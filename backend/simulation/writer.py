@@ -1,12 +1,12 @@
 """Results writer subscribing to zmq publisher and writing data to hdf5 file."""
 
 from pathlib import Path
+from threading import Event
 from typing import override
 
 import numpy as np
 import tables as tb
 import zmq
-from loguru import logger
 
 from utilities.socket import SocketHandler
 
@@ -38,14 +38,15 @@ class Writer(SocketHandler):
         self.file = tb.open_file(filename, mode='w')
         self.expectedrows = expectedrows
 
-    def write(self, port: int = 5556) -> None:
+    def write(self, terminate: Event, port: int = 5556) -> None:
         """Function for writing data to file. Required to support saving virus topics.
 
         Args:
+            terminate: Stop event for terminating writer.
             port: ZMQ port accessed by publisher.
         """
         with self.sync_socket(zmq.SUB, port):
-            while True:
+            while not terminate.is_set():
                 topic = self.recv_string()
                 if topic in ['agents', 'virus']:
                     data = self.recv_array().astype(np.int16)
@@ -63,9 +64,7 @@ class Writer(SocketHandler):
                             agent_info.append()
                         break
 
-        logger.debug('Received agent info, closing file.')
         self.file.close()
-        logger.debug('Done.')
 
     def _append(self, topic: str, data: np.typing.NDArray) -> None:
         """Append data to EArray, creating array if required."""

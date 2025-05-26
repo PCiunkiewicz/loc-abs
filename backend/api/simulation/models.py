@@ -1,5 +1,9 @@
 """Localized Epidemiological ABS API Models."""
 
+from __future__ import annotations
+
+from pathlib import Path
+
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import MinValueValidator, validate_slug
 from django.db import models
@@ -59,20 +63,28 @@ class Virus(BaseModel):
     fatality_rate = models.FloatField(default=0.01, validators=[MinValueValidator(0)])
 
 
+class Prevention(BaseModel):
+    """Prevention Model representing the prevention parameters."""
+
+    name = models.CharField(max_length=250, unique=True, validators=[validate_slug])
+    mask = models.JSONField()
+    vax = models.JSONField()
+
+
 class Scenario(BaseModel):
     """Scenario Model representing combined parameters for simulation scenarios."""
 
     name = models.CharField(max_length=250, unique=True, validators=[validate_slug])
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
     virus = models.ForeignKey(Virus, on_delete=models.CASCADE)
-    prevention = models.JSONField()  # TODO: figure out best structure for this, maybe split vax and mask as models?
+    prevention = models.ForeignKey(Prevention, on_delete=models.CASCADE)
 
 
 class AgentConfig(BaseModel):
     """Agent Configuration Model representing the agent parameters."""
 
     name = models.CharField(max_length=250, unique=True, validators=[validate_slug])
-    default = models.JSONField(default=dict)  # TODO: come back and finish this json validation
+    default = models.JSONField(default=dict)
     random_agents = models.PositiveIntegerField()
     random_infected = models.PositiveIntegerField()
     custom = models.JSONField(default=list)
@@ -91,11 +103,9 @@ class Run(BaseModel):
 
     name = models.CharField(max_length=250, validators=[validate_slug])
     status = models.CharField(max_length=7, choices=Status.choices, default=Status.CREATED)
-    save_dir = models.CharField(max_length=250, null=True)
-    config = models.CharField(max_length=250, null=True)
-    logfile = models.CharField(max_length=250, null=True)
+    save_dir: str | Path = models.CharField(max_length=250, null=True)
+    config: str | Path = models.CharField(max_length=250, null=True)
+    logfile: str | Path = models.CharField(max_length=250, null=True)
     scenario = models.ForeignKey(Scenario, on_delete=models.RESTRICT)
     agents = models.ForeignKey(AgentConfig, on_delete=models.RESTRICT)
     runs = models.IntegerField(default=1, validators=[MinValueValidator(1)])
-    parallel = models.BooleanField(default=False)  # TODO: consider replacing with n_jobs or adding
-    # TODO: add status and special logic for polling completeness
