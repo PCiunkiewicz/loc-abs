@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DOCKERIZED=1
 
-RUN apt-get update && apt-get install -y libhdf5-dev libpq-dev gcc
+RUN apt-get update && apt-get install -y libhdf5-dev libpq-dev gcc g++
 
 WORKDIR /code
 COPY requirements.txt /code/

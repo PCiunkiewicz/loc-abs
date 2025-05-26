@@ -89,3 +89,8 @@ services:
       - /app/node_modules  
     working_dir: /app
     command: pnpm dev --host
+    environment:
+      TZ: America/Edmonton
+    depends_on:
+      - db
+      - api

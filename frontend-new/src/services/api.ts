@@ -1,23 +1,31 @@
-// services/api.ts
 import axios from "axios";
-import type { AxiosInstance, AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
 
 export class GenericAPI {
   private url: string;
-  private session: AxiosInstance;
 
   constructor(endpoint: string = "") {
-    const baseUrl = "http://api:8000/api/v1";
+    const baseUrl = "/api/v1"; // Vite proxy will handle routing
     this.url = endpoint ? `${baseUrl}/${endpoint}` : baseUrl;
-    this.session = axios.create();
   }
 
   async post(data: Record<string, any>): Promise<AxiosResponse> {
-    return this.session.post(`${this.url}/`, data, { timeout: 10000 });
+    return axios.post(`${this.url}/`, data, {
+      timeout: 10000,
+      headers: {
+        Accept: "application/json",
+      },
+    });
   }
 
   async get(objId?: number): Promise<AxiosResponse> {
-    const fullUrl = objId ? `${this.url}/${objId}` : this.url;
-    return this.session.get(fullUrl);
+    const fullUrl = objId ? `${this.url}/${objId}/` : `${this.url}/`; // force trailing slash
+    console.log("GET request to:", fullUrl); // ← logging added
+    return axios.get(fullUrl, {
+      timeout: 10000,
+      headers: {
+        Accept: "application/json",
+      },
+    });
   }
 }

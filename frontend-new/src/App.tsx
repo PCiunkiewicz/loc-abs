@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Scenarios from "./pages/Scenarios";
-import Simulation from "./pages/Simulation";
+import Simulation from "./pages/SimulationsPage";
 import Terrain from "./pages/Terrain";
 import Viruses from "./pages/Viruses";
 import TestAPI from "./pages/test";
@@ -11,8 +11,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* <Route path="/" element={<Home />} /> */}
-        <Route path="/" element={<TestAPI />} />
+        <Route path="/" element={<Home />} />
         <Route path="/Scenarios" element={<Scenarios />} />
         <Route path="/Simulation" element={<Simulation />} />
         <Route path="/Terrain" element={<Terrain />} />
