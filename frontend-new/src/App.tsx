@@ -5,12 +5,14 @@ import Scenarios from "./pages/Scenarios";
 import Simulation from "./pages/Simulation";
 import Terrain from "./pages/Terrain";
 import Viruses from "./pages/Viruses";
+import TestAPI from "./pages/test";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* <Route path="/" element={<Home />} /> */}
+        <Route path="/" element={<TestAPI />} />
         <Route path="/Scenarios" element={<Scenarios />} />
         <Route path="/Simulation" element={<Simulation />} />
         <Route path="/Terrain" element={<Terrain />} />
