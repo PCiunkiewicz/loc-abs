@@ -5,7 +5,8 @@ import Scenarios from "./pages/Scenarios";
 import Simulation from "./pages/SimulationsPage";
 import Terrain from "./pages/Terrain";
 import Viruses from "./pages/Viruses";
-import TestAPI from "./pages/test";
+import Preventions from "./pages/Preventions";
+
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/Simulation" element={<Simulation />} />
         <Route path="/Terrain" element={<Terrain />} />
         <Route path="/Viruses" element={<Viruses />} />
+        <Route path="/Preventions" element={<Preventions />} />
       </Routes>
     </Router>
   );
