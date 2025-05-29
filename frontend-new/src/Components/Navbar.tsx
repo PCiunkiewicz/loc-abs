@@ -29,7 +29,7 @@ const Navbar = (): JSX.Element => {
             className="h-8"
             alt="Flowbite Logo"
           />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
+          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white cursor-pointer">
             LocAbs
           </span>
         </Link>
@@ -51,7 +51,8 @@ const Navbar = (): JSX.Element => {
             <li className="relative" ref={envRef}>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto"
+                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto cursor-pointer
+"
               >
                 Environment
                 <svg className="w-2.5 h-2.5 ms-2.5" fill="none" viewBox="0 0 10 6">
@@ -79,7 +80,7 @@ const Navbar = (): JSX.Element => {
             <li className="relative" ref={infRef}>
               <button
                 onClick={() => setIsEnvironmentDropdownOpen((prev) => !prev)}
-                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto"
+                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto cursor-pointer"
               >
                 Infection Data
                 <svg className="w-2.5 h-2.5 ms-2.5" fill="none" viewBox="0 0 10 6">
@@ -107,7 +108,7 @@ const Navbar = (): JSX.Element => {
             <li className="relative" ref={scnRef}>
               <button
                 onClick={() => setIsInfectionDataDropdownOpen((prev) => !prev)}
-                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto"
+                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto cursor-pointer"
               >
                 Scenarios & Agent
                 <svg className="w-2.5 h-2.5 ms-2.5" fill="none" viewBox="0 0 10 6">
@@ -128,7 +129,7 @@ const Navbar = (): JSX.Element => {
             <li className="relative" ref={sysRef}>
               <button
                 onClick={() => setIsScenariosAgentsDropdownOpen((prev) => !prev)}
-                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto"
+                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 dark:text-white md:p-0 md:w-auto cursor-pointer"
               >
                 System
                 <svg className="w-2.5 h-2.5 ms-2.5" fill="none" viewBox="0 0 10 6">
