@@ -1,5 +1,7 @@
+import Navbar from "../Components/Navbar";
+
 function Home() {
-  return <div>Home</div>;
+  return <div className="w-full"><Navbar/></div>;
 }
 
 export default Home;
