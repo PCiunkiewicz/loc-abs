@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GenericAPI } from "../services/api";
+import Navbar from "../Components/Navbar";
 
 export default function ImporterPage() {
   const [configs, setConfigs] = useState<string[]>([]);
@@ -32,7 +33,8 @@ export default function ImporterPage() {
   };
 
   return (
-    <div className="space-y-4 p-4">
+    <div>
+      <Navbar/>
       <h2 className="text-xl font-bold">Import Config</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-4">

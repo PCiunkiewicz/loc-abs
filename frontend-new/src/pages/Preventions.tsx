@@ -1,4 +1,5 @@
 import GenericORMUI from "../Components/GenericORMUI";
+import Navbar from "../Components/Navbar";
 
 const preventionDefaults = {
   name: "",
@@ -19,7 +20,7 @@ const PreventionsForm = (
   onChange: (key: string, value: any) => void
 ) => {
   return (
-    <div className="space-y-2">
+    <div>
       <input
         type="text"
         placeholder="Name"
@@ -59,10 +60,13 @@ const PreventionsForm = (
 
 export default function PreventionsPage() {
   return (
+    <div>
+    <Navbar/>
     <GenericORMUI
       model="preventions"
       defaults={preventionDefaults}
       renderForm={PreventionsForm}
-    />
+      />
+      </div>
   );
 }

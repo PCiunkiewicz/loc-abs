@@ -11,7 +11,7 @@ import RunsPage from "./pages/Runs";
 import ImporterPage from "./pages/Importer";
 import Admin from "./pages/Admin";
 
-
+ 
 
 
 function App() {
@@ -23,11 +23,11 @@ function App() {
         <Route path="/Simulation" element={<Simulation />} />
         <Route path="/Terrain" element={<Terrain />} />
         <Route path="/Viruses" element={<Viruses />} />
-        <Route path="/Preventions" element={<Preventions />} />
+        <Route path="/Prevention" element={<Preventions />} />
         <Route path="/AgentConfigs" element={<AgentConfigsPage />} />
-        <Route path="/RunsPage" element={<RunsPage />} />
-        <Route path="Importer" element={ <ImporterPage />} />
-        <Route path="Admin" element={ <Admin />} />
+        <Route path="/Runs" element={<RunsPage />} />
+        <Route path="/Importer" element={ <ImporterPage />} />
+        <Route path="/Admin" element={ <Admin />} />
       </Routes>
     </Router>
   );

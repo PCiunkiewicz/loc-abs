@@ -1,4 +1,5 @@
 import GenericORMUI from "../Components/GenericORMUI";
+import Navbar from "../Components/Navbar";
 
 const agentDefaults = {
   name: "",
@@ -69,7 +70,6 @@ const AgentConfigForm = (
               try {
                 onChange("default", JSON.parse(e.target.value));
               } catch (_) {
-                // ignore JSON parse error
               }
             }}
           />
@@ -96,10 +96,13 @@ const AgentConfigForm = (
 
 export default function AgentConfigsPage() {
   return (
+    <div>
+    <Navbar/>
     <GenericORMUI
       model="agent_configs"
       defaults={agentDefaults}
       renderForm={AgentConfigForm}
-    />
+      />
+      </div>
   );
 }

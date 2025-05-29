@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import GenericORMUI from "../Components/GenericORMUI";
 import { GenericAPI } from "../services/api";
+import Navbar from "../Components/Navbar";
 
 const runDefaults = {
   name: "",
@@ -28,7 +29,7 @@ function RunsFormComponent({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div>
       <input
         type="text"
         placeholder="Run Name"
@@ -73,12 +74,15 @@ function RunsFormComponent({
 
 export default function RunsPage() {
   return (
+    <div>
+    <Navbar/>
     <GenericORMUI
       model="runs"
       defaults={runDefaults}
       renderForm={(form, onChange) => (
         <RunsFormComponent form={form} onChange={onChange} />
       )}
-    />
+      />
+      </div>
   );
 }

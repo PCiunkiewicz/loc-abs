@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import GenericORMUI from "../Components/GenericORMUI";
 import { GenericAPI } from "../services/api";
+import Navbar from "../Components/Navbar";
+
 
 const scenarioDefaults = {
   name: "",
@@ -31,7 +33,7 @@ function ScenariosFormComponent({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div>
       <input
         type="text"
         placeholder="Scenario Name"
@@ -82,12 +84,15 @@ function ScenariosFormComponent({
 
 export default function ScenariosPage() {
   return (
+    <div>
+    <Navbar/>
     <GenericORMUI
       model="scenarios"
       defaults={scenarioDefaults}
       renderForm={(form, onChange) => (
         <ScenariosFormComponent form={form} onChange={onChange} />
       )}
-    />
+      />
+      </div>
   );
 }

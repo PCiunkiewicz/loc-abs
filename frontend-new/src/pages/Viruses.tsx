@@ -1,4 +1,6 @@
 import GenericORMUI from "../Components/GenericORMUI";
+import Navbar from "../Components/Navbar";
+
 
 const virusDefaults = {
   name: "",
@@ -65,10 +67,13 @@ const VirusForm = (
 
 export default function VirusesPage() {
   return (
+    <div>
+      <Navbar/>
     <GenericORMUI
       model="viruses"
       defaults={virusDefaults}
       renderForm={VirusForm}
-    />
+      />
+      </div>
   );
 }

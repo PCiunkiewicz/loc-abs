@@ -1,4 +1,6 @@
 import GenericORMUI from "../Components/GenericORMUI";
+import Navbar from "../Components/Navbar";
+
 
 const terrainDefaults = {
   name: "",
@@ -84,10 +86,13 @@ const TerrainForm = (
 
 export default function TerrainsPage() {
   return (
+    <div>
+      <Navbar/>
     <GenericORMUI
       model="terrains"
       defaults={terrainDefaults}
       renderForm={TerrainForm}
-    />
+      />
+      </div>
   );
 }

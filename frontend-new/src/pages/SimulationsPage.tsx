@@ -1,4 +1,5 @@
 import GenericORMUI from "../Components/GenericORMUI";
+import Navbar from "../Components/Navbar";
 
 const simDefaults = {
   name: "",
@@ -62,6 +63,9 @@ const SimForm = (form: any, onChange: (key: string, value: any) => void) => (
 
 export default function SimulationsPage() {
   return (
-    <GenericORMUI model="simulations" defaults={simDefaults} renderForm={SimForm} />
+    <div>
+        <Navbar/>
+        <GenericORMUI model="simulations" defaults={simDefaults} renderForm={SimForm} />
+      </div>
   );
 }

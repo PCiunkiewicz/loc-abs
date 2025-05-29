@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { GenericAPI } from "../services/api";
+import Navbar from "../Components/Navbar";
+
 
 export default function AdminPage() {
   const [result, setResult] = useState<any | null>(null);
@@ -16,7 +18,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="">
+      <Navbar/>
       <h2 className="text-xl font-semibold">Admin Panel</h2>
 
       {!confirming && (
