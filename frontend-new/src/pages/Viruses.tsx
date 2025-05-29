@@ -14,10 +14,9 @@ const VirusForm = (
 ) => {
   return (
     <div className="space-y-2">
-      {/* Slug-safe name */}
       <input
         type="text"
-        placeholder="Name (slug format)"
+        placeholder="Name"
         value={form.name}
         onChange={(e) =>
           onChange("name", e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))

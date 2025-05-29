@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import GenericORMUI from "../Components/GenericORMUI";
 import { GenericAPI } from "../services/api";
 

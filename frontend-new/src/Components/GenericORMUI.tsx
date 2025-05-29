@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import type { JSX } from "react";
 import { GenericAPI } from "../services/api";
 
 type ORMProps = {
@@ -13,7 +14,7 @@ type ORMProps = {
 const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
   const api = new GenericAPI(model);
   const [tab, setTab] = useState<"create" | "retrieve" | "update" | "delete">("create");
-  const [form, setForm] = useState(defaults);
+  const [form, setForm] = useState(() => ({ ...defaults }));
   const [objectList, setObjectList] = useState<any[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [response, setResponse] = useState<any | null>(null);
@@ -68,20 +69,12 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
       .catch(err => setError(JSON.stringify(err.response?.data || err.message)));
   };
 
-  // ✅ Wrapper ensures hooks in renderForm don't trigger hook mismatch
-  const RenderFormWrapper = ({
-    form,
-    onChange,
-  }: {
-    form: Record<string, any>;
-    onChange: (key: string, value: any) => void;
-  }) => renderForm(form, onChange);
+  const RenderFormWrapper = useMemo(() => renderForm(form, handleChange), [form]);
 
   return (
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-semibold">{model.toUpperCase()}</h2>
 
-      {/* Tab Menu */}
       <div className="flex gap-4 mb-4">
         {["create", "retrieve", "update", "delete"].map((t) => (
           <button
@@ -94,7 +87,7 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
               setResponse(null);
               setError(null);
               if (t === "create") {
-                setForm(defaults);
+                setForm({ ...defaults });
                 setSelectedId(null);
               }
               if (t === "update" || t === "delete" || t === "retrieve") {
@@ -107,18 +100,20 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
         ))}
       </div>
 
-      {/* Create */}
       {tab === "create" && (
-        <>
-          <RenderFormWrapper form={form} onChange={handleChange} />
-          <button onClick={handleCreate}>Create</button>
-        </>
+        <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
+          {RenderFormWrapper}
+          <button type="submit">Create</button>
+        </form>
       )}
 
-      {/* Retrieve */}
       {tab === "retrieve" && (
         <>
-          <select onChange={(e) => setSelectedId(parseInt(e.target.value))}>
+          <select
+            name="retrieveId"
+            id="retrieveId"
+            onChange={(e) => setSelectedId(parseInt(e.target.value))}
+          >
             <option value="">Select {model}</option>
             {objectList.map((obj) => (
               <option key={obj.id} value={obj.id}>
@@ -132,10 +127,11 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
         </>
       )}
 
-      {/* Update */}
       {tab === "update" && (
         <>
           <select
+            name="updateId"
+            id="updateId"
             onChange={(e) => {
               const id = parseInt(e.target.value);
               setSelectedId(id);
@@ -150,18 +146,21 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
             ))}
           </select>
           {selectedId && (
-            <>
-              <RenderFormWrapper form={form} onChange={handleChange} />
-              <button onClick={handleUpdate}>Update</button>
-            </>
+            <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }}>
+              {RenderFormWrapper}
+              <button type="submit">Update</button>
+            </form>
           )}
         </>
       )}
 
-      {/* Delete */}
       {tab === "delete" && (
         <>
-          <select onChange={(e) => setSelectedId(parseInt(e.target.value))}>
+          <select
+            name="deleteId"
+            id="deleteId"
+            onChange={(e) => setSelectedId(parseInt(e.target.value))}
+          >
             <option value="">Select {model}</option>
             {objectList.map((obj) => (
               <option key={obj.id} value={obj.id}>
@@ -175,7 +174,6 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
         </>
       )}
 
-      {/* Result Display */}
       {response && (
         <div className="border p-2 bg-green-50 mt-4">
           <strong>Response:</strong>

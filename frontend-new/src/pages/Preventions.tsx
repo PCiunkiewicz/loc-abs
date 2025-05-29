@@ -1,4 +1,3 @@
-import React from "react";
 import GenericORMUI from "../Components/GenericORMUI";
 
 const preventionDefaults = {
@@ -36,7 +35,6 @@ const PreventionsForm = (
             try {
               onChange("mask", JSON.parse(e.target.value));
             } catch {
-              // silently ignore for now
             }
           }}
         />
@@ -51,7 +49,6 @@ const PreventionsForm = (
             try {
               onChange("vax", JSON.parse(e.target.value));
             } catch {
-              // silently ignore for now
             }
           }}
         />

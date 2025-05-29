@@ -6,6 +6,12 @@ import Simulation from "./pages/SimulationsPage";
 import Terrain from "./pages/Terrain";
 import Viruses from "./pages/Viruses";
 import Preventions from "./pages/Preventions";
+import AgentConfigsPage from "./pages/Agent_Config";
+import RunsPage from "./pages/Runs";
+import ImporterPage from "./pages/Importer";
+import Admin from "./pages/Admin";
+
+
 
 
 function App() {
@@ -18,6 +24,10 @@ function App() {
         <Route path="/Terrain" element={<Terrain />} />
         <Route path="/Viruses" element={<Viruses />} />
         <Route path="/Preventions" element={<Preventions />} />
+        <Route path="/AgentConfigs" element={<AgentConfigsPage />} />
+        <Route path="/RunsPage" element={<RunsPage />} />
+        <Route path="Importer" element={ <ImporterPage />} />
+        <Route path="Admin" element={ <Admin />} />
       </Routes>
     </Router>
   );

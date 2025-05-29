@@ -7,7 +7,7 @@ const terrainDefaults = {
   interactive: false,
   restricted: false,
   color: "#00f900",
-  value: "#00f900", // ✅ ensure this is initialized
+  value: "#00f900",
   access_level: 0,
 };
 
@@ -17,7 +17,6 @@ const TerrainForm = (
 ) => {
   return (
     <div className="space-y-2">
-      {/* Slug-safe name field */}
       <input
         type="text"
         placeholder="Name (slug: lowercase, no spaces)"
@@ -27,7 +26,6 @@ const TerrainForm = (
         }
       />
 
-      {/* Checkboxes */}
       <div className="flex gap-4">
         <label>
           <input
@@ -55,7 +53,6 @@ const TerrainForm = (
         </label>
       </div>
 
-      {/* Color + value sync */}
       <div className="flex items-center gap-2">
         <label>
           Color:
@@ -64,8 +61,8 @@ const TerrainForm = (
             value={form.color}
             onChange={(e) => {
               const color = e.target.value;
-              onChange("color", color); // for UI
-              onChange("value", color); // for backend field
+              onChange("color", color); 
+              onChange("value", color); 
             }}
           />
         </label>
