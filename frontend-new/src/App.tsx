@@ -10,6 +10,8 @@ import AgentConfigsPage from "./pages/Agent_Config";
 import RunsPage from "./pages/Runs";
 import ImporterPage from "./pages/Importer";
 import Admin from "./pages/Admin";
+import Terraintest from "./pages/Terraintest";
+
 
  
 
@@ -27,7 +29,9 @@ function App() {
         <Route path="/AgentConfigs" element={<AgentConfigsPage />} />
         <Route path="/Runs" element={<RunsPage />} />
         <Route path="/Importer" element={ <ImporterPage />} />
-        <Route path="/Admin" element={ <Admin />} />
+        <Route path="/Admin" element={<Admin />} />
+        <Route path="/Terraintest" element={<Terraintest />} />
+        
       </Routes>
     </Router>
   );

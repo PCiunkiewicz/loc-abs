@@ -19,6 +19,9 @@ const GenericORMUI: React.FC<ORMProps> = ({ model, defaults, renderForm }) => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [response, setResponse] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  
+
 
   const fetchObjects = () => {
     api.get()
