@@ -2,6 +2,7 @@
 
 from api.simulation.views.admin import ResetDB
 from api.simulation.views.agent_configs import AgentConfigViewSet
+from api.simulation.views.exports import ExportViewSet
 from api.simulation.views.importer import ImportConfig, ListConfigs
 from api.simulation.views.preventions import PreventionViewSet
 from api.simulation.views.runs import RunViewSet
@@ -12,6 +13,7 @@ from api.simulation.views.viruses import VirusViewSet
 
 __all__ = [
     'AgentConfigViewSet',
+    'ExportViewSet',
     'PreventionViewSet',
     'RunViewSet',
     'ScenarioViewSet',

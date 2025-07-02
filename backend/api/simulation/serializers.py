@@ -165,3 +165,20 @@ class NestedRunSerializer(RunSerializer):
 
     scenario = Nested(queryset=models.Scenario.objects.all(), serializer=NestedScenarioSerializer)
     agents = Nested(queryset=models.AgentConfig.objects.all(), serializer=AgentConfigSerializer)
+
+
+class ExportSerializer(serializers.ModelSerializer):
+    """Export Model Serializer."""
+
+    class Meta:
+        model = models.Export
+        fields = '__all__'
+
+    def validate_name(self, data: str) -> Any:
+        """Validate `name` field on Export."""
+        filetypes = ('.png', '.gif', '.svg', '.html', '.pdf')
+        if not data.endswith(filetypes):
+            raise ValidationError({'name': f'must end with one of {filetypes}'})
+
+        data = data.replace(' ', '_')
+        return data

@@ -13,6 +13,7 @@ router.register('preventions', views.PreventionViewSet)
 router.register('scenarios', views.ScenarioViewSet)
 router.register('agent_configs', views.AgentConfigViewSet)
 router.register('runs', views.RunViewSet)
+router.register('exports', views.ExportViewSet)
 
 urlpatterns = router.urls
 urlpatterns += [
