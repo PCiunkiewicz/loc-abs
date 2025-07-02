@@ -44,12 +44,12 @@ class SimSnapshot:
             except tb.NoSuchNodeError:
                 self.virus = np.zeros((*self.imgs[0].shape[:2], len(self.imgs)))
 
-    def export(self, i: int, outfile: Path, cmap: str = 'bwr_r', label: bool = True) -> None:
+    def export(self, outfile: Path, i: int, cmap: str = 'bwr_r', label: bool = True) -> None:
         """Export snapshot to output file.
 
         Args:
-            i: Index of the snapshot frame to export.
             outfile: Path to the output file.
+            i: Index of the snapshot frame to export.
             cmap: Colormap for the virus overlay.
                 https://matplotlib.org/stable/users/explain/colors/colormaps.html
             label: Whether to label agents with their IDs.

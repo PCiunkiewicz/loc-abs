@@ -109,3 +109,23 @@ class Run(BaseModel):
     scenario = models.ForeignKey(Scenario, on_delete=models.RESTRICT)
     agents = models.ForeignKey(AgentConfig, on_delete=models.RESTRICT)
     runs = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+
+
+class Export(BaseModel):
+    """Export Model representing exported simulation data."""
+
+    class ExportType(models.TextChoices):
+        """Export `export_type` field possible choices."""
+
+        ANIMATION = 'ANIMATION'
+        SNAPSHOT = 'SNAPSHOT'
+        EXCESS_RISK = 'EXCESS_RISK'
+        EPIDEMIOLOGICAL_STATUS = 'EPIDEMIOLOGICAL_STATUS'
+        VIRAL_CONCENTRATION = 'VIRAL_CONCENTRATION'
+
+    run = models.ForeignKey(Run, on_delete=models.CASCADE)
+    name = models.CharField(max_length=250)
+    outfile = models.CharField(max_length=250, null=True)
+    export_type = models.CharField(max_length=32, choices=ExportType.choices)
+    params = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
