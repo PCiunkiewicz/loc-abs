@@ -64,6 +64,22 @@ class SimLauncher:
                 self.set_status(Run.Status.FAILURE)
                 raise
 
+    def resume(self) -> None:
+        """Resume a failed or crashed simulation run."""
+        if self.run.runs == 1:
+            raise ValueError('Cannot resume a single run simulation. Use `run_sim` instead.')
+
+        self.set_status(Run.Status.RUNNING)
+        with Redirector(self.run.logfile):
+            try:
+                logger.debug(f'Writing outputs to >> {self.run.save_dir}/*.hdf5')
+                logger.debug(f'Logging to >> {self.run.logfile}')
+                self.run_parallel(resume=True)
+                self.set_status(Run.Status.SUCCESS)
+            except Exception:
+                self.set_status(Run.Status.FAILURE)
+                raise
+
     def set_status(self, status: Run.Status) -> None:
         """Set the status of the run."""
         Run.objects.filter(id=self.run.id).update(status=status)
@@ -96,7 +112,7 @@ class SimLauncher:
                 if thread.is_alive():
                     logger.warning(f'Thread {thread.name} is still alive after 1 second.')
 
-    def run_parallel(self) -> None:
+    def run_parallel(self, resume=False) -> None:
         """Parallelize multiple simulation runs using Dask."""
         logger.debug(f'Configuring {self.run.runs} runs for {self.run.name} (id={self.run.id})...')
 
@@ -104,6 +120,11 @@ class SimLauncher:
             logger.success(f'Dask cluster dashboard - {client.dashboard_link}')
 
             filenames = [self.run.save_dir / f'{run}.hdf5' for run in range(self.run.runs)]
+            if resume:  # Check if any output files already exist
+                filenames = [f for f in filenames if not f.exists()]
+                if not filenames:
+                    logger.warning('No new runs to execute, all output files already exist.')
+                    return
             if any(f.exists() for f in filenames):
                 raise FileExistsError(f'Output files already exist in {self.run.save_dir}')
 
