@@ -110,7 +110,10 @@ class GenericORM(ABC):
         result = ':green[Success]' if response.ok else ':red[Failed]'
         st.write(f'{msg} - **{result}**')
         st.write(f'`{response.request.method} {response.url} -> [{response.status_code}] {response.reason}`')
-        st.json(response.json(), expanded=1 if response.ok else 2)
+        try:
+            st.json(response.json(), expanded=1 if response.ok else 2)
+        except requests.JSONDecodeError:
+            pass
 
     @staticmethod
     def _format(obj: dict) -> str:
