@@ -10,7 +10,7 @@ from queue import Queue
 from threading import Event
 
 import django
-from dask.distributed import Client, wait
+from dask.distributed import Client, fire_and_forget, wait
 from django.db import connections
 from loguru import logger
 
@@ -38,6 +38,10 @@ class SimLauncher:
         self.run = Run.objects.get(id=run) if isinstance(run, int) else run
         (BACKEND / self.run.save_dir).mkdir(parents=True, exist_ok=True)
 
+        for attr in ('logfile', 'config', 'save_dir'):
+            if isinstance(value := getattr(self.run, attr), str):
+                setattr(self.run, attr, Path(value))
+
     @classmethod
     def from_config(cls, config: Path, runs: int = 1, exist_ok: bool = True) -> SimLauncher:
         """Create a simulation launcher from a config file."""
@@ -51,20 +55,22 @@ class SimLauncher:
 
         return cls(run)
 
-    def start(self) -> None:
+    def start(self, await_results=True) -> None:
         """Start the simulation run."""
         self.set_status(Run.Status.RUNNING)
         with Redirector(self.run.logfile):
             try:
+                logger.info(f'Starting run "{self.run.name}" (id={self.run.id})')
                 logger.debug(f'Writing outputs to >> {self.run.save_dir}/*.hdf5')
                 logger.debug(f'Logging to >> {self.run.logfile}')
-                self.run_parallel() if self.run.runs > 1 else self.run_sim()
-                self.set_status(Run.Status.SUCCESS)
+                self.run_parallel(await_results=await_results) if self.run.runs > 1 else self.run_sim()
+                if await_results:
+                    self.set_status(Run.Status.SUCCESS)
             except Exception:
                 self.set_status(Run.Status.FAILURE)
                 raise
 
-    def resume(self) -> None:
+    def resume(self, await_results=True) -> None:
         """Resume a failed or crashed simulation run."""
         if self.run.runs == 1:
             raise ValueError('Cannot resume a single run simulation. Use `run_sim` instead.')
@@ -72,10 +78,12 @@ class SimLauncher:
         self.set_status(Run.Status.RUNNING)
         with Redirector(self.run.logfile):
             try:
+                logger.info(f'Resuming run "{self.run.name}" (id={self.run.id})')
                 logger.debug(f'Writing outputs to >> {self.run.save_dir}/*.hdf5')
                 logger.debug(f'Logging to >> {self.run.logfile}')
-                self.run_parallel(resume=True)
-                self.set_status(Run.Status.SUCCESS)
+                self.run_parallel(resume=True, await_results=await_results)
+                if await_results:
+                    self.set_status(Run.Status.SUCCESS)
             except Exception:
                 self.set_status(Run.Status.FAILURE)
                 raise
@@ -112,12 +120,13 @@ class SimLauncher:
                 if thread.is_alive():
                     logger.warning(f'Thread {thread.name} is still alive after 1 second.')
 
-    def run_parallel(self, resume=False) -> None:
+    def run_parallel(self, resume=False, await_results=True) -> None:
         """Parallelize multiple simulation runs using Dask."""
         logger.debug(f'Configuring {self.run.runs} runs for {self.run.name} (id={self.run.id})...')
 
         with Client(f'tcp://{HOST}:8786', direct_to_workers=True) as client:
-            logger.success(f'Dask cluster dashboard - {client.dashboard_link}')
+            if await_results:
+                logger.success(f'Dask cluster dashboard - {client.dashboard_link}')
 
             filenames = [self.run.save_dir / f'{run}.hdf5' for run in range(self.run.runs)]
             if resume:  # Check if any output files already exist
@@ -125,6 +134,8 @@ class SimLauncher:
                 if not filenames:
                     logger.warning('No new runs to execute, all output files already exist.')
                     return
+                completed = self.run.runs - len(filenames)
+                logger.info(f'Found {completed}/{self.run.runs} completed runs, resuming {len(filenames)} runs...')
             if any(f.exists() for f in filenames):
                 raise FileExistsError(f'Output files already exist in {self.run.save_dir}')
 
@@ -135,9 +146,13 @@ class SimLauncher:
 
             job_id = f'{self.run.id:03}-{self.run.name}'
             res = client.map(self._parallel_helper, filenames, model_pkl=model_pkl, pure=False, key=job_id)
-            logger.debug('Simulation runs submitted to scheduler, waiting for completion...')
-            wait(res)
-            logger.success('All simulation runs completed successfully.')
+            logger.debug('Simulation runs submitted to scheduler.')
+            if await_results:
+                logger.debug('Waiting for completion...')
+                wait(res)
+                logger.success('All simulation runs completed successfully.')
+            else:
+                fire_and_forget(res)
 
     def _parallel_helper(self, outfile: Path, model_pkl: Path) -> None:
         """Callable for Dask."""
