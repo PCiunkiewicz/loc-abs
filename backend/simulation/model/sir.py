@@ -111,7 +111,7 @@ class SIRModel(BaseModel):
             self.model_step()
             data['timesteps'].append(self.scenario.dt.timestamp())
             data['agents'].append(self.get_agents())
-            if i % (self.sim.max_iter // 4) == 0:
+            if (i % min((self.sim.max_iter // 4), 100) == 0) or (i == self.sim.max_iter - 1):
                 logger.info(str(pbar), flush=True)
 
         logger.debug(f'Writing simulation data to {outfile}')
