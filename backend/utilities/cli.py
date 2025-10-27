@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from importlib import import_module
 from pathlib import Path
 from typing import Any, override
 
@@ -12,7 +13,8 @@ from prompt_toolkit.validation import DummyValidator, Validator
 
 from api.simulation.models import Export
 from tools.handler import ExportHandler
-from utilities.paths import CFG
+from utilities.paths import CFG, SCRIPTS
+from utilities.scripting import BaseScript
 
 FileType = str | Path
 
@@ -80,6 +82,35 @@ class LauncherCLI(BaseCLI):
             'runs': int(self.session.prompt(HTML('<b>Number of runs: </b>'), **self._prompt_kws(dtype=int)) or 1),
         }
         return {k: v for k, v in kwargs.items() if v}
+
+
+class ScriptCLI(BaseCLI):
+    """CLI tool for selecting script launchers."""
+
+    loaded_module: str | None = None
+
+    @override
+    def prompt(self) -> BaseScript:
+        """Prompt user to select a script file."""
+        scripts = sorted(
+            [str(x.relative_to(SCRIPTS)).replace('.py', '').replace('/', '.') for x in SCRIPTS.rglob('*.py')]
+        )
+        script = self.session.prompt(HTML('<b>Script module: </b>'), **self._prompt_kws(scripts))
+        return self.load_script(script)
+
+    def confirm(self) -> bool:
+        """Prompt user to confirm script execution."""
+        confirm = self.session.prompt(
+            HTML('<b>Are you sure you want to run this script? (y/n): </b>'), **self._prompt_kws()
+        )
+        return confirm.lower() == 'y'
+
+    def load_script(self, name: str) -> BaseScript:
+        """Load script module by name using `importlib.import_module`."""
+        module = import_module(f'scripts.{name}')
+        if not hasattr(module, 'Script') or not issubclass(getattr(module, 'Script'), BaseScript):
+            raise ImportError(f'Module {name} does not have a valid Script class.')
+        return getattr(module, 'Script')()
 
 
 class ExporterCLI(BaseCLI):
