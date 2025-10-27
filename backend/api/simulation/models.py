@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import os
+import shutil
 from pathlib import Path
 
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import MinValueValidator, validate_slug
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 # TODO: all models - write appropriate on-create and on-delete logic
 # TODO: add Export model and logic for figures
@@ -109,6 +113,18 @@ class Run(BaseModel):
     scenario = models.ForeignKey(Scenario, on_delete=models.RESTRICT)
     agents = models.ForeignKey(AgentConfig, on_delete=models.RESTRICT)
     runs = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+
+
+@receiver(post_delete)
+def delete_run(sender, instance, **kwargs) -> None:
+    """Post-delete hook for Run model."""
+    if sender == Run:
+        if instance.save_dir is not None and os.path.isdir(instance.save_dir):
+            shutil.rmtree(instance.save_dir)
+        if instance.logfile is not None and os.path.isfile(instance.logfile):
+            os.remove(instance.logfile)
+        if instance.config is not None and os.path.isfile(instance.config):
+            os.remove(instance.config)
 
 
 class Export(BaseModel):

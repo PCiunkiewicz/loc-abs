@@ -51,3 +51,6 @@ TOOLS = BACKEND / 'tools'
 """Tools directory: `./backend/tools/`"""
 STATIC = TOOLS / 'static'
 """Static files directory: `./backend/tools/static/`"""
+
+SCRIPTS = BACKEND / 'scripts'
+"""Scripts directory: `./backend/scripts/`"""

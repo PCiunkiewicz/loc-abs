@@ -8,6 +8,7 @@ from typing import override
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.simulation.models import Run
 from api.simulation.serializers import NestedRunSerializer, RunSerializer
@@ -72,3 +73,11 @@ class RunViewSet(viewsets.ModelViewSet):
             response = super().partial_update(request, pk=pk)
 
         return response
+
+
+class CheckRunStatus(APIView):
+    """API View to check runs for completion."""
+
+    def get(self, request: Request) -> Response:
+        """Handle GET request to check run(s) status and update accordingly."""
+        # TODO: implement
