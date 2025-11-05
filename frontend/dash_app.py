@@ -3,6 +3,7 @@ from dash import Dash, html
 import dash
 import dash_bootstrap_components as dbc
 import components_.header as header
+import components_.footer as footer
 from utilities.logging import configure_logger
 from loguru import logger
 
@@ -12,9 +13,12 @@ app = Dash(__name__, use_pages= True, external_stylesheets=[dbc.themes.LUX])
 
 header = header.create_header()
 
+footer = footer.create_footer()
+
 app.layout = html.Div([
     header,
-    dash.page_container
+    dash.page_container,
+    footer
 ])
 
 

@@ -166,6 +166,9 @@ recent_activity_card = dbc.Card(
     style={"maxWidth": "600px", "margin": "0", "padding": "12px"},
 )
 
+# TODO: Add functionality to buttons
+# TODO: Style buttons to be centered in card 
+
 actions_card = dbc.Card(
     dbc.CardBody(
         [
