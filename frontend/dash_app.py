@@ -4,6 +4,7 @@ import dash
 import dash_bootstrap_components as dbc
 import components_.header as header
 import components_.footer as footer
+import components_.bottom_nav as bottom_nav
 from utilities.logging import configure_logger
 from loguru import logger
 
@@ -15,10 +16,13 @@ header = header.create_header()
 
 footer = footer.create_footer()
 
+bottom_nav = bottom_nav.create_bottom_nav()
+
 app.layout = html.Div([
     header,
     dash.page_container,
-    footer
+    footer,
+    bottom_nav
 ])
 
 
