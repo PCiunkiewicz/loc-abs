@@ -10,7 +10,10 @@ from loguru import logger
 
 configure_logger(level="DEBUG")
 
-app = Dash(__name__, use_pages= True, external_stylesheets=[dbc.themes.LUX])
+app = Dash(__name__, 
+            use_pages= True,
+            external_stylesheets=[dbc.themes.LUX],
+            suppress_callback_exceptions=True,)
 
 header = header.create_header()
 
