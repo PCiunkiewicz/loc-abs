@@ -74,14 +74,14 @@ metric_cards = dbc.Container([
             dbc.Col(kpi_card("Total Agents", "567", delta="-2%", subtitle="Since last week"), md=6),
         ], 
         justify="evenly",
-        className="row mb-4 w-100"),
+        className="row m-4 w-100"),
         dbc.Row(
         [
             dbc.Col(kpi_card("Last Simulation Duration", "3h 45m", subtitle="Completed 2 days ago"), md=6),
             dbc.Col(kpi_card("Floors Detected", "42", delta="+10%", subtitle="Since last scan"), md=6),
         ], 
         justify="evenly",
-        className="row mb-4 w-100"
+        className="row m-4 w-100"
         )
     ],
     style={ "align-items": "center", "width": "50vw"},)
@@ -207,13 +207,12 @@ def update_recent_activity(n_intervals):
 
 
 
-layout = dbc.Container([
+layout = html.Div([
 
-    dbc.Container([
+    html.Div([
         metric_cards,
         runs_card,
     ],   
-    fluid=True,
     className="metric-container d-flex flex-row justify-content-between align-items-center gap-4"
     ),
 
@@ -241,5 +240,10 @@ layout = dbc.Container([
         "alignItems": "flex-start"
     }),
 ],   
-fluid=True,
+
 )
+
+
+# "backgroundColor": "#f5f5f5",
+#         "minHeight": "calc(100vh - 200px)",
+#         "paddingBottom": "100px",

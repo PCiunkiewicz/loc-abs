@@ -42,7 +42,7 @@ def create_header() -> html.Div:
             className="navbar d-flex justify-content-evenly align-items-center font-weight-bold text-white",
             style={
                 "padding": "20px 10px", 
-                "margin": "30px 0",
+                # "margin": "30px 0",
                 }
     )
 

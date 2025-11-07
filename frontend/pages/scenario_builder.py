@@ -359,6 +359,20 @@ def create_agent_config_form():
         html.Div: Agent configuration form.
     """
     return html.Div([
+
+        html.Div(
+                "AGENT CONFIGURATION",
+                style={
+                    "backgroundColor": "#000000",
+                    "color": "#ffffff",
+                    "padding": "12px",
+                    "textAlign": "center",
+                    "fontWeight": "600",
+                    "fontSize": "14px",
+                    "borderRadius": "8px 8px 0 0",
+                },
+            ),
+        
         # Agent Config Name
         html.Label("Name", style={"fontWeight": "600", "marginBottom": "8px"}),
         dcc.Input(
@@ -593,6 +607,8 @@ def create_agent_config_form():
                     style={"marginBottom": "16px"},
                 ),
             ]),
+
+
         ]),
 
 
@@ -674,9 +690,14 @@ def create_agent_config_form():
             ),
         ], style={"marginTop": "20px"}),
 
-        # Output Display
-        html.Div(id="agent-config-output", style={"marginTop": "20px"}),
-    ])
+    ], style={
+        "backgroundColor": "#ffffff",
+        "padding": "30px 100px",
+        "width": "100vw",
+        "alignItems": "center",
+        "minHeight": "500px",
+        "borderRadius": "0 0 8px 8px",
+    })
 
 
 def create_side_panel(title, content_id):
@@ -685,7 +706,6 @@ def create_side_panel(title, content_id):
     Args:
         title (str): The title of the panel.
         content_id (str): The identifier for the content to be displayed.
-        width (str): The width of the panel (e.g., "300px", "25%").
     
     Returns:
         html.Div: Side panel component.
@@ -882,7 +902,7 @@ layout = html.Div(
                 # Left panel - Side components
                 html.Div(
                     [
-                        create_side_panel("MAPS AND TERRAINS", "terrain-content"),
+                        create_side_panel("TERRAINS", "terrain-content"),
                         create_side_panel("VIRUS", "virus-content"),
                     ],
                     style={
@@ -905,10 +925,10 @@ layout = html.Div(
             },
         ),
          html.Div(
-                            [
-                                create_side_panel("AGENT CONFIGURATION", "agent-content"),
-                            ]
-                        ),
+            [
+                create_agent_config_form(),
+            ]
+        ),
     ],
     style={
         "backgroundColor": "#f5f5f5",
