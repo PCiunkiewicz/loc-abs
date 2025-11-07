@@ -1,0 +1,5 @@
+/* change color picker settings */
+#terrain-color-input .chrome-picker {
+    border-radius: 0% !important;
+    border: 1px solid #ddd !important;
+}

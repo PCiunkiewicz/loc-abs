@@ -1,7 +1,7 @@
 """Scenario Builder Page for LocABS Application."""
 from dash import html, dcc, register_page, callback, Output, Input, MATCH
 import dash 
-#import dash_daq as daq
+import dash_daq as daq
 #import dash_bootstrap_components as dbc
 from components_.tooltip import create_tooltip
 
@@ -124,7 +124,7 @@ def create_terrain_form():
                     "display": "flex", 
                     "gap": "20px", 
                     "marginBottom": "20px",
-                    "flexDirection": "row",
+                    "flexDirection": "column",
                     "justify-content": "space-between"
                 }),
                     
@@ -181,27 +181,27 @@ def create_terrain_form():
             # TRY THIS: https://community.plotly.com/t/daq-colorpicker-how-to-remove-a-border-radius/76177/5
             # Color Picker
             html.Div([
-                html.Label ("Terrain Color", style={"fontWeight": "600", "margin": "20px 0px"}),
-                # daq.ColorPicker(
-                #     id="terrain-color-input",
-                #     value=dict(hex="#0000FF"),
-                #     size=150,
+                html.Label ("Terrain Color", style={"fontWeight": "600", "margin": "0px"}),
+                daq.ColorPicker(
+                    id="terrain-color-input",
+                    value=dict(hex="#0000FF"),
+                    size=150,
                     
-                #     # theme={"dark": False}, # Apply dark theme
-                #     style={
-                #         "borderRadius":"0px", 
-                #         "border":"1px solid #ddd",
-                #         "padding": "20px"
-                #     }
-                # )
+                    # theme={"dark": False}, # Apply dark theme
+                    style={
+                        "borderRadius":"0px", 
+                        # "border":"1px solid #ddd",
+                        # "padding": "20px"
+                    }
+                )
                 
             ]),
 
         ], style={
             "marginBottom": "20px", 
             "display": "flex", 
-            # "alignItems": "center", 
-            "flexDirection": "column",
+             "gap": "20px", 
+            "flexDirection": "row",
             "justify-content": "space-around"
             }),
 
@@ -924,7 +924,8 @@ layout = html.Div(
                 
             },
         ),
-         html.Div(
+        
+        html.Div(
             [
                 create_agent_config_form(),
             ]
