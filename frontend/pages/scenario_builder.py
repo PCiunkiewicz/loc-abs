@@ -1,8 +1,8 @@
 """Scenario Builder Page for LocABS Application."""
 from dash import html, dcc, register_page, callback, Output, Input, MATCH
 import dash 
-import dash_daq as daq
-import dash_bootstrap_components as dbc
+#import dash_daq as daq
+#import dash_bootstrap_components as dbc
 from components_.tooltip import create_tooltip
 
 #TODO: Add tooltips to various components for better UX
@@ -65,7 +65,7 @@ def create_config_panel():
         style={
             "flex": "1",
             "marginRight": "16px",
-            "width": "50vw"
+            "width": "22vw"
         },
     )
 
@@ -92,94 +92,120 @@ def create_terrain_form():
             }
         ),
 
-        # Terrain Properties (Checkboxes)
-        html.Label ("Terrain Type", style={"fontWeight": "600", "marginBottom": "8px"}),
+        # Terrain Properties (Checkboxes)   
+        
         html.Div([
-            dcc.Checklist(
-                id="terrain-walkable-checkbox",
-                options=[{"label": " Walkable", "value": "walkable"}],
-                value=["walkable"],  # Checked by default
-                inline=True,
-                labelStyle={"marginRight": "20px", "cursor": "pointer"},
-            ),
-            dcc.Checklist(
-                id="terrain-interactive-checkbox",
-                options=[{"label": " Interactive", "value": "interactive"}],
-                value=[],
-                inline=True,
-                labelStyle={"marginRight": "20px", "cursor": "pointer"},
-            ),
-            dcc.Checklist(
-                id="terrain-restricted-checkbox",
-                options=[{"label": " Restricted", "value": "restricted"}],
-                value=[],
-                inline=True,
-                labelStyle={"cursor": "pointer"},
-            ),
-        ], style={"display": "flex", "gap": "20px", "marginBottom": "20px"}),
 
-        # Color Picker
-        html.Label ("Terrain Color", style={"fontWeight": "600", "marginBottom": "8px"}),
-        html.Div([
-            # TODO: FIX CSS FOR THIS: 
-            # TRY THIS: https://community.plotly.com/t/daq-colorpicker-how-to-remove-a-border-radius/76177/5
-            daq.ColorPicker(
-                id="terrain-color-input",
-                value=dict(hex="#0000FF"),
-                size=200,
-                # theme={"dark": False}, # Apply dark theme
-                style={
-                    "borderRadius":"0px",
-                    "border":"1px solid #ddd",
-                    "padding": "20px"
-
-                }
-            )
-        ], style={"marginBottom": "20px"}),
-
-        # Access Level Selector
-        html.Div([
-            html.Label("Access Level", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
             html.Div([
-                html.Button(
-                    "−",
-                    id="terrain-access-decrement",
-                    style={
-                        "padding": "8px 12px",
-                        "border": "1px solid #ddd",
-                        "backgroundColor": "#f8f9fa",
-                        "cursor": "pointer",
-                        "borderRadius": "4px 0 0 4px",
-                    },
-                ),
-                dcc.Input(
-                    id="terrain-access-input",
-                    type="number",
-                    value=0,
-                    min=0,
-                    style={
-                        "width": "80%",
-                        "padding": "8px",
-                        "textAlign": "center",
-                        "border": "1px solid #ddd",
-                        "borderLeft": "none",
-                        "borderRight": "none",
-                    },
-                ),
-                html.Button(
-                    "+",
-                    id="terrain-access-increment",
-                    style={
-                        "padding": "8px 12px",
-                        "border": "1px solid #ddd",
-                        "backgroundColor": "#f8f9fa",
-                        "cursor": "pointer",
-                        "borderRadius": "0 4px 4px 0",
-                    },
-                ),
-            ], style={"display": "flex", "alignItems": "center"}),
-        ]),
+                html.Label ("Terrain Type", style={"fontWeight": "600", "marginBottom": "8px"}),
+                html.Div([
+                    dcc.Checklist(
+                        id="terrain-walkable-checkbox",
+                        options=[{"label": " Walkable", "value": "walkable"}],
+                        value=["walkable"],  # Checked by default
+                        inline=True,
+                        labelStyle={"marginRight": "20px", "cursor": "pointer"},
+                    ),
+                    dcc.Checklist(
+                        id="terrain-interactive-checkbox",
+                        options=[{"label": " Interactive", "value": "interactive"}],
+                        value=[],
+                        inline=True,
+                        labelStyle={"marginRight": "20px", "cursor": "pointer"},
+                    ),
+                    dcc.Checklist(
+                        id="terrain-restricted-checkbox",
+                        options=[{"label": " Restricted", "value": "restricted"}],
+                        value=[],
+                        inline=True,
+                        labelStyle={"cursor": "pointer"},
+                    ),
+                ], style={
+                    "display": "flex", 
+                    "gap": "20px", 
+                    "marginBottom": "20px",
+                    "flexDirection": "row",
+                    "justify-content": "space-between"
+                }),
+                    
+                # Access Level Selector
+                html.Div([
+                    html.Label("Access Level", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                    html.Div([
+                        html.Button(
+                            "−",
+                            id="terrain-access-decrement",
+                            style={
+                                "padding": "8px 12px",
+                                "border": "1px solid #ddd",
+                                "backgroundColor": "#f8f9fa",
+                                "cursor": "pointer",
+                                "borderRadius": "4px 0 0 4px",
+                            },
+                        ),
+                        dcc.Input(
+                            id="terrain-access-input",
+                            type="number",
+                            value=0,
+                            min=0,
+                            style={
+                                "width": "80%",
+                                "padding": "8px",
+                                "textAlign": "center",
+                                "border": "1px solid #ddd",
+                                "borderLeft": "none",
+                                "borderRight": "none",
+                            },
+                        ),
+                        html.Button(
+                            "+",
+                            id="terrain-access-increment",
+                            style={
+                                "padding": "8px 12px",
+                                "border": "1px solid #ddd",
+                                "backgroundColor": "#f8f9fa",
+                                "cursor": "pointer",
+                                "borderRadius": "0 4px 4px 0",
+                            },
+                        ),
+                    ], style={"display": "flex", "alignItems": "center", }),
+                ]),
+            ], style={
+                "display": "flex", 
+                # "alignItems": "center", 
+                "flexDirection": "column",
+                # "justify-content": "space-between"
+                }),
 
+            # TODO: FIX CSS FOR THIS:
+            # TRY THIS: https://community.plotly.com/t/daq-colorpicker-how-to-remove-a-border-radius/76177/5
+            # Color Picker
+            html.Div([
+                html.Label ("Terrain Color", style={"fontWeight": "600", "margin": "20px 0px"}),
+                # daq.ColorPicker(
+                #     id="terrain-color-input",
+                #     value=dict(hex="#0000FF"),
+                #     size=150,
+                    
+                #     # theme={"dark": False}, # Apply dark theme
+                #     style={
+                #         "borderRadius":"0px", 
+                #         "border":"1px solid #ddd",
+                #         "padding": "20px"
+                #     }
+                # )
+                
+            ]),
+
+        ], style={
+            "marginBottom": "20px", 
+            "display": "flex", 
+            # "alignItems": "center", 
+            "flexDirection": "column",
+            "justify-content": "space-around"
+            }),
+
+        
 
         # Action Buttons
         html.Div([
@@ -203,18 +229,474 @@ def create_virus_form():
     """Create virus configuration form.
 
     Returns:
-    html.Form: Virus configuration form.
+    html.div: Virus configuration form.
     """
+    return html.Div([
+        # Virus Name
+        html.Label("Name", style={"fontWeight": "600", "marginBottom": "8px"}),
+        dcc.Input(
+            id="virus-name",
+            type="text",
+            placeholder="Enter virus name",
+            style={
+                "width": "100%",
+                "padding": "10px",
+                "marginBottom": "20px",
+                "borderRadius": "4px",
+                "border": "1px solid #ddd",
+            }
+        ),
 
+        # Attack Rate
+        html.Div([
+            html.Label("Attack Rate", style={"fontWeight": "600", "marginBottom": "8px"}),
+            dcc.Input(
+                            id="virus-attack-rate",
+                            type="number",
+                            min=0,
+                            max=1,
+                            step=0.001,
+                            value=0.0,
+                            placeholder="0.070",
+                            style={
+                                "flex": "1",
+                                "padding": "8px",
+                                "textAlign": "center",
+                                "border": "1px solid #ddd",
+                                "borderRadius": "4px",
+                            },
+            ),
+        ],
+        style={
+            "display": "flex",
+            "flexDirection": "column",
+            # "alignItems": "center",
+            "gap": "5px",
+            "marginBottom": "20px",
+        }),
+
+        # Infection Rate
+        html.Div([
+            html.Label("Infection Rate", style={"fontWeight": "600", "marginBottom": "8px"}),
+            dcc.Input(
+                            id="virus-infection-rate",
+                            type="number",
+                            min=0,
+                            max=1,
+                            step=0.001,
+                            value=0.0,
+                            placeholder="0.021",
+                            style={
+                                "flex": "1",
+                                "padding": "8px",
+                                "textAlign": "center",
+                                "border": "1px solid #ddd",
+                                "borderRadius": "4px",
+                            },
+            ),
+            ],
+        style={
+            "display": "flex",
+            "flexDirection": "column",
+            # "alignItems": "center",
+            "gap": "5px",
+            "marginBottom": "20px",
+        } ),
+        
+        # Fatality Rate
+        html.Div([
+            html.Label("Fatality Rate", style={"fontWeight": "600", "marginBottom": "8px"}),
+            dcc.Input(
+                            id="virus-fatality-rate",
+                            type="number",
+                            min=0,
+                            max=1,
+                            step=0.001,
+                            value=0.0,
+                            placeholder="0.013",
+                            style={
+                                "flex": "1",
+                                "padding": "8px",
+                                "textAlign": "center",
+                                "border": "1px solid #ddd",
+                                "borderRadius": "4px",
+                            },
+            ),
+        ],
+        style={
+            "display": "flex",
+            "flexDirection": "column",
+            # "alignItems": "center",
+            "gap": "5px",
+            "marginBottom": "20px",
+        } ),
+
+        
+
+        # Action Buttons
+        html.Div([
+            html.Button(
+                "Create Virus",
+                id="create-terrain-btn",
+                className="btn btn-primary",
+                style={"marginRight": "10px", "padding": "10px 20px"},
+            ),
+            html.Button(
+                "Clear",
+                id="clear-terrain-btn",
+                className="btn btn-secondary",
+                style={"padding": "10px 20px"},
+            ),
+        ], style={"marginTop": "20px"}),
+
+    ])
+
+
+def create_agent_config_form():
+    """Create agent configuration form.
+
+    Returns:
+        html.Div: Agent configuration form.
+    """
+    return html.Div([
+        # Agent Config Name
+        html.Label("Name", style={"fontWeight": "600", "marginBottom": "8px"}),
+        dcc.Input(
+            id="agent-config-name",
+            type="text",
+            placeholder="Enter agent configuration name",
+            style={
+                "width": "100%",
+                "padding": "10px",
+                "marginBottom": "20px",
+                "borderRadius": "4px",
+                "border": "1px solid #ddd",
+            }
+        ),
+
+        # Agent Population Section
+        html.H6("Agent Population", style={
+            "fontWeight": "600", 
+            "marginBottom": "16px",
+            "borderBottom": "2px solid #000",
+            "paddingBottom": "8px"
+        }),
+
+        # Random Agents and Random Infected in a row
+        html.Div([
+            # Random Agents
+            html.Div([
+                html.Label("Random Agents", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                html.Div([
+                    html.Button(
+                        "−",
+                        id="random-agents-decrement",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "4px 0 0 4px",
+                        },
+                    ),
+                    dcc.Input(
+                        id="random-agents-input",
+                        type="number",
+                        value=1,
+                        min=0,
+                        style={
+                            "width": "80px",
+                            "padding": "8px",
+                            "textAlign": "center",
+                            "border": "1px solid #ddd",
+                            "borderLeft": "none",
+                            "borderRight": "none",
+                        },
+                    ),
+                    html.Button(
+                        "+",
+                        id="random-agents-increment",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "0 4px 4px 0",
+                        },
+                    ),
+                ], style={"display": "flex", "alignItems": "center"}),
+            ], style={"flex": "1"}),
+
+            # Random Infected
+            html.Div([
+                html.Label("Random Infected", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                html.Div([
+                    html.Button(
+                        "−",
+                        id="random-infected-decrement",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "4px 0 0 4px",
+                        },
+                    ),
+                    dcc.Input(
+                        id="random-infected-input",
+                        type="number",
+                        value=0,
+                        min=0,
+                        style={
+                            "width": "80px",
+                            "padding": "8px",
+                            "textAlign": "center",
+                            "border": "1px solid #ddd",
+                            "borderLeft": "none",
+                            "borderRight": "none",
+                        },
+                    ),
+                    html.Button(
+                        "+",
+                        id="random-infected-increment",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "0 4px 4px 0",
+                        },
+                    ),
+                ], style={"display": "flex", "alignItems": "center"}),
+            ], style={"flex": "1"}),
+        ], style={
+            "display": "flex",
+            "gap": "20px",
+            "marginBottom": "20px",
+        }),
+
+        # Default Agent Configuration Section
+        html.H6("Default Agent Configuration", style={
+            "fontWeight": "600",
+            "marginBottom": "16px",
+            "marginTop": "20px",
+            "borderBottom": "2px solid #000",
+            "paddingBottom": "8px"
+        }),
+
+        # Agent Info Section
+        html.Div([
+            # Mask Type
+            html.Div([
+                html.Label("Mask Type", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Dropdown(
+                    id="agent-mask-type",
+                    options=[
+                        {"label": "None", "value": ""},
+                        {"label": "N95", "value": "N95"},
+                        {"label": "Surgical", "value": "SURGICAL"},
+                        {"label": "Cloth", "value": "CLOTH"},
+                        {"label": "Home/Cloth", "value": "HOME"},
+                    ],
+                    value="",
+                    placeholder="Select mask type",
+                    style={"marginBottom": "16px"},
+                ),
+            ]),
+
+            # Vaccine Type
+            html.Div([
+                html.Label("Vaccine Type", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Dropdown(
+                    id="agent-vaccine-type",
+                    options=[
+                        {"label": "None", "value": ""},
+                        {"label": "MRNA (Moderna)", "value": "MRNA"},
+                        {"label": "ASTRA (AstraZeneca)", "value": "ASTRA"},
+                    ],
+                    value="",
+                    placeholder="Select vaccine type",
+                    style={"marginBottom": "16px"},
+                ),
+            ]),
+
+            # Vaccine Doses
+            html.Div([
+                html.Label("Vaccine Doses", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                html.Div([
+                    html.Button(
+                        "−",
+                        id="vaccine-doses-decrement",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "4px 0 0 4px",
+                        },
+                    ),
+                    dcc.Input(
+                        id="vaccine-doses-input",
+                        type="number",
+                        value=0,
+                        min=0,
+                        max=3,
+                        style={
+                            "width": "80px",
+                            "padding": "8px",
+                            "textAlign": "center",
+                            "border": "1px solid #ddd",
+                            "borderLeft": "none",
+                            "borderRight": "none",
+                        },
+                    ),
+                    html.Button(
+                        "+",
+                        id="vaccine-doses-increment",
+                        style={
+                            "padding": "8px 12px",
+                            "border": "1px solid #ddd",
+                            "backgroundColor": "#f8f9fa",
+                            "cursor": "pointer",
+                            "borderRadius": "0 4px 4px 0",
+                        },
+                    ),
+                ], style={"display": "flex", "alignItems": "center", "marginBottom": "16px"}),
+            ]),
+
+            # Work Zone
+            html.Div([
+                html.Label("Work Zone", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Dropdown(
+                    id="agent-work-zone",
+                    options=[
+                        {"label": "None", "value": "null"},
+                        # TODO: Dynamically populate from created terrains
+                    ],
+                    value="null",
+                    placeholder="Select work zone",
+                    style={"marginBottom": "16px"},
+                ),
+            ]),
+
+            # Start Zone
+            html.Div([
+                html.Label("Start Zone", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Dropdown(
+                    id="agent-start-zone",
+                    options=[
+                        {"label": "None", "value": "null"},
+                        # TODO: Dynamically populate from created terrains
+                    ],
+                    value="null",
+                    placeholder="Select start zone",
+                    style={"marginBottom": "16px"},
+                ),
+            ]),
+        ]),
+
+
+        # Agent State Section
+        html.H6("Initial Agent State", style={
+            "fontWeight": "600",
+            "marginBottom": "16px",
+            "marginTop": "20px",
+            "borderBottom": "2px solid #000",
+            "paddingBottom": "8px"
+        }),
+
+        html.Div([
+            # Status
+            html.Div([
+                html.Label("Status", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Dropdown(
+                    id="agent-status",
+                    options=[
+                        {"label": "Unknown", "value": "UNKNOWN"},
+                        {"label": "Susceptible", "value": "SUSCEPTIBLE"},
+                        {"label": "Infected", "value": "INFECTED"},
+                        {"label": "Recovered", "value": "RECOVERED"},
+                        {"label": "Dead", "value": "DEAD"},
+                    ],
+                    value="UNKNOWN",
+                    style={"marginBottom": "16px"},
+                ),
+            ]),
+
+            # Position X
+            html.Div([
+                html.Label("Position X", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Input(
+                    id="agent-position-x",
+                    type="number",
+                    value=0,
+                    style={
+                        "width": "100%",
+                        "padding": "8px",
+                        "border": "1px solid #ddd",
+                        "borderRadius": "4px",
+                        "marginBottom": "16px",
+                    },
+                ),
+            ]),
+
+            # Position Y
+            html.Div([
+                html.Label("Position Y", style={"fontWeight": "600", "marginBottom": "8px", "fontSize": "14px"}),
+                dcc.Input(
+                    id="agent-position-y",
+                    type="number",
+                    value=0,
+                    style={
+                        "width": "100%",
+                        "padding": "8px",
+                        "border": "1px solid #ddd",
+                        "borderRadius": "4px",
+                        "marginBottom": "16px",
+                    },
+                ),
+            ]),
+        ]),
+
+        # Action Buttons
+        html.Div([
+            html.Button(
+                "Create",
+                id="create-agent-config-btn",
+                className="btn btn-primary",
+                style={"marginRight": "10px", "padding": "10px 20px"},
+            ),
+            html.Button(
+                "Clear",
+                id="clear-agent-config-btn",
+                className="btn btn-secondary",
+                style={"padding": "10px 20px"},
+            ),
+        ], style={"marginTop": "20px"}),
+
+        # Output Display
+        html.Div(id="agent-config-output", style={"marginTop": "20px"}),
+    ])
 
 
 def create_side_panel(title, content_id):
-    """Create a side panel with title and appropriate content."""
+    """Create a side panel with title and appropriate content.
+    
+    Args:
+        title (str): The title of the panel.
+        content_id (str): The identifier for the content to be displayed.
+        width (str): The width of the panel (e.g., "300px", "25%").
+    
+    Returns:
+        html.Div: Side panel component.
+    """
     # Determine content based on content_id
     if content_id == "terrain-content":
         panel_content = create_terrain_form()
     elif content_id == "virus-content":
         panel_content = create_virus_form()
+    elif content_id == "agent-content":
+        panel_content = create_agent_config_form()
     else:
         panel_content = "Content placeholder"
     
@@ -244,7 +726,7 @@ def create_side_panel(title, content_id):
         ],
         style={
             "marginBottom": "16px",
-            "width": "25vw",
+            "width": "50vw",
         },
     )
 
@@ -385,7 +867,7 @@ def create_vaccine_type(vaccine_type, label, default_doses=[0.5, 0.5, 0.5], is_c
         "padding": "12px",
         "border": "1px solid #e0e0e0",
         "borderRadius": "4px",
-        "marginBottom": "12px",
+        "margin": "10px 12px 0px 0px",
         "backgroundColor": "#fafafa",
     })
 
@@ -410,7 +892,7 @@ layout = html.Div(
                         "gap": "16px",
                     },
                 ),
-                
+
                 # Right panel - Configuration
                 create_config_panel(),
             ],
@@ -422,6 +904,11 @@ layout = html.Div(
                 
             },
         ),
+         html.Div(
+                            [
+                                create_side_panel("AGENT CONFIGURATION", "agent-content"),
+                            ]
+                        ),
     ],
     style={
         "backgroundColor": "#f5f5f5",
@@ -704,7 +1191,12 @@ def switch_tabs(sim_clicks, prev_clicks):
                 ),
 
                 # Mask Information
-                html.H6("Mask Information", style={"marginBottom": "20px"}),
+                html.H6("Mask Information", style={
+                    "fontWeight": "600", 
+                    "marginBottom": "20px",
+                    "borderBottom": "2px solid #000",
+                    "paddingBottom": "8px",
+                }),
                 html.Label("Mask Type", style={"fontWeight": "600", "marginBottom": "8px"}),
                 # Mask type inputs using the reusable function
                 html.Div([
@@ -753,7 +1245,11 @@ def switch_tabs(sim_clicks, prev_clicks):
 
                 
                 # Vaccine Information
-                html.H6("Vaccine Information", style={"marginBottom": "20px", "marginTop": "20px"}),
+                html.H6("Vaccine Information", style={
+                    "fontWeight": "600", 
+                    "margin": "20px 20px 0px 0px",
+                    "borderBottom": "2px solid #000",
+                    "paddingBottom": "8px",}),
                 # Vaccine type inputs using the reusable function
                 html.Div([
                     create_vaccine_type("MRNA", "MRNA (Moderna)", default_doses=[0.0, 0.31, 0.88], is_checked=True),
