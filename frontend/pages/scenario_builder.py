@@ -900,17 +900,24 @@ layout = html.Div(
         html.Div(
             [
                 # Left panel - Side components
+                
+
                 html.Div(
                     [
-                        create_side_panel("TERRAINS", "terrain-content"),
-                        create_side_panel("VIRUS", "virus-content"),
-                    ],
-                    style={
-                        "width":"50vw",
-                        "display": "flex",
-                        "flexDirection": "row",
-                        "gap": "16px",
-                    },
+                        html.Div(
+                        [
+                            create_side_panel("TERRAINS", "terrain-content"),
+                            create_side_panel("VIRUS", "virus-content"),
+                        ],
+                        style={
+                            "width":"50vw",
+                            "display": "flex",
+                            "flexDirection": "row",
+                            "gap": "16px",
+                        },
+                    ),
+                    create_side_panel("DefAULT CONFIGURATION", "default-config-content"),
+                    ]
                 ),
 
                 # Right panel - Configuration
