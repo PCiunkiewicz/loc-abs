@@ -53,70 +53,107 @@ def kpi_card(title, value, delta=None, subtitle=None, accent="primary"):
                 html.Div(subtitle or "", className="subtitle text-muted medium mt-1",),
             ]
         ),
-        className="metric-card shadow-sm h-100 w-100 p-3 rounded",
-        style={"backgroundColor": "#F0F2F6", },
+        className="metric-card",
+        style={
+            "backgroundColor": "#ffffff", 
+            "minWidth": "300px", 
+            "padding": "15px", 
+            "margin": "10px", 
+            "borderRadius": "10px", 
+            "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.1)"},
 )
 
 def status_row(label: str, color: str, value: str = "#####") -> html.Div:
     """Create a status row with a colored dot, label, and value."""
     dot = html.Span(
-        className=f"bg-{color}",
+        className=f"status-dot bg-{color}",
         style={"width": "20px", "height": "20px", "borderRadius": "50%", "display": "inline-block"},
     )
     left = html.Span([dot, html.Span(f"  {label}:", className="ms-4")], className="d-flex align-items-center")
     right = html.Span(value, className="fw-semibold")
     return html.Div([left, right], className="d-flex justify-content-between align-items-center mb-4")
 
-metric_cards = dbc.Container([
-        dbc.Row(
-        [
-            dbc.Col(kpi_card("Total Scenarios", "1,234", delta="+5%", subtitle="Since last month"), md=6),
-            dbc.Col(kpi_card("Total Agents", "567", delta="-2%", subtitle="Since last week"), md=6),
-        ], 
-        justify="evenly",
-        className="row m-4 w-100"),
-        dbc.Row(
-        [
-            dbc.Col(kpi_card("Last Simulation Duration", "3h 45m", subtitle="Completed 2 days ago"), md=6),
-            dbc.Col(kpi_card("Floors Detected", "42", delta="+10%", subtitle="Since last scan"), md=6),
-        ], 
-        justify="evenly",
-        className="row m-4 w-100"
-        )
-    ],
-    style={ "align-items": "center", "width": "50vw"},)
-
-runs_card = dbc.Card(
-    dbc.CardBody(
-        [
-            dbc.Row(
+metric_cards = html.Div(
+    [
+        html.Div(
             [
-                # Left column: title + total runs
-                dbc.Row(
-                    [
-                        html.H3("Recent Simulation Runs", className="card-title mb-2"),
-                        dbc.Row([
-                            dbc.Col("Total Runs", className="text-muted medium"),
-                            dbc.Col( html.H3("#####", className="mb-3")),
-                        ], className="m-3 justify-content-between w-100" ),
-                    ],
-                ),
-                # Right column: status breakdown
-                dbc.Row(
-                    [
-                        status_row("CREATED", "dark", "#####"),
-                        status_row("RUNNING", "info", "#####"),
-                        status_row("SUCCESS", "success", "#####"),
-                        status_row("FAILURE", "danger", "#####"),
-                    ],
-                ),
+                kpi_card("Total Scenarios", "1,234", delta="+5%", subtitle="Since last month"),
+                kpi_card("Total Agents", "567", delta="-2%", subtitle="Since last week"),
             ],
-            className="g-2 align-items-center",
-            )
-        ]
-    ),
-    className="runs-card shadow-sm bg-white rounded",
-    
+            className="container-row",
+            style={"display": "flex", "flexDirection": "row", "gap": "20px", "margin": "10px"},
+        ),
+        html.Div(
+            [
+                kpi_card("Last Simulation Duration", "3h 45m", subtitle="Completed 2 days ago"),
+                kpi_card("Floors Detected", "42", delta="+10%", subtitle="Since last scan"),
+            ],
+            className="container-row",
+            style={"display": "flex", "flexDirection": "row", "gap": "20px", "margin": "10px"},
+        ),
+    ],
+    className="metric-cards-container",
+    style={"alignItems": "center", "width": "50vw", "display": "flex", "flexDirection": "column"},
+)
+
+runs_card = html.Div(
+    [
+        # Header section with title and total count
+        html.Div(
+            [
+                html.H3("Recent Simulation Runs", style={
+                    "fontSize": "1.25rem",
+                    "fontWeight": "600",
+                    "marginBottom": "16px",
+                    "color": "#1f2937"
+                }),
+                html.Div(
+                    [
+                        html.Span("Total Runs", style={
+                            "color": "#6b7280",
+                            "fontSize": "0.875rem",
+                            "fontWeight": "500"
+                        }),
+                        html.Span(id="total-runs-value", children="#####", style={
+                            "fontSize": "1.5rem",
+                            "fontWeight": "600",
+                            "color": "#111827"
+                        }),
+                    ],
+                    style={
+                        "display": "flex",
+                        "justifyContent": "space-between",
+                        "alignItems": "center",
+                        "padding": "12px 0",
+                        "borderBottom": "1px solid #e5e7eb",
+                        "marginBottom": "16px"
+                    }
+                ),
+            ]
+        ),
+        # Status breakdown section
+        html.Div(
+            [
+                status_row("CREATED", "primary", "#####"),
+                status_row("RUNNING", "info", "#####"),
+                status_row("SUCCESS", "success", "#####"),
+                status_row("FAILURE", "danger", "#####"),
+            ],
+            style={
+                "display": "flex",
+                "flexDirection": "column",
+                "gap": "8px"
+            }
+        ),
+    ],
+    style={
+        "backgroundColor": "#ffffff",
+        "padding": "20px",
+        "borderRadius": "8px",
+        "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+        "minWidth": "280px",
+        "width": "100%",
+    }
 )
 
 graph_card = dbc.Card(
@@ -134,7 +171,14 @@ graph_card = dbc.Card(
             ),
         ],
     ), 
-    className="graph-card shadow-sm bg-white rounded w-100",
+    className="graph-card",
+    style={
+        "backgroundColor": "#ffffff",
+        "padding": "10px",
+        "borderRadius": "8px",
+        "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+        "width": "100%"
+    }
 )
 
 recent_activity_card = dbc.Card(
@@ -158,7 +202,7 @@ recent_activity_card = dbc.Card(
                 },
                 className="ag-theme-alpine",
                 columnSize="sizeToFit",
-                style={"height": "420px", "width": "100%"},
+                style={"height": "47vh", "width": "100%"},
             )
         ]
     ),
@@ -169,26 +213,6 @@ recent_activity_card = dbc.Card(
 # TODO: Add functionality to buttons
 # TODO: Style buttons to be centered in card 
 
-actions_card = dbc.Card(
-    dbc.CardBody(
-        [
-            html.H3("Quick Actions", className="card-title mb-4"),
-            dbc.Button("Create New Scenario", color="primary", className="mb-4 w-75"),
-            dbc.Button("Open Data Visualisation", color="primary", className="mb-4 w-75"),
-            dbc.Button("Manage Agents", color="primary", className="mb-4 w-75"),
-            dbc.Button("Stop Simulation", color="primary", className="mb-4 w-75"),  
-        ]
-    ),
-    className="shadow-sm bg-white rounded",
-    style={
-        "padding": "12px",
-        "maxWidth": "600px",
-        "height": "500px",
-        "display": "flex",
-        "flexDirection": "column",
-        "alignItems": "center",
-        "justifyContent": "center"},
-)
 
 @callback(
     Output("recent-activity-grid", "rowData"),
@@ -209,6 +233,17 @@ def update_recent_activity(n_intervals):
 
 layout = html.Div([
 
+    # Overview section
+    html.Div([
+        html.H2("Overview", className="overview-title"),
+        html.P(
+            "The LocABS dashboard provides real-time insights into localization simulations, "
+            "agent performance metrics, and mapping progress. Monitor active scenarios, "
+            "track simulation runs, and quickly access system controls.",
+            className="overview-description"
+        ),
+    ], className="overview-section"),
+
     html.Div([
         metric_cards,
         runs_card,
@@ -216,28 +251,36 @@ layout = html.Div([
     className="metric-container d-flex flex-row justify-content-between align-items-center gap-4"
     ),
 
-   # Two-column layout: left has activity/actions stacked, right has graphs stacked
+   # Two-row layout: top has activity/graph side by side, bottom has actions/graph side by side
     html.Div([
-        # Left column
+        # Row 1: Recent Activity + Graph
         html.Div([
-            recent_activity_card,
-            html.Div(style={"height": "70px"}),  # spacer
-            actions_card,
-        ], style={"flex": "1", "maxWidth": "33vw"}),
+            html.Div(recent_activity_card, style={"flex": "1", "maxWidth": "600px"}),
+            html.Div(graph_card, style={"flex": "1", "minWidth": "0"}),
+        ], style={
+            "display": "flex",
+            "flexDirection": "row",
+            "gap": "16px",
+            "margin": "16px",
+            "alignItems": "flex-start"
+        }),
         
-        # Right column
+        # Row 2: Quick Actions + Second Graph
         html.Div([
-            graph_card,
-            html.Div(style={"height": "30px"}),  # spacer
-            graph_card,  # replace with a different graph if needed
-        ], style={"flex": "1", "minWidth": "0"}),
+            html.Div(graph_card, style={"flex": "1", "maxWidth": "50%"}),
+            html.Div(graph_card, style={"flex": "1", "maxWidth": "50%"}),  # replace with different graph
+        ], style={
+            "display": "flex",
+            "flexDirection": "row",
+            "gap": "16px",
+            "margin": "16px",
+            "alignItems": "stretch"
+        }),
     ], style={
-        "display": "flex",
-        "flexDirection": "row",
-        "gap": "10px",
         "marginTop": "20px",
-        "justifyContent": "space-evenly",
-        "alignItems": "flex-start"
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "16px"
     }),
 ],   
 

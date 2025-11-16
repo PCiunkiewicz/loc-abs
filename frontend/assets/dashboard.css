@@ -1,0 +1,20 @@
+/* Overview section */
+.overview-section {
+  margin: 10px 30px;
+  padding: 20px 0;
+}
+
+.overview-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1f2937;
+}
+
+.overview-description {
+  font-size: 0.95rem;
+  color: #6b7280;
+  /* max-width: 900px; */
+  line-height: 1.6;
+  margin: 0;
+}

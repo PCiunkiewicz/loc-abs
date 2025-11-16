@@ -26,7 +26,9 @@ app.layout = html.Div([
     dash.page_container,
     footer,
     bottom_nav
-])
+], className="app-container",
+    style={"minHeight": "100vh", "backgroundColor": "#f5f5f5"}
+)
 
 
 if __name__ == '__main__':

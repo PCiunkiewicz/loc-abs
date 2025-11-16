@@ -58,7 +58,7 @@ def create_header() -> html.Div:
     ],
         className="app-header",
         style={
-            "padding": "10px 0",
+            "padding": "0px",
             "position": "relative",
             "top": "0",
             "left": "0",
