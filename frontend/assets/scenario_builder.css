@@ -195,8 +195,9 @@
 /* Agent Configuration */
 .agent-config-container {
     background-color: #ffffff;
-    padding: 30px 100px;
-    width: 100vw;
+    margin: 30px 50px;
+    padding: 20px;
+    /* width: 100vw; */
     align-items: center;
     min-height: 500px;
     border-radius: 0 0 8px 8px;
@@ -220,6 +221,8 @@
 
 .agent-population-item {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Section Headers */

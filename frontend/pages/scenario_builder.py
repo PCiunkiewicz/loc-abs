@@ -154,106 +154,107 @@ def create_agent_config_form():
             ], className="agent-population-item"),
         ], className="agent-population-row"),
 
-        # Default Agent Configuration Section
-        html.H6("Default Agent Configuration", className="section-header-with-margin"),
+        # TODO: Add back default agent configuration and initial agent state sections - Ask Phillip about whether needed
+        # # Default Agent Configuration Section
+        # html.H6("Default Agent Configuration", className="section-header-with-margin"),
 
-        # Mask Type
-        html.Div([
-            html.Label("Mask Type", className="form-label-small"),
-            dcc.Dropdown(
-                id="agent-mask-type",
-                options=[
-                    {"label": "None", "value": ""},
-                    {"label": "N95", "value": "N95"},
-                    {"label": "Surgical", "value": "SURGICAL"},
-                    {"label": "Cloth", "value": "CLOTH"},
-                    {"label": "Home/Cloth", "value": "HOME"},
-                ],
-                value="",
-                placeholder="Select mask type",
-                className="dropdown-with-margin",
-            ),
-        ]),
+        # # Mask Type
+        # html.Div([
+        #     html.Label("Mask Type", className="form-label-small"),
+        #     dcc.Dropdown(
+        #         id="agent-mask-type",
+        #         options=[
+        #             {"label": "None", "value": ""},
+        #             {"label": "N95", "value": "N95"},
+        #             {"label": "Surgical", "value": "SURGICAL"},
+        #             {"label": "Cloth", "value": "CLOTH"},
+        #             {"label": "Home/Cloth", "value": "HOME"},
+        #         ],
+        #         value="",
+        #         placeholder="Select mask type",
+        #         className="dropdown-with-margin",
+        #     ),
+        # ]),
 
-        # Vaccine Type
-        html.Div([
-            html.Label("Vaccine Type", className="form-label-small"),
-            dcc.Dropdown(
-                id="agent-vaccine-type",
-                options=[
-                    {"label": "None", "value": ""},
-                    {"label": "MRNA (Moderna)", "value": "MRNA"},
-                    {"label": "ASTRA (AstraZeneca)", "value": "ASTRA"},
-                ],
-                value="",
-                placeholder="Select vaccine type",
-                className="dropdown-with-margin",
-            ),
-        ]),
+        # # Vaccine Type
+        # html.Div([
+        #     html.Label("Vaccine Type", className="form-label-small"),
+        #     dcc.Dropdown(
+        #         id="agent-vaccine-type",
+        #         options=[
+        #             {"label": "None", "value": ""},
+        #             {"label": "MRNA (Moderna)", "value": "MRNA"},
+        #             {"label": "ASTRA (AstraZeneca)", "value": "ASTRA"},
+        #         ],
+        #         value="",
+        #         placeholder="Select vaccine type",
+        #         className="dropdown-with-margin",
+        #     ),
+        # ]),
 
-        # Vaccine Doses
-        html.Div([
-            html.Label("Vaccine Doses", className="form-label-small"),
-            dcc.Input(id="vaccine-doses-input", type="number", value=0, min=0, max=3, className="form-input-number"),
-        ]),
+        # # Vaccine Doses
+        # html.Div([
+        #     html.Label("Vaccine Doses", className="form-label-small"),
+        #     dcc.Input(id="vaccine-doses-input", type="number", value=0, min=0, max=3, className="form-input-number"),
+        # ]),
 
-        # Work Zone
-        html.Div([
-            html.Label("Work Zone", className="form-label-small"),
-            dcc.Dropdown(
-                id="agent-work-zone",
-                options=[{"label": "None", "value": "null"}],
-                value="null",
-                placeholder="Select work zone",
-                className="dropdown-with-margin",
-            ),
-        ]),
+        # # Work Zone
+        # html.Div([
+        #     html.Label("Work Zone", className="form-label-small"),
+        #     dcc.Dropdown(
+        #         id="agent-work-zone",
+        #         options=[{"label": "None", "value": "null"}],
+        #         value="null",
+        #         placeholder="Select work zone",
+        #         className="dropdown-with-margin",
+        #     ),
+        # ]),
 
-        # Start Zone
-        html.Div([
-            html.Label("Start Zone", className="form-label-small"),
-            dcc.Dropdown(
-                id="agent-start-zone",
-                options=[{"label": "None", "value": "null"}],
-                value="null",
-                placeholder="Select start zone",
-                className="dropdown-with-margin",
-            ),
-        ]),
+        # # Start Zone
+        # html.Div([
+        #     html.Label("Start Zone", className="form-label-small"),
+        #     dcc.Dropdown(
+        #         id="agent-start-zone",
+        #         options=[{"label": "None", "value": "null"}],
+        #         value="null",
+        #         placeholder="Select start zone",
+        #         className="dropdown-with-margin",
+        #     ),
+        # ]),
 
-        # Agent State Section
-        html.H6("Initial Agent State", className="section-header-with-margin"),
+        # # Agent State Section
+        # html.H6("Initial Agent State", className="section-header-with-margin"),
 
-        html.Div([
-            # Status
-            html.Div([
-                html.Label("Status", className="form-label-small"),
-                dcc.Dropdown(
-                    id="agent-status",
-                    options=[
-                        {"label": "Unknown", "value": "UNKNOWN"},
-                        {"label": "Susceptible", "value": "SUSCEPTIBLE"},
-                        {"label": "Infected", "value": "INFECTED"},
-                        {"label": "Recovered", "value": "RECOVERED"},
-                        {"label": "Dead", "value": "DEAD"},
-                    ],
-                    value="UNKNOWN",
-                    className="dropdown-with-margin",
-                ),
-            ]),
+        # html.Div([
+        #     # Status
+        #     html.Div([
+        #         html.Label("Status", className="form-label-small"),
+        #         dcc.Dropdown(
+        #             id="agent-status",
+        #             options=[
+        #                 {"label": "Unknown", "value": "UNKNOWN"},
+        #                 {"label": "Susceptible", "value": "SUSCEPTIBLE"},
+        #                 {"label": "Infected", "value": "INFECTED"},
+        #                 {"label": "Recovered", "value": "RECOVERED"},
+        #                 {"label": "Dead", "value": "DEAD"},
+        #             ],
+        #             value="UNKNOWN",
+        #             className="dropdown-with-margin",
+        #         ),
+        #     ]),
 
-            # Position X
-            html.Div([
-                html.Label("Position X", className="form-label-small"),
-                dcc.Input(id="agent-position-x", type="number", value=0, className="agent-full-width-input"),
-            ]),
+        #     # Position X
+        #     html.Div([
+        #         html.Label("Position X", className="form-label-small"),
+        #         dcc.Input(id="agent-position-x", type="number", value=0, className="agent-full-width-input"),
+        #     ]),
 
-            # Position Y
-            html.Div([
-                html.Label("Position Y", className="form-label-small"),
-                dcc.Input(id="agent-position-y", type="number", value=0, className="agent-full-width-input"),
-            ]),
-        ]),
+        #     # Position Y
+        #     html.Div([
+        #         html.Label("Position Y", className="form-label-small"),
+        #         dcc.Input(id="agent-position-y", type="number", value=0, className="agent-full-width-input"),
+        #     ]),
+        # ]),
 
         # Action Buttons
         html.Div([
