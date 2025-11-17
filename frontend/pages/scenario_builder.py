@@ -29,87 +29,94 @@ def create_config_panel():
 def create_terrain_form():
     """Create terrain configuration form."""
     return html.Div([
-        # Terrain Name
-        html.Label("Name", className="form-label"),
-        dcc.Input(id="terrain-name", type="text", placeholder="Enter terrain name", className="form-input"),
 
-        # Terrain Properties
         html.Div([
             html.Div([
-                html.Label("Terrain Type", className="form-label"),
+                # Terrain Name
+                html.Label("Name", className="form-label"),
+                dcc.Input(id="terrain-name", type="text", placeholder="Enter terrain name", className="form-input"),
+
+                # Terrain Properties
                 html.Div([
-                    dcc.Checklist(
-                        id="terrain-walkable-checkbox",
-                        options=[{"label": " Walkable", "value": "walkable"}],
-                        value=["walkable"],
-                        inline=True,
-                        labelClassName="checklist-label",
-                    ),
-                    dcc.Checklist(
-                        id="terrain-interactive-checkbox",
-                        options=[{"label": " Interactive", "value": "interactive"}],
-                        value=[],
-                        inline=True,
-                        labelClassName="checklist-label",
-                    ),
-                    dcc.Checklist(
-                        id="terrain-restricted-checkbox",
-                        options=[{"label": " Restricted", "value": "restricted"}],
-                        value=[],
-                        inline=True,
-                        labelClassName="checklist-label",
-                    ),
-                ], className="terrain-type-container"),
-                    
-                # Access Level Selector
-                html.Div([
-                    html.Label("Access Level", className="form-label-small"),
                     html.Div([
-                        html.Button("−", id="terrain-access-decrement", className="counter-button counter-button-decrement"),
-                        dcc.Input(id="terrain-access-input", type="number", value=0, min=0, className="form-input-number-narrow"),
-                        html.Button("+", id="terrain-access-increment", className="counter-button counter-button-increment"),
-                    ], className="counter-container"),
-                ]),
-            ], className="terrain-properties-column"),
+                        html.Label("Terrain Type", className="form-label"),
+                        html.Div([
+                            dcc.Checklist(
+                                id="terrain-walkable-checkbox",
+                                options=[{"label": " Walkable", "value": "walkable"}],
+                                value=["walkable"],
+                                inline=True,
+                                labelClassName="checklist-label",
+                            ),
+                            dcc.Checklist(
+                                id="terrain-interactive-checkbox",
+                                options=[{"label": " Interactive", "value": "interactive"}],
+                                value=[],
+                                inline=True,
+                                labelClassName="checklist-label",
+                            ),
+                            dcc.Checklist(
+                                id="terrain-restricted-checkbox",
+                                options=[{"label": " Restricted", "value": "restricted"}],
+                                value=[],
+                                inline=True,
+                                labelClassName="checklist-label",
+                            ),
+                        ], className="terrain-type-container"),
+                            
+                        # Access Level Selector
+                        html.Div([
+                            html.Label("Access Level", className="form-label-small"),
+                            dcc.Input(id="terrain-access-input", type="number", value=0, min=0, className="form-input-number"),
+                        ],className="terrain-properties-column"),
+
+                        # Action Buttons
+                        html.Div([
+                            html.Button("Create Terrain", id="create-terrain-btn", className="btn-primary"),
+                            html.Button("Clear", id="clear-terrain-btn", className="btn-secondary"),
+                        ], className="btn-container"),
+                    ], className="terrain-properties-column"),
+
+                ], className="terrain-properties-row"),
+
+            ]),
 
             # Color Picker
             html.Div([
-                html.Label("Terrain Color", className="form-label"),
-                daq.ColorPicker(id="terrain-color-input", value=dict(hex="#0000FF"), size=150)
+                    html.Label("Terrain Color", className="form-label"),
+                    daq.ColorPicker(id="terrain-color-input", value=dict(hex="#0000FF", label="Terrain Color"), size=250)
             ]),
+        ],
+        className="terrain-form-container"
+        ),
 
-        ], className="terrain-properties-row"),
 
-        # Action Buttons
-        html.Div([
-            html.Button("Create Terrain", id="create-terrain-btn", className="btn-primary"),
-            html.Button("Clear", id="clear-terrain-btn", className="btn-secondary"),
-        ], className="btn-container"),
     ])
 
 
 def create_virus_form():
     """Create virus configuration form."""
     return html.Div([
-        # Virus Name
+        # Virus Name (full width)
         html.Label("Name", className="form-label"),
         dcc.Input(id="virus-name", type="text", placeholder="Enter virus name", className="form-input"),
 
-        # Attack Rate
+        # Attack Rate and Infection Rate (side by side)
         html.Div([
-            html.Label("Attack Rate", className="form-label"),
-            dcc.Input(id="virus-attack-rate", type="number", min=0, max=1, step=0.001,
-                     value=0.0, placeholder="0.070", className="virus-rate-input"),
-        ], className="virus-rate-container"),
-
-        # Infection Rate
-        html.Div([
-            html.Label("Infection Rate", className="form-label"),
-            dcc.Input(id="virus-infection-rate", type="number", min=0, max=1, step=0.001,
-                     value=0.0, placeholder="0.021", className="virus-rate-input"),
-        ], className="virus-rate-container"),
+            html.Div([
+                html.Label("Attack Rate", className="form-label-small"),
+                dcc.Input(id="virus-attack-rate", type="number", min=0, max=1, step=0.001,
+                         value=0.0, placeholder="0.070", className="virus-rate-input"),
+            ], className="virus-rate-column"),
+            
+            html.Div([
+                html.Label("Infection Rate", className="form-label-small"),
+                dcc.Input(id="virus-infection-rate", type="number", min=0, max=1, step=0.001,
+                         value=0.0, placeholder="0.021", className="virus-rate-input"),
+            ], className="virus-rate-column"),
+        ], className="virus-rates-row"),
         
-        # Fatality Rate
+        # Fatality Rate (full width)
         html.Div([
             html.Label("Fatality Rate", className="form-label"),
             dcc.Input(id="virus-fatality-rate", type="number", min=0, max=1, step=0.001,
@@ -118,8 +125,8 @@ def create_virus_form():
 
         # Action Buttons
         html.Div([
-            html.Button("Create Virus", id="create-terrain-btn", className="btn-primary"),
-            html.Button("Clear", id="clear-terrain-btn", className="btn-secondary"),
+            html.Button("Create Virus", id="create-virus-btn", className="btn-primary"),
+            html.Button("Clear", id="clear-virus-btn", className="btn-secondary"),
         ], className="btn-container"),
     ])
 
@@ -367,18 +374,13 @@ layout = html.Div(
     [
         html.Div(
             [
-                html.Div(
-                    [
-                        html.Div(
+                 html.Div(
                             [
                                 create_side_panel("TERRAINS", "terrain-content"),
                                 create_side_panel("VIRUS", "virus-content"),
                             ],
                             className="side-panels-container",
                         ),
-                    ],
-                    className="side-panels-wrapper",
-                ),
                 create_config_panel(),
             ],
             className="main-container",
