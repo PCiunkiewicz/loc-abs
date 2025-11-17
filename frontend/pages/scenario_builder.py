@@ -1,7 +1,6 @@
 """Scenario Builder Page for LocABS Application."""
 from dash import html, dcc, register_page, callback, Output, Input, MATCH, State
 import dash 
-import re
 import dash_daq as daq
 # import dash_bootstrap_components as dbc
 from components_.tooltip import create_tooltip
@@ -367,10 +366,7 @@ layout = html.Div(
     className="scenario-builder-page",
 )
 
-
 # Callbacks
-
-
 # Terrain Create Callback
 @callback(
     [
@@ -423,7 +419,6 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
     # Extract color hex value
     color_hex = color.get("hex", "#000000") if color else "#000000"
 
-       
     is_name_valid, validated_name, error_msg = validators.validate_slug_name(name)
     
     if not is_name_valid:
@@ -446,8 +441,6 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
             dash.no_update, dash.no_update, dash.no_update,
             dash.no_update, dash.no_update, dash.no_update
         )
-
-    
 
     # Prepare terrain data
     terrain_data = {
