@@ -26,8 +26,8 @@
     display: flex;
     gap: 16px;
     padding: 30px;
-    margin: 0;
-    height: 82vh;
+    margin: 10px;
+    height: 85vh;
 }
 
 /* Side Panels Container */
@@ -35,7 +35,7 @@
     width: 50vw;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 30px;
 }
 
 /* Config Panel */
@@ -81,7 +81,7 @@
 .side-panel {
     margin-bottom: 16px;
     width: 50vw;
-    min-height: 30vh;
+    min-height: 35vh;
 }
 
 .side-panel-header {
@@ -97,7 +97,7 @@
 .side-panel-content {
     background-color: #ffffff;
     padding: 20px;
-    max-height: 34vh;
+    max-height: 35vh;
     border-radius: 0 0 8px 8px;
 }
 
