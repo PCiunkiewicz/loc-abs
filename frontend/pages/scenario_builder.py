@@ -10,7 +10,7 @@ from utilities import validators
 
 register_page(__name__, path="/scenario-builder", name="Scenario Builder", title="LocABS · Scenario Builder")
 
-
+# TODO: Add save verbose - you accidentally skipped it in the UI
 def create_config_panel():
     """Create the main configuration panel with tabs."""
     return html.Div(
@@ -639,57 +639,6 @@ def clear_virus_form(n_clicks):
     prevent_initial_call=False,
 )
 
-def load_terrain_options(pathname):
-    """Load terrain options for the terrain dropdown.
-
-    Args:
-        pathname (str): Current URL pathname.
-
-    Returns:
-        list: List of terrain options for the dropdown.
-    """
-    # TODO: Confirm if it will only be neccessary on scenario-builder page otherwise remove the if condition
-    if pathname != "/scenario-builder":
-        return dash.no_update
-
-    success, terrains, message = dash_api.get_all('terrain')
-    if success:
-        options = [{"label": terrain["name"], "value": terrain["id"]} for terrain in terrains]
-        return options
-    else:
-        # Return empty list on error
-        return []
-
-
-
-@callback(
-    Output("map-file-dropdown", "options"),
-    Input("url", "pathname"), # Trigger on page load
-    prevent_initial_call=False,
-)
-def load_map_file_options(pathname):
-    """Load map file options for the map file dropdown.
-
-    Args:
-        pathname (str): Current URL pathname.
-    
-    Returns:
-        list: List of map file options for the dropdown.
-    """
-    # TODO: Confirm if it will only be neccessary on scenario-builder page otherwise remove the if condition
-    if pathname != "/scenario-builder":
-        return dash.no_update
-    
-    success, map_files, message = dash_api.get_map_files()
-
-    if success and map_files:
-        options = [{"label": map_file.replace("_", " ").title(), "value": map_file} for map_file in map_files]
-        return options
-    else:
-        # Return empty list on error
-        return [{"label": "No map files available", "value": "", "disabled": True}]
-
-
 @callback(
     [
         Output("notification-modal", "is_open", allow_duplicate=True),
@@ -715,7 +664,7 @@ def load_map_file_options(pathname):
     ],
     prevent_initial_call=True,
 )
-def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolution, max_iterations, terrain_id):
+def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolution, max_iterations, terrain_ids):
     """Create a new simulation via backend API.
 
     Args:
@@ -726,13 +675,25 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
         time_step (float): Time step in seconds.
         save_resolution (int): Save resolution.
         max_iterations (int): Maximum number of iterations.
-        terrain_id (str): Selected terrain ID.
+        terrain_ids (list): Selected terrain IDs.
 
     Returns:
         tuple: Notification modal states and cleared input values.
     """
     if n_clicks is None or map_file is None:
         return dash.no_update
+
+    is_name_valid, validated_name, name_error = validators.validate_slug_name(name)
+    if not is_name_valid:
+        notification_body = html.Div([
+            name_error
+        ])
+        return (
+            True, notification_body, "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update
+        )
 
     # Validate required fields
     if not map_file:
@@ -747,14 +708,13 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
             dash.no_update, dash.no_update, dash.no_update,
             dash.no_update
         )
-    if not terrain_id:
+    
+    if not terrain_ids or len(terrain_ids) == 0:
         notification_body = html.Div([
-            "Error creating simulation: Terrain is required. Please select a terrain."
+            "At least one terrain must be selected."
         ])
         return (
-            True,
-            notification_body,
-            "notification-error",
+            True, notification_body, "notification-error",
             dash.no_update, dash.no_update, dash.no_update,
             dash.no_update, dash.no_update, dash.no_update,
             dash.no_update
@@ -765,12 +725,13 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
     # Ways to do defaults: placeholder texts, default values in the input fields, default selections in dropdowns when creating new simulation or new scenaerio
     simulation_data = {
         "name": name,
-        "map_file": map_file,
+        "mapfile": map_file,
         "xy_scale": float(xy_scale) if xy_scale else 2.77,
-        "time_step": float(time_step) if time_step else 5.0,
+        "t_step": float(time_step) if time_step else 5.0,
         "save_resolution": int(save_resolution) if save_resolution else 12,
-        "max_iterations": int(max_iterations) if max_iterations else 250,
-        "terrain": terrain_id,
+        "max_iter": int(max_iterations) if max_iterations else 250,
+        "save_verbose": None,
+        "terrain": terrain_ids,
     }
 
 
@@ -869,6 +830,36 @@ def switch_tabs(sim_clicks, prev_clicks):
             active_tab = "prevention"
     
     if active_tab == "simulations":
+
+        success_terrain, terrains, _ = dash_api.get_all('terrain')
+        terrain_options = []
+        if success_terrain and terrains:
+            terrain_options = [
+                {"label": f"{t['id']} - {t['name']}", "value": t['id']} 
+                for t in terrains
+            ]
+
+        success_maps, map_files, _ = dash_api.get_map_files()
+        map_options = []
+        if success_maps and map_files:
+            map_options = [
+                {"label": mf.replace("_", " ").title(), "value": mf} 
+                for mf in map_files
+            ]
+
+
+        time_step_options = [
+        {"label": "1 second", "value": 1},
+        {"label": "5 seconds", "value": 5},
+        {"label": "10 seconds", "value": 10},
+        {"label": "30 seconds", "value": 30},
+        {"label": "1 minute (60s)", "value": 60},
+        {"label": "5 minutes (300s)", "value": 300},
+        {"label": "10 minutes (600s)", "value": 600},
+        {"label": "30 minutes (1800s)", "value": 1800},
+        {"label": "1 hour (3600s)", "value": 3600},
+    ]
+
         content = html.Div([
             html.H5("Simulation Configuration", className="simulation-header"),
 
@@ -892,6 +883,7 @@ def switch_tabs(sim_clicks, prev_clicks):
             ),
             dcc.Dropdown(
                 id="map-file-dropdown",
+                options=map_options,
                 placeholder="Select map file",
                 className="dropdown-standard",
             ),
@@ -910,6 +902,8 @@ def switch_tabs(sim_clicks, prev_clicks):
                 type="number",
                 placeholder="2.77",
                 value=2.77,
+                min= 1.0,
+                max= 1000000.0,
                 step=0.01,
                 className="form-input"
             ),
@@ -923,14 +917,14 @@ def switch_tabs(sim_clicks, prev_clicks):
                 "Defines the duration of each simulation step in seconds.",
                 "time-step-tooltip"
             ),
-            dcc.Input(
-                id="time-step-input",
-                type="number",
-                placeholder="5",
-                value=5.0,
-                step=0.1,
-                className="form-input"
-            ),
+            dcc.Dropdown(
+            id="time-step-input",
+            options=time_step_options,
+            value=1,  # Default to 1 second
+            placeholder="Select time step",
+            className="dropdown-standard",
+            clearable=False,
+               ),
 
             # Save Resolution with Tooltip
             html.Div([
@@ -946,6 +940,8 @@ def switch_tabs(sim_clicks, prev_clicks):
                 type="number",
                 placeholder="12",
                 value=12,
+                min=1,
+                max=2147483647,
                 step=1,
                 className="form-input"
             ),
@@ -964,6 +960,8 @@ def switch_tabs(sim_clicks, prev_clicks):
                 type="number",
                 placeholder="250",
                 value=250,
+                min=1,
+                max=2147483647,
                 step=1,
                 className="form-input"
             ),
@@ -980,6 +978,7 @@ def switch_tabs(sim_clicks, prev_clicks):
             dcc.Dropdown(
                 id="terrain-dropdown",
                 placeholder="Select terrain",
+                options=terrain_options,
                 className="dropdown-standard",
                 multi=True, 
                 closeOnSelect=False
