@@ -37,7 +37,18 @@ ColumnDefs = [
 ]
 
 def kpi_card(title, value, delta=None, subtitle=None, accent="primary"):
-    """Create a KPI card component."""
+    """Create a KPI card component.
+
+    Args:
+        title (str): The title of the KPI.  
+        value (str): The main value to display.
+        delta (str, optional): The change indicator (e.g., "+5%"). Defaults to None.
+        subtitle (str, optional): Additional subtitle text. Defaults to None.
+        accent (str, optional): Color accent for the delta badge. Defaults to "primary".
+
+    Returns:
+        dbc.Card: A Dash Bootstrap Card component representing the KPI.
+    """
     trend = html.Span(
         delta,
         className=f"delta badge-{accent}",
@@ -55,7 +66,16 @@ def kpi_card(title, value, delta=None, subtitle=None, accent="primary"):
     )
 
 def status_row(label: str, color: str, value: str = "#####") -> html.Div:
-    """Create a status row with a colored dot, label, and value."""
+    """Create a status row with a colored dot, label, and value.
+    
+    Args:
+        label (str): The status label.
+        color (str): The color for the status dot (e.g., "primary", "success").
+        value (str): The value to display next to the label. Defaults to "#####".
+        
+    Returns:
+        html.Div: A Dash HTML Div component representing the status row.
+    """
     dot = html.Span(className=f"status-dot bg-{color}")
     left = html.Span([dot, html.Span(f"  {label}:", className="status-label")], className="status-left")
     right = html.Span(value, className="status-value")

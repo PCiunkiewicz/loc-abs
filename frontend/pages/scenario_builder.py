@@ -19,7 +19,6 @@ def create_config_panel():
                 ],
                 className="tab-headers",
             ),
-            
             # Tab content
             html.Div(id="tab-content", className="tab-content"),
         ],
@@ -89,19 +88,16 @@ def create_terrain_form():
         ],
         className="terrain-form-container"
         ),
-
-
     ])
-
 
 def create_virus_form():
     """Create virus configuration form."""
     return html.Div([
-        # Virus Name (full width)
+        # Virus Name 
         html.Label("Name", className="form-label"),
         dcc.Input(id="virus-name", type="text", placeholder="Enter virus name", className="form-input"),
 
-        # Attack Rate and Infection Rate (side by side)
+        # Attack Rate and Infection Rate
         html.Div([
             html.Div([
                 html.Label("Attack Rate", className="form-label-small"),
@@ -148,21 +144,13 @@ def create_agent_config_form():
             # Random Agents
             html.Div([
                 html.Label("Random Agents", className="form-label-small"),
-                html.Div([
-                    html.Button("−", id="random-agents-decrement", className="counter-button counter-button-decrement"),
-                    dcc.Input(id="random-agents-input", type="number", value=1, min=0, className="form-input-number-narrow"),
-                    html.Button("+", id="random-agents-increment", className="counter-button counter-button-increment"),
-                ], className="counter-container"),
+                dcc.Input(id="random-agents-input", type="number", value=1, min=0, className="form-input-number"),
             ], className="agent-population-item"),
 
             # Random Infected
             html.Div([
                 html.Label("Random Infected", className="form-label-small"),
-                html.Div([
-                    html.Button("−", id="random-infected-decrement", className="counter-button counter-button-decrement"),
-                    dcc.Input(id="random-infected-input", type="number", value=0, min=0, className="form-input-number-narrow"),
-                    html.Button("+", id="random-infected-increment", className="counter-button counter-button-increment"),
-                ], className="counter-container"),
+                dcc.Input(id="random-infected-input", type="number", value=0, min=0, className="form-input-number"),
             ], className="agent-population-item"),
         ], className="agent-population-row"),
 
@@ -206,11 +194,7 @@ def create_agent_config_form():
         # Vaccine Doses
         html.Div([
             html.Label("Vaccine Doses", className="form-label-small"),
-            html.Div([
-                html.Button("−", id="vaccine-doses-decrement", className="counter-button counter-button-decrement"),
-                dcc.Input(id="vaccine-doses-input", type="number", value=0, min=0, max=3, className="form-input-number-narrow"),
-                html.Button("+", id="vaccine-doses-increment", className="counter-button counter-button-increment"),
-            ], className="counter-container"),
+            dcc.Input(id="vaccine-doses-input", type="number", value=0, min=0, max=3, className="form-input-number"),
         ]),
 
         # Work Zone
@@ -324,7 +308,17 @@ def create_mask_input(mask_type, label, default_value=0.5, is_checked=False):
     ], className="mask-input-wrapper")
 
 def create_vaccine_type(vaccine_type, label, default_doses=[0.5, 0.5, 0.5], is_checked=False):
-    """Create a vaccine input component."""
+    """Create a vaccine input component.
+    
+    Args:
+        vaccine_type (str): The type of vaccine (e.g., "MRNA").
+        label (str): The label to display next to the checkbox.
+        default_doses (list): List of default effectiveness values for doses 1, 2, and 3.
+        is_checked (bool): Whether the vaccine checkbox is checked by default.
+
+    Returns:
+        html.Div: A Dash HTML Div component representing the vaccine input.
+    """
     return html.Div([
         dcc.Checklist(
             id={"type": "vaccine-checkbox", "vaccine": vaccine_type},
@@ -405,8 +399,17 @@ layout = html.Div(
     ],
     prevent_initial_call=False,
 )
+
 def switch_tabs(sim_clicks, prev_clicks):
-    """Switch between Simulations and Prevention tabs."""
+    """Switch between Simulations and Prevention tabs.
+    
+    Args:
+        sim_clicks (int): Number of clicks on the Simulations tab.
+        prev_clicks (int): Number of clicks on the Prevention tab.    
+    
+    Returns:
+        tuple: Content for the selected tab and updated class names for the tab buttons.
+    """
     ctx = dash.callback_context
     active_tab = "simulations"
     
