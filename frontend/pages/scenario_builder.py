@@ -1,8 +1,13 @@
 """Scenario Builder Page for LocABS Application."""
-from dash import html, dcc, register_page, callback, Output, Input, MATCH
+from dash import html, dcc, register_page, callback, Output, Input, MATCH, State
 import dash 
+import re
 import dash_daq as daq
+# import dash_bootstrap_components as dbc
 from components_.tooltip import create_tooltip
+from components_.notifications_modal import create_notification_modal
+from utilities import dash_api
+from utilities import validators
 
 register_page(__name__, path="/scenario-builder", name="Scenario Builder", title="LocABS · Scenario Builder")
 
@@ -33,7 +38,16 @@ def create_terrain_form():
             html.Div([
                 # Terrain Name
                 html.Label("Name", className="form-label"),
-                dcc.Input(id="terrain-name", type="text", placeholder="Enter terrain name", className="form-input"),
+                dcc.Input(
+                    id="terrain-name",
+                    type="text",
+                    placeholder="Enter terrain name",
+                    className="form-input",
+                    #required=True,
+                    minLength=1,
+                    maxLength=250,
+                    pattern="^[a-zA-Z0-9\\s_-]+$",  # Allow letters, numbers, spaces, underscores, hyphens
+                ),
 
                 # Terrain Properties
                 html.Div([
@@ -66,8 +80,16 @@ def create_terrain_form():
                         # Access Level Selector
                         html.Div([
                             html.Label("Access Level", className="form-label-small"),
-                            dcc.Input(id="terrain-access-input", type="number", value=0, min=0, className="form-input-number"),
-                        ],className="terrain-properties-column"),
+                            dcc.Input(
+                                id="terrain-access-input",
+                                type="number",
+                                value=0,
+                                min=0,
+                                max=999,  # Reasonable max for access level
+                                className="form-input-number",
+                                required=True
+                            ),
+                        ], className="terrain-properties-column"),
 
                         # Action Buttons
                         html.Div([
@@ -82,8 +104,12 @@ def create_terrain_form():
 
             # Color Picker
             html.Div([
-                    html.Label("Terrain Color", className="form-label"),
-                    daq.ColorPicker(id="terrain-color-input", value=dict(hex="#0000FF", label="Terrain Color"), size=250)
+                html.Label("Terrain Color", className="form-label"),
+                daq.ColorPicker(
+                    id="terrain-color-input",
+                    value=dict(hex="#0000FF", label="Terrain Color"),
+                    size=250
+                )
             ]),
         ],
         className="terrain-form-container"
@@ -95,28 +121,60 @@ def create_virus_form():
     return html.Div([
         # Virus Name 
         html.Label("Name", className="form-label"),
-        dcc.Input(id="virus-name", type="text", placeholder="Enter virus name", className="form-input"),
+         dcc.Input(
+            id="virus-name",
+            type="text",
+            placeholder="Enter virus name",
+            className="form-input",
+            minLength=1,
+            maxLength=250,
+            pattern="^[a-zA-Z0-9\\s_-]+$",
+        ),
 
         # Attack Rate and Infection Rate
         html.Div([
             html.Div([
                 html.Label("Attack Rate", className="form-label-small"),
-                dcc.Input(id="virus-attack-rate", type="number", min=0, max=1, step=0.001,
-                         value=0.0, placeholder="0.070", className="virus-rate-input"),
+                dcc.Input(
+                    id="virus-attack-rate",
+                    type="number",
+                    min=0,
+                    max=1,
+                    step=0.001,
+                    value=0.0,
+                    placeholder="0.000 - 1.000",
+                    className="virus-rate-input",
+                ),
             ], className="virus-rate-column"),
             
             html.Div([
                 html.Label("Infection Rate", className="form-label-small"),
-                dcc.Input(id="virus-infection-rate", type="number", min=0, max=1, step=0.001,
-                         value=0.0, placeholder="0.021", className="virus-rate-input"),
+                dcc.Input(
+                    id="virus-infection-rate",
+                    type="number",
+                    min=0,
+                    max=1,
+                    step=0.001,
+                    value=0.0,
+                    placeholder="0.000 - 1.000",
+                    className="virus-rate-input",
+                ),
             ], className="virus-rate-column"),
         ], className="virus-rates-row"),
         
-        # Fatality Rate (full width)
+        # Fatality Rate
         html.Div([
             html.Label("Fatality Rate", className="form-label"),
-            dcc.Input(id="virus-fatality-rate", type="number", min=0, max=1, step=0.001,
-                     value=0.0, placeholder="0.013", className="virus-rate-input"),
+            dcc.Input(
+                id="virus-fatality-rate",
+                type="number",
+                min=0,
+                max=1,
+                step=0.001,
+                value=0.0,
+                placeholder="0.000 - 1.000",
+                className="virus-rate-input",
+            ),
         ], className="virus-rate-container"),
 
         # Action Buttons
@@ -134,129 +192,48 @@ def create_agent_config_form():
         
         # Agent Config Name
         html.Label("Name", className="form-label"),
-        dcc.Input(id="agent-config-name", type="text", placeholder="Enter agent configuration name", className="form-input"),
+        dcc.Input(
+            id="agent-config-name",
+            type="text",
+            placeholder="Enter agent configuration name",
+            className="form-input",
+            minLength=1,
+            maxLength=250,
+            pattern="^[a-zA-Z0-9\\s_-]+$",
+        ),
 
         # Agent Population Section
         html.H6("Agent Population", className="section-header"),
-
-        # Random Agents and Random Infected
         html.Div([
             # Random Agents
             html.Div([
                 html.Label("Random Agents", className="form-label-small"),
-                dcc.Input(id="random-agents-input", type="number", value=1, min=0, className="form-input-number"),
+                dcc.Input(
+                    id="random-agents-input",
+                    type="number",
+                    value=1,
+                    min=0,
+                    max=10000, 
+                    className="form-input-number",
+                ),
             ], className="agent-population-item"),
 
             # Random Infected
             html.Div([
                 html.Label("Random Infected", className="form-label-small"),
-                dcc.Input(id="random-infected-input", type="number", value=0, min=0, className="form-input-number"),
+                dcc.Input(
+                    id="random-infected-input",
+                    type="number",
+                    value=0,
+                    min=0,
+                    max=10000, 
+                    className="form-input-number",
+                ),
             ], className="agent-population-item"),
         ], className="agent-population-row"),
 
         # TODO: Add back default agent configuration and initial agent state sections - Ask Phillip about whether needed
-        # # Default Agent Configuration Section
-        # html.H6("Default Agent Configuration", className="section-header-with-margin"),
 
-        # # Mask Type
-        # html.Div([
-        #     html.Label("Mask Type", className="form-label-small"),
-        #     dcc.Dropdown(
-        #         id="agent-mask-type",
-        #         options=[
-        #             {"label": "None", "value": ""},
-        #             {"label": "N95", "value": "N95"},
-        #             {"label": "Surgical", "value": "SURGICAL"},
-        #             {"label": "Cloth", "value": "CLOTH"},
-        #             {"label": "Home/Cloth", "value": "HOME"},
-        #         ],
-        #         value="",
-        #         placeholder="Select mask type",
-        #         className="dropdown-with-margin",
-        #     ),
-        # ]),
-
-        # # Vaccine Type
-        # html.Div([
-        #     html.Label("Vaccine Type", className="form-label-small"),
-        #     dcc.Dropdown(
-        #         id="agent-vaccine-type",
-        #         options=[
-        #             {"label": "None", "value": ""},
-        #             {"label": "MRNA (Moderna)", "value": "MRNA"},
-        #             {"label": "ASTRA (AstraZeneca)", "value": "ASTRA"},
-        #         ],
-        #         value="",
-        #         placeholder="Select vaccine type",
-        #         className="dropdown-with-margin",
-        #     ),
-        # ]),
-
-        # # Vaccine Doses
-        # html.Div([
-        #     html.Label("Vaccine Doses", className="form-label-small"),
-        #     dcc.Input(id="vaccine-doses-input", type="number", value=0, min=0, max=3, className="form-input-number"),
-        # ]),
-
-        # # Work Zone
-        # html.Div([
-        #     html.Label("Work Zone", className="form-label-small"),
-        #     dcc.Dropdown(
-        #         id="agent-work-zone",
-        #         options=[{"label": "None", "value": "null"}],
-        #         value="null",
-        #         placeholder="Select work zone",
-        #         className="dropdown-with-margin",
-        #     ),
-        # ]),
-
-        # # Start Zone
-        # html.Div([
-        #     html.Label("Start Zone", className="form-label-small"),
-        #     dcc.Dropdown(
-        #         id="agent-start-zone",
-        #         options=[{"label": "None", "value": "null"}],
-        #         value="null",
-        #         placeholder="Select start zone",
-        #         className="dropdown-with-margin",
-        #     ),
-        # ]),
-
-        # # Agent State Section
-        # html.H6("Initial Agent State", className="section-header-with-margin"),
-
-        # html.Div([
-        #     # Status
-        #     html.Div([
-        #         html.Label("Status", className="form-label-small"),
-        #         dcc.Dropdown(
-        #             id="agent-status",
-        #             options=[
-        #                 {"label": "Unknown", "value": "UNKNOWN"},
-        #                 {"label": "Susceptible", "value": "SUSCEPTIBLE"},
-        #                 {"label": "Infected", "value": "INFECTED"},
-        #                 {"label": "Recovered", "value": "RECOVERED"},
-        #                 {"label": "Dead", "value": "DEAD"},
-        #             ],
-        #             value="UNKNOWN",
-        #             className="dropdown-with-margin",
-        #         ),
-        #     ]),
-
-        #     # Position X
-        #     html.Div([
-        #         html.Label("Position X", className="form-label-small"),
-        #         dcc.Input(id="agent-position-x", type="number", value=0, className="agent-full-width-input"),
-        #     ]),
-
-        #     # Position Y
-        #     html.Div([
-        #         html.Label("Position Y", className="form-label-small"),
-        #         dcc.Input(id="agent-position-y", type="number", value=0, className="agent-full-width-input"),
-        #     ]),
-        # ]),
-
-        # Action Buttons
         html.Div([
             html.Button("Create", id="create-agent-config-btn", className="btn-primary"),
             html.Button("Clear", id="clear-agent-config-btn", className="btn-secondary"),
@@ -367,9 +344,10 @@ def create_vaccine_type(vaccine_type, label, default_doses=[0.5, 0.5, 0.5], is_c
 # Layout
 layout = html.Div(
     [
+
         html.Div(
             [
-                 html.Div(
+                html.Div(
                             [
                                 create_side_panel("TERRAINS", "terrain-content"),
                                 create_side_panel("VIRUS", "virus-content"),
@@ -382,12 +360,490 @@ layout = html.Div(
         ),
         
         html.Div([create_agent_config_form()]),
+
+        # Notification Modal Container
+        create_notification_modal(),
     ],
     className="scenario-builder-page",
 )
 
 
 # Callbacks
+
+
+# Terrain Create Callback
+@callback(
+    [
+        Output("notification-modal", "is_open"),
+        Output("notification-modal-body", "children"),
+        Output("notification-modal", "className"),
+        Output("terrain-name", "value"),
+        Output("terrain-walkable-checkbox", "value"),  
+        Output("terrain-interactive-checkbox", "value"),
+        Output("terrain-restricted-checkbox", "value"),
+        Output("terrain-access-input", "value"),
+        Output("terrain-color-input", "value"),   
+    ],  
+    Input("create-terrain-btn", "n_clicks"),
+    [
+        State("terrain-name", "value"),
+        State("terrain-walkable-checkbox", "value"),
+        State("terrain-interactive-checkbox", "value"),
+        State("terrain-restricted-checkbox", "value"),
+        State("terrain-access-input", "value"),
+        State("terrain-color-input", "value"),
+    ],
+    prevent_initial_call=True,
+)
+
+def create_terrain(n_clicks, name, walkable, interactive, restricted, access_level, color):
+    """Create a new terrain via backend API.
+
+    Args:
+        n_clicks (int): Number of clicks on the create terrain button.
+        name (str): Name of the terrain.
+        walkable (list): List of walkable types selected.
+        interactive (list): List of interactive types selected.
+        restricted (list): List of restricted types selected.
+        access_level (int): Access level of the terrain.
+        color (dict): Color value from the color picker.
+        terrains_data (list): Current list of terrains in the store.
+
+    Returns:
+        tuple: Updated terrains data, notification message, and cleared input values.
+    """
+    if n_clicks is None or name is None:
+        return dash.no_update
+    
+    # Parse checkbox values
+    is_walkable = "walkable" in (walkable or [])
+    is_interactive = "interactive" in (interactive or [])
+    is_restricted = "restricted" in (restricted or [])
+
+    # Extract color hex value
+    color_hex = color.get("hex", "#000000") if color else "#000000"
+
+       
+    is_name_valid, validated_name, error_msg = validators.validate_slug_name(name)
+    
+    if not is_name_valid:
+        notification_body = html.Div([
+            error_msg
+        ])
+        return (
+            True, notification_body, "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update
+        )
+
+    is_color_valid, valid_color_hex, color_error_msg = validators.validate_hex_color(color_hex)
+    if not is_color_valid:
+        notification_body = html.Div([
+            color_error_msg
+        ])
+        return (
+            True, notification_body, "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update
+        )
+
+    
+
+    # Prepare terrain data
+    terrain_data = {
+        "name": validated_name,
+        "value": valid_color_hex,
+        "color": valid_color_hex,
+        "walkable": is_walkable,
+        "interactive": is_interactive,
+        "restricted": is_restricted,
+        "access_level": access_level or 0,
+    }
+
+    # Call API to create terrain
+    success, data, message = dash_api.create('terrain', terrain_data)
+
+    if success:
+        # Success notification
+        notification_body = html.Div([
+            f"Terrain '{validated_name.capitalize()}' created successfully!"
+        ])
+
+        modal_class = "notification-success"
+
+        return(
+            True,
+            notification_body,
+            modal_class,
+            "",  # Clear name
+            ["walkable"],  # Reset to default
+            [],  # Clear interactive
+            [],  # Clear restricted
+            0,   # Reset access level
+            {"hex": "#0000FF", "label": "Terrain Color"},  # Reset color
+        )
+
+    else:
+        # Error notification
+        notification_body = html.Div([
+            f"Error creating terrain: {message}"
+        ])
+
+        modal_class = "notification-error"
+
+        return(
+            True,
+            notification_body,
+            modal_class,
+            dash.no_update,dash.no_update,dash.no_update,
+            dash.no_update,dash.no_update, dash.no_update,
+        )
+
+@callback(
+    Output("notification-modal", "is_open", allow_duplicate=True),
+    Input("close-notification-modal", "n_clicks"),
+    State("notification-modal", "is_open"),
+    prevent_initial_call=True,
+)
+def close_modal(n_clicks, is_open):
+    """Close the notification modal."""
+    if n_clicks and is_open:
+        return False
+    return dash.no_update
+
+
+# Clear Terrain Form Callback
+@callback(
+    [
+        Output("terrain-name", "value", allow_duplicate=True),
+        Output("terrain-walkable-checkbox", "value", allow_duplicate=True),
+        Output("terrain-interactive-checkbox", "value", allow_duplicate=True),
+        Output("terrain-restricted-checkbox", "value", allow_duplicate=True),
+        Output("terrain-access-input", "value", allow_duplicate=True),
+        Output("terrain-color-input", "value", allow_duplicate=True),
+    ],
+    Input("clear-terrain-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def clear_terrain_form(n_clicks):
+    """Clear the terrain form."""
+    if not n_clicks:
+        return dash.no_update
+    return "", ["walkable"], [], [], 0, {"hex": "#0000FF", "label": "Terrain Color"}
+
+# Virus Create Callback
+@callback(
+    [
+        Output("notification-modal", "is_open", allow_duplicate=True),
+        Output("notification-modal-body", "children", allow_duplicate=True),    
+        Output("notification-modal", "className", allow_duplicate=True),
+        Output("virus-name", "value"),
+        Output("virus-attack-rate", "value"),
+        Output("virus-infection-rate", "value"),
+        Output("virus-fatality-rate", "value"),   
+    ],
+
+    Input("create-virus-btn", "n_clicks"),
+    [
+        State("virus-name", "value"),
+        State("virus-attack-rate", "value"),
+        State("virus-infection-rate", "value"),
+        State("virus-fatality-rate", "value"),  
+    ],
+    prevent_initial_call=True,
+)
+def create_virus(n_clicks, name, attack_rate, infection_rate, fatality_rate):
+    """Create a new virus via backend API.
+
+    Args:
+        n_clicks (int): Number of clicks on the create virus button.
+        name (str): Name of the virus.
+        attack_rate (float): Attack rate of the virus.
+        infection_rate (float): Infection rate of the virus.
+        fatality_rate (float): Fatality rate of the virus.
+    
+    Returns:
+        tuple: Notification modal states and cleared input values.
+    """
+    if n_clicks is None or name is None:
+        return dash.no_update
+
+    is_valid, validated_name, error_msg = validators.validate_slug_name(name)
+    
+    if not is_valid:
+        notification_body = html.Div([
+            error_msg
+        ])
+        return (
+            True, notification_body, "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update
+        )
+
+    # Prepare virus data
+    virus_data = {
+        "name": validated_name,
+        "attack_rate": float(attack_rate or 0.0),
+        "infection_rate": float(infection_rate or 0.0),
+        "fatality_rate": float(fatality_rate or 0.0),
+    }
+
+    success, data, message = dash_api.create('virus', virus_data)
+    if success:
+        # Success notification
+        notification_body = html.Div([
+            f"Virus '{name}' created successfully!"
+        ])
+
+        modal_class = "notification-success"
+
+        return(
+            True,
+            notification_body,
+            modal_class,
+            "",  # Clear name
+            0.0,  # Clear attack rate
+            0.0,  # Clear infection rate
+            0.0,  # Clear fatality rate
+        )
+    else:
+        # Error notification
+        notification_body = html.Div([
+            f"Error creating virus: {message}"
+        ])
+
+        modal_class = "notification-error"
+
+        return(
+            True,
+            notification_body,
+            modal_class,
+            dash.no_update, dash.no_update,
+            dash.no_update,dash.no_update,
+        )
+
+# Clear Virus Form Callback
+@callback(
+    [
+        Output("virus-name", "value", allow_duplicate=True),
+        Output("virus-attack-rate", "value", allow_duplicate=True),
+        Output("virus-infection-rate", "value", allow_duplicate=True),
+        Output("virus-fatality-rate", "value", allow_duplicate=True),
+    ],
+    Input("clear-virus-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def clear_virus_form(n_clicks):
+    """Clear the virus form."""
+    if not n_clicks:
+        return dash.no_update
+    return "", 0.0, 0.0, 0.0
+
+# Simulations Operations
+@callback(
+    Output("terrain-dropdown", "options"),
+    Input("url", "pathname"),  # Trigger on page load
+    prevent_initial_call=False,
+)
+
+def load_terrain_options(pathname):
+    """Load terrain options for the terrain dropdown.
+
+    Args:
+        pathname (str): Current URL pathname.
+
+    Returns:
+        list: List of terrain options for the dropdown.
+    """
+    # TODO: Confirm if it will only be neccessary on scenario-builder page otherwise remove the if condition
+    if pathname != "/scenario-builder":
+        return dash.no_update
+
+    success, terrains, message = dash_api.get_all('terrain')
+    if success:
+        options = [{"label": terrain["name"], "value": terrain["id"]} for terrain in terrains]
+        return options
+    else:
+        # Return empty list on error
+        return []
+
+
+
+@callback(
+    Output("map-file-dropdown", "options"),
+    Input("url", "pathname"), # Trigger on page load
+    prevent_initial_call=False,
+)
+def load_map_file_options(pathname):
+    """Load map file options for the map file dropdown.
+
+    Args:
+        pathname (str): Current URL pathname.
+    
+    Returns:
+        list: List of map file options for the dropdown.
+    """
+    # TODO: Confirm if it will only be neccessary on scenario-builder page otherwise remove the if condition
+    if pathname != "/scenario-builder":
+        return dash.no_update
+    
+    success, map_files, message = dash_api.get_map_files()
+
+    if success and map_files:
+        options = [{"label": map_file.replace("_", " ").title(), "value": map_file} for map_file in map_files]
+        return options
+    else:
+        # Return empty list on error
+        return [{"label": "No map files available", "value": "", "disabled": True}]
+
+
+@callback(
+    [
+        Output("notification-modal", "is_open", allow_duplicate=True),
+        Output("notification-modal-body", "children", allow_duplicate=True),
+        Output("notification-modal", "className", allow_duplicate=True),
+        Output("simulation-name", "value"),
+        Output("map-file-dropdown", "value"),
+        Output("xy-scale-input", "value"),
+        Output("time-step-input", "value"),
+        Output("save-resolution-input", "value"),
+        Output("max-iterations-input", "value"),
+        Output("terrain-dropdown", "value"),
+    ],
+    Input("create-simulation-btn", "n_clicks"),
+    [
+        State("simulation-name", "value"),
+        State("map-file-dropdown", "value"),
+        State("xy-scale-input", "value"),
+        State("time-step-input", "value"),
+        State("save-resolution-input", "value"),
+        State("max-iterations-input", "value"),
+        State("terrain-dropdown", "value"),
+    ],
+    prevent_initial_call=True,
+)
+def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolution, max_iterations, terrain_id):
+    """Create a new simulation via backend API.
+
+    Args:
+        n_clicks (int): Number of clicks on the create simulation button.
+        name (str): Name of the simulation.
+        map_file (str): Selected map file.
+        xy_scale (float): Plot scale for X and Y axes.
+        time_step (float): Time step in seconds.
+        save_resolution (int): Save resolution.
+        max_iterations (int): Maximum number of iterations.
+        terrain_id (str): Selected terrain ID.
+
+    Returns:
+        tuple: Notification modal states and cleared input values.
+    """
+    if n_clicks is None or map_file is None:
+        return dash.no_update
+
+    # Validate required fields
+    if not map_file:
+        notification_body = html.Div([
+            "Error creating simulation: Map file is required. Please select a map file."
+        ])
+        return (
+            True,
+            notification_body,
+            "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update
+        )
+    if not terrain_id:
+        notification_body = html.Div([
+            "Error creating simulation: Terrain is required. Please select a terrain."
+        ])
+        return (
+            True,
+            notification_body,
+            "notification-error",
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update
+        )
+
+    # Prepare simulation data
+    # TODO: Confirm default values with Phillip and Implement Default options in the UI if necessary
+    # Ways to do defaults: placeholder texts, default values in the input fields, default selections in dropdowns when creating new simulation or new scenaerio
+    simulation_data = {
+        "name": name,
+        "map_file": map_file,
+        "xy_scale": float(xy_scale) if xy_scale else 2.77,
+        "time_step": float(time_step) if time_step else 5.0,
+        "save_resolution": int(save_resolution) if save_resolution else 12,
+        "max_iterations": int(max_iterations) if max_iterations else 250,
+        "terrain": terrain_id,
+    }
+
+
+    # Call API to create simulation
+    success, data, message = dash_api.create('simulation', simulation_data)
+
+    if success:
+        notification_body = html.Div([
+            f"Simulation '{name}' created successfully!"
+        ])
+
+        modal_class = "notification-success"
+        return(
+            True,
+            notification_body,
+            modal_class,
+            "", None, 2.77, 5.0, 12, 250, None
+        )
+
+    else:
+        notification_body = html.Div([
+            f"Error creating simulation: {message}"
+        ])
+
+        modal_class = "notification-error"
+
+        return(
+            True,
+            notification_body,
+            modal_class,
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update, dash.no_update, dash.no_update,
+            dash.no_update
+        )
+
+@callback(
+    [
+        Output("simulation-name", "value", allow_duplicate=True),
+        Output("map-file-dropdown", "value", allow_duplicate=True),
+        Output("xy-scale-input", "value", allow_duplicate=True),
+        Output("time-step-input", "value", allow_duplicate=True),
+        Output("save-resolution-input", "value", allow_duplicate=True),
+        Output("max-iterations-input", "value", allow_duplicate=True),
+        Output("terrain-dropdown", "value", allow_duplicate=True),
+    ],
+    Input("clear-simulation-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def clear_simulation_form(n_clicks):
+    """Clear the simulation form.
+    
+    Args:
+        n_clicks (int): Number of clicks on clear button.
+    
+    Returns:
+        tuple: Cleared input values.
+    """
+    if not n_clicks:
+        return dash.no_update
+    return "", None, 2.77, 5.0, 12, 250, None
+
+
+# Prevention Operations
+
+
+# Tab Switching Callback
 @callback(
     [
         Output("tab-content", "children"),
@@ -422,61 +878,123 @@ def switch_tabs(sim_clicks, prev_clicks):
     if active_tab == "simulations":
         content = html.Div([
             html.H5("Simulation Configuration", className="simulation-header"),
+
+            # Simulation Name
+            html.Label(" Name", className="form-label"),
+            dcc.Input(
+                id="simulation-name",
+                type="text",
+                placeholder="Enter simulation name",
+                className="form-input"
+            ),
             
+            # Map File with Tooltip
             html.Div([
                 html.Label("Map File", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="map-file")
+                html.Img(src="/static/tooltip.png", id="map-file-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Select the map file that defines the terrain and environment for the simulation.", "map-file"),
+            create_tooltip(
+                "Select the map file that defines the terrain and environment for the simulation.",
+                "map-file-tooltip"
+            ),
             dcc.Dropdown(
-                options=[{"label": "Bow View Manor", "value": "bow_view_manor"}],
+                id="map-file-dropdown",
                 placeholder="Select map file",
                 className="dropdown-standard",
             ),
             
+            # Plot Scale with Tooltip
             html.Div([
                 html.Label("Plot Scale", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="xy-scale")
+                html.Img(src="/static/tooltip.png", id="xy-scale-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Defines the scale for the X and Y axes on the simulation plot.", "xy-scale"),
-            dcc.Input(type="number", placeholder="2.77", className="form-input"),
+            create_tooltip(
+                "Defines the scale for the X and Y axes on the simulation plot.",
+                "xy-scale-tooltip"
+            ),
+            dcc.Input(
+                id="xy-scale-input",
+                type="number",
+                placeholder="2.77",
+                value=2.77,
+                step=0.01,
+                className="form-input"
+            ),
 
+            # Time Step with Tooltip
             html.Div([
                 html.Label("Time Step (s)", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="time-step")
+                html.Img(src="/static/tooltip.png", id="time-step-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Defines the duration of each simulation step in seconds.", "time-step"),
-            dcc.Input(type="number", placeholder="5", className="form-input"),
+            create_tooltip(
+                "Defines the duration of each simulation step in seconds.",
+                "time-step-tooltip"
+            ),
+            dcc.Input(
+                id="time-step-input",
+                type="number",
+                placeholder="5",
+                value=5.0,
+                step=0.1,
+                className="form-input"
+            ),
 
+            # Save Resolution with Tooltip
             html.Div([
                 html.Label("Save Resolution", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="save-resolution")
+                html.Img(src="/static/tooltip.png", id="save-resolution-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Number of time steps per iteration.", "save-resolution"),
-            dcc.Input(type="number", placeholder="12", className="form-input"),
+            create_tooltip(
+                "Number of time steps per iteration.",
+                "save-resolution-tooltip"
+            ),
+            dcc.Input(
+                id="save-resolution-input",
+                type="number",
+                placeholder="12",
+                value=12,
+                step=1,
+                className="form-input"
+            ),
             
+            # Max Iterations with Tooltip
             html.Div([
                 html.Label("Max Iterations", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="max-iterations")
+                html.Img(src="/static/tooltip.png", id="max-iterations-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Total number of iterations to run the simulation.", "max-iterations"),
-            dcc.Input(type="number", placeholder="250", className="form-input"),
+            create_tooltip(
+                "Total number of iterations to run the simulation.",
+                "max-iterations-tooltip"
+            ),
+            dcc.Input(
+                id="max-iterations-input",
+                type="number",
+                placeholder="250",
+                value=250,
+                step=1,
+                className="form-input"
+            ),
 
+            # Terrain Dropdown with Tooltip
             html.Div([
                 html.Label("Terrain", className="form-label"),
-                html.Img(src="/static/tooltip.png", id="terrain")
+                html.Img(src="/static/tooltip.png", id="terrain-tooltip")
             ], className="tooltip-container"),
-            create_tooltip("Select the terrain type for the simulation.", "terrain"),
+            create_tooltip(
+                "Select the terrain type for the simulation. Terrains are loaded from previously created terrain configurations.",
+                "terrain-tooltip"
+            ),
             dcc.Dropdown(
-                options=[{"label": "Bow View Manor", "value": "bow_view_manor"}],
-                placeholder="Select map file",
+                id="terrain-dropdown",
+                placeholder="Select terrain",
                 className="dropdown-standard",
+                multi=True, 
+                closeOnSelect=False
             ),
             
             html.Div([
-                html.Button("Create Simulation", className="btn-primary"),
-                html.Button("Update Values", className="btn-primary"),
-                html.Button("Delete Simulation", className="btn-danger"),
+                html.Button("Create Simulation", id="create-simulation-btn", className="btn-primary"),
+                html.Button("Clear", id="clear-simulation-btn", className="btn-secondary"),
             ], className="btn-container"),
         ])
         

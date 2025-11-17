@@ -27,7 +27,6 @@
     gap: 16px;
     padding: 30px;
     margin: 10px;
-    height: 85vh;
 }
 
 /* Side Panels Container */
@@ -129,6 +128,61 @@
     border-radius: 4px;
 }
 
+
+/* Input validation styles - Only show colors when user has interacted */
+/* Invalid state - only after user input */
+.form-input:not(:placeholder-shown):invalid,
+.form-input-number:not(:placeholder-shown):invalid,
+.virus-rate-input:not(:placeholder-shown):invalid {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+/* Valid state - only after user input */
+.form-input:not(:placeholder-shown):valid,
+.form-input-number:not(:placeholder-shown):valid,
+.virus-rate-input:not(:placeholder-shown):valid {
+    border-color: #28a745;
+}
+
+/* Focus states - show validation colors when focused and has input */
+.form-input:focus:not(:placeholder-shown):invalid,
+.form-input-number:focus:not(:placeholder-shown):invalid,
+.virus-rate-input:focus:not(:placeholder-shown):invalid {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-input:focus:not(:placeholder-shown):valid,
+.form-input-number:focus:not(:placeholder-shown):valid,
+.virus-rate-input:focus:not(:placeholder-shown):valid {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Keep default gray focus when no input yet */
+.form-input:focus:placeholder-shown,
+.form-input-number:focus:placeholder-shown,
+.virus-rate-input:focus:placeholder-shown {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Helper text styling */
+.form-text.text-muted {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Required field indicator */
+.form-label::after {
+    content: " *";
+    color: #dc3545;
+}
 
 /* Terrain Form */
 .terrain-form-container {
