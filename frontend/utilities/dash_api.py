@@ -100,74 +100,24 @@ APIS = {
 
 # Response Handler
 def handle_response(response: requests.Response) -> dict:
-    """Handle API response and return formatted tuple for Dash callbacks.
-
+    """
+    Handle API response and return formatted tuple for Dash callbacks.
+    
     Args:
-        response (requests.Response): The response from the API.
-
+        response: requests.Response object
+    
     Returns:
         Tuple[bool, Any, str]: (success, data, message)
     """
     try:
         if response.ok:
-            # Check if response has content before parsing JSON
-            if response.content:
-                try:
-                    data = response.json()
-                    return True, data, "Success"
-                except requests.exceptions.JSONDecodeError:
-                    # Response has content but not valid JSON
-                    return True, response.text, "Success (non-JSON)"
-            else:
-                # Successful response but no content (e.g., 204 No Content)
-                return True, None, "Success (no content)"
+            data = response.json() if response.content else None
+            return True, data, "Success"
         else:
-            # Extract detailed error message from Django REST Framework
-            error_msg = response.reason
-            
-            if response.content:
-                try:
-                    error_data = response.json()
-                    
-                    # Handle different Django REST Framework error formats
-                    if isinstance(error_data, dict):
-                        # Case 1: {"detail": "error message"}
-                        if 'detail' in error_data:
-                            error_msg = error_data['detail']
-                        
-                        # Case 2: {"field_name": ["error message"]}
-                        elif error_data:
-                            # Collect all field errors
-                            field_errors = []
-                            for field, errors in error_data.items():
-                                if isinstance(errors, list):
-                                    field_errors.append(f"{field}: {', '.join(str(e) for e in errors)}")
-                                else:
-                                    field_errors.append(f"{field}: {errors}")
-                            
-                            if field_errors:
-                                error_msg = " | ".join(field_errors)
-                    
-                    # Case 3: Error is a list or string
-                    elif isinstance(error_data, list):
-                        error_msg = ", ".join(str(e) for e in error_data)
-                    elif isinstance(error_data, str):
-                        error_msg = error_data
-                        
-                except requests.exceptions.JSONDecodeError:
-                    # Error response but not JSON - use raw text
-                    error_msg = response.text[:300] if response.text else response.reason
-            
-            return False, None, f"{error_msg}"
-            
-    except requests.exceptions.ConnectionError:
-        return False, None, "Connection error: Cannot reach backend. Is Docker running?"
-    except requests.exceptions.Timeout:
-        return False, None, "Request timeout: Backend took too long to respond"
-    except requests.exceptions.RequestException as e:
-        return False, None, f"Request error: {str(e)}"
+            error_msg = response.json().get('detail', response.reason) if response.content else response.reason
+            return False, None, error_msg
     except Exception as e:
-        return False, None, f"Unexpected error: {str(e)}"
+        return False, None, str(e)
 
 
 # Operations for Specific Endpoints 
