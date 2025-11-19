@@ -957,23 +957,99 @@ def clear_prevention_form(n_clicks):
         [], 0.0, 0.31, 0.67,   # Clear ASTRA - Reset to defaults
     )
 
-# Agent Confiuration Operations
-# @callback(
-#     [
-#         Output("notification-modal", "is_open", allow_duplicate=True),
-#         Output("notification-modal-body", "children", allow_duplicate=True),
-#         Output("notification-modal", "className", allow_duplicate=True),
-#         Output("agent-config-name", "value"),
-#         Output("random-agents-input", "value"),
-#         Output("random-infected-input", "value"),
-#     ],
-#     Input("create-agent-config-btn", "n_clicks"),
-#     [
-#         State("agent-config-name", "value"),
-#         State("random-agents-input", "value"),
-#         State("random-infected-input", "value"),
-#     ]
-# )
+#Agent Confiuration Operations
+@callback(
+    [
+        Output("notification-modal", "is_open", allow_duplicate=True),
+        Output("notification-modal-body", "children", allow_duplicate=True),
+        Output("notification-modal", "className", allow_duplicate=True),
+        Output("agent-config-name", "value"),
+        Output("random-agents-input", "value"),
+        Output("random-infected-input", "value"),
+    ],
+    Input("create-agent-config-btn", "n_clicks"),
+    [
+        State("agent-config-name", "value"),
+        State("random-agents-input", "value"),
+        State("random-infected-input", "value"),
+
+    ],
+    prevent_initial_call=True,
+)
+
+def create_agent_config(n_clicks, name, random_agents, random_infected):
+    """Create a new agent configuration via backend API.
+    
+    Args:
+        n_clicks (int): Number of clicks on the create agent configuration button.
+        name (str): Name of the agent configuration.
+        random_agents (int): Number of random agents.
+        random_infected (int): Number of random infected agents.
+    
+    Returns:
+        tuple: Notification modal states and cleared input values.
+    """
+    if n_clicks is None or name is None:
+        return dash.no_update
+
+    is_name_valid, validated_name, name_error = validators.validate_slug_name(name)
+    if not is_name_valid:
+        notification_body = html.Div([
+            name_error
+        ])
+        return (
+            True, notification_body, "notification-error",
+            *([dash.no_update] * 3)
+        )
+
+    default_config = {
+                    "info": {
+                        "mask_type": "",
+                        "vax_type": "",
+                        "vax_doses": 0,
+                        "schedule": {},
+                        "work_zone": None,
+                        "start_zone": None
+                    },
+                    "state": {
+                        "x": 0,
+                        "y": 0,
+                        "status": "UNKNOWN"
+                    }
+    }
+
+    custom_config = [ ]
+
+    agent_config_data = {
+        "name": validated_name,
+        "default": default_config,  # JSONField - dict with 'info' and 'state'
+        "random_agents": int(random_agents),
+        "random_infected": int(random_infected),
+        "custom": custom_config,  
+        
+    }
+
+    success, data, message = dash_api.create('agent_config', agent_config_data)
+    if success:
+        notification_body = html.Div([
+            f"Agent configuration '{name}' created successfully!"
+        ])
+        modal_class = "notification-success"
+        return(
+            True, notification_body, modal_class,
+            "", 0, 0
+        )
+    else:
+        notification_body = html.Div([
+            f"Error creating agent configuration: {message}"
+        ])
+        modal_class = "notification-error"
+        return(
+            True,
+            notification_body,
+            modal_class,
+            *([dash.no_update] * 3)
+        )
 
 # Tab Switching Callback
 @callback(
@@ -1017,13 +1093,18 @@ def switch_tabs(sim_clicks, prev_clicks):
                 for t in terrains
             ]
 
-        success_maps, map_files, _ = dash_api.get_map_files()
+        success_maps, map_files_paths, _ = dash_api.get_map_files()
         map_options = []
-        if success_maps and map_files:
-            map_options = [
-                {"label": mf.replace("_", " ").title(), "value": mf} 
-                for mf in map_files
-            ]
+        if success_maps and map_files_paths:
+            map_options = []
+            for mp in map_files_paths:
+                display_name = mp.replace('data/mapfiles/', '').replace('_', ' ').title()
+            
+                map_options.append({
+                    "label": display_name,  # "Bow View Manor"
+                    "value": mp       # "data/mapfiles/bow_view_manor"
+                })
+        
 
         time_step_options = [
         {"label": "1 second", "value": 1},

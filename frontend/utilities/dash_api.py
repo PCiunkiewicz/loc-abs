@@ -26,14 +26,7 @@ class GenericAPI:
         self.session = requests.Session()
 
     def post(self, data: dict) -> requests.Response:
-        """Make a POST request to the API.
-
-        Args:
-            data (dict): The data to send in the POST request.
-
-        Returns:
-            requests.Response: The response from the API.
-        """
+        """Make a POST request to the API."""
         return self.session.post(
             f'{self.url}/',
             timeout=10,
@@ -41,29 +34,14 @@ class GenericAPI:
         )
 
     def get(self, obj_id: int | None = None) -> requests.Response:
-        """Make a GET request to the API.
-
-        Args:
-            obj_id (int | None): The ID of the object to retrieve. If None, retrieves all objects. Defaults to None.
-
-        Returns:
-            requests.Response: The response from the API.
-        """
+        """Make a GET request to the API."""
         return self.session.get(
             self.url if obj_id is None else f'{self.url}/{obj_id}',
             timeout=10,
         )
     
     def patch(self, obj_id: int, data: dict) -> requests.Response:
-        """Make a PATCH request to the API.
-
-        Args:
-            obj_id (int): The ID of the object to update.
-            data (dict): The data to send in the PATCH request.
-
-        Returns:
-            requests.Response: The response from the API.
-        """
+        """Make a PATCH request to the API."""
         return self.session.patch(
             f'{self.url}/{obj_id}/',
             timeout=10,
@@ -71,14 +49,7 @@ class GenericAPI:
         )
     
     def delete(self, obj_id: int) -> requests.Response:
-        """Make a DELETE request to the API.
-
-        Args:
-            obj_id (int): The ID of the object to delete.
-
-        Returns:
-            requests.Response: The response from the API.
-        """
+        """Make a DELETE request to the API."""
         return self.session.delete(
             f'{self.url}/{obj_id}/',
             timeout=10,
@@ -89,26 +60,17 @@ class GenericAPI:
 APIS = {
     'terrain': GenericAPI('terrains'),
     'virus': GenericAPI('viruses'),
-    'agent_config': GenericAPI('agent-configs'),
+    'agent_config': GenericAPI('agent_configs'),
     'prevention': GenericAPI('preventions'),
     'simulation': GenericAPI('simulations'),
     'scenario': GenericAPI('scenarios'),
     'run': GenericAPI('runs'),
-    'admin': GenericAPI('admin/mapfiles'),
 }
 
 
 # Response Handler
 def handle_response(response: requests.Response) -> dict:
-    """
-    Handle API response and return formatted tuple for Dash callbacks.
-    
-    Args:
-        response: requests.Response object
-    
-    Returns:
-        Tuple[bool, Any, str]: (success, data, message)
-    """
+    """Handle API response and return formatted tuple for Dash callbacks."""
     try:
         if response.ok:
             data = response.json() if response.content else None
@@ -122,14 +84,7 @@ def handle_response(response: requests.Response) -> dict:
 
 # Operations for Specific Endpoints 
 def get_all(resource: str) -> dict:
-    """Get all objects from a specific resource endpoint.
-
-    Args:
-        resource (str): The resource endpoint to query.
-
-    Returns:
-        dict: The result of the operation.
-    """
+    """Get all objects from a specific resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
@@ -137,30 +92,14 @@ def get_all(resource: str) -> dict:
 
 
 def get_by_id(resource: str, obj_id: int) -> dict:
-    """Get a specific object by ID from a resource endpoint.
-
-    Args:
-        resource (str): The resource endpoint to query.
-        obj_id (int): The ID of the object to retrieve.
-
-    Returns:
-        dict: The result of the operation.
-    """
+    """Get a specific object by ID from a resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
     return handle_response(APIS[resource].get(obj_id))
 
 def create(resource: str, data: dict) -> dict:
-    """Create a new object in a specific resource endpoint.
-
-    Args:
-        resource (str): The resource endpoint to query.
-        data (dict): The data for the new object.
-
-    Returns:
-        dict: The result of the operation.
-    """
+    """Create a new object in a specific resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
@@ -168,31 +107,14 @@ def create(resource: str, data: dict) -> dict:
 
 
 def update(resource: str, obj_id: int, data: dict) -> dict:
-    """Update an existing object in a specific resource endpoint.
-
-    Args:
-        resource (str): The resource endpoint to query.
-        obj_id (int): The ID of the object to update.
-        data (dict): The updated data for the object.
-
-    Returns:
-        dict: The result of the operation.
-    """
+    """Update an existing object in a specific resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
     return handle_response(APIS[resource].patch(obj_id, data))
 
 def delete(resource: str, obj_id: int) -> dict:
-    """Delete an existing object in a specific resource endpoint.
-
-    Args:
-        resource (str): The resource endpoint to query.
-        obj_id (int): The ID of the object to delete.
-
-    Returns:
-        dict: The result of the operation.
-    """
+    """Delete an existing object in a specific resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
@@ -200,8 +122,18 @@ def delete(resource: str, obj_id: int) -> dict:
 
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
-    success, data, msg = handle_response(APIS['admin'].get())
-    if success and data:
-        return True, data.get('mapfiles', []), msg
-    return False, [], msg
+    try:
+        mapfiles_dir = Path("/app/backend/data/mapfiles")
+
+        if not mapfiles_dir.exists():
+            mapfiles_dir = Path(__file__).parent.parent.parent / "backend" / "data" / "mapfiles"
+        
+        if not mapfiles_dir.exists():
+            return False, [], "Mapfiles directory not found."
+
+        file_paths = [f"data/mapfiles/{f.name}" for f in mapfiles_dir.iterdir() if f.is_file()]
+        return True, file_paths, "Success"
+    
+    except Exception as e:
+        return False, [], f"Error accessing map files: {str(e)}"
     
