@@ -367,7 +367,7 @@ layout = html.Div(
 )
 
 # Callbacks
-# Terrain Create Callback
+# Terrrain Operations
 @callback(
     [
         Output("notification-modal", "is_open"),
@@ -427,8 +427,7 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
         ])
         return (
             True, notification_body, "notification-error",
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update
+            *([dash.no_update] * 6)
         )
 
     is_color_valid, valid_color_hex, color_error_msg = validators.validate_hex_color(color_hex)
@@ -438,10 +437,8 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
         ])
         return (
             True, notification_body, "notification-error",
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update
+            *([dash.no_update] * 6)
         )
-
     # Prepare terrain data
     terrain_data = {
         "name": validated_name,
@@ -455,15 +452,12 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
 
     # Call API to create terrain
     success, data, message = dash_api.create('terrain', terrain_data)
-
     if success:
         # Success notification
         notification_body = html.Div([
             f"Terrain '{validated_name.capitalize()}' created successfully!"
         ])
-
         modal_class = "notification-success"
-
         return(
             True,
             notification_body,
@@ -481,15 +475,12 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
         notification_body = html.Div([
             f"Error creating terrain: {message}"
         ])
-
         modal_class = "notification-error"
-
         return(
             True,
             notification_body,
             modal_class,
-            dash.no_update,dash.no_update,dash.no_update,
-            dash.no_update,dash.no_update, dash.no_update,
+            *([dash.no_update] * 6)
         )
 
 @callback(
@@ -524,7 +515,7 @@ def clear_terrain_form(n_clicks):
         return dash.no_update
     return "", ["walkable"], [], [], 0, {"hex": "#0000FF", "label": "Terrain Color"}
 
-# Virus Create Callback
+# Virus Operations
 @callback(
     [
         Output("notification-modal", "is_open", allow_duplicate=True),
@@ -562,15 +553,13 @@ def create_virus(n_clicks, name, attack_rate, infection_rate, fatality_rate):
         return dash.no_update
 
     is_valid, validated_name, error_msg = validators.validate_slug_name(name)
-    
     if not is_valid:
         notification_body = html.Div([
             error_msg
         ])
         return (
             True, notification_body, "notification-error",
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update
+            *([dash.no_update] * 6)
         )
 
     # Prepare virus data
@@ -587,9 +576,7 @@ def create_virus(n_clicks, name, attack_rate, infection_rate, fatality_rate):
         notification_body = html.Div([
             f"Virus '{name}' created successfully!"
         ])
-
         modal_class = "notification-success"
-
         return(
             True,
             notification_body,
@@ -611,8 +598,7 @@ def create_virus(n_clicks, name, attack_rate, infection_rate, fatality_rate):
             True,
             notification_body,
             modal_class,
-            dash.no_update, dash.no_update,
-            dash.no_update,dash.no_update,
+            *([dash.no_update] * 4)
         )
 
 # Clear Virus Form Callback
@@ -690,9 +676,7 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
         ])
         return (
             True, notification_body, "notification-error",
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update
+            *([dash.no_update] * 7)
         )
 
     # Validate required fields
@@ -704,9 +688,7 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
             True,
             notification_body,
             "notification-error",
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update
+            *([dash.no_update] * 7)
         )
     
     if not terrain_ids or len(terrain_ids) == 0:
@@ -720,7 +702,6 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
             dash.no_update
         )
 
-    # Prepare simulation data
     # TODO: Confirm default values with Phillip and Implement Default options in the UI if necessary
     # Ways to do defaults: placeholder texts, default values in the input fields, default selections in dropdowns when creating new simulation or new scenaerio
     simulation_data = {
@@ -742,7 +723,6 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
         notification_body = html.Div([
             f"Simulation '{name}' created successfully!"
         ])
-
         modal_class = "notification-success"
         return(
             True,
@@ -755,16 +735,12 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
         notification_body = html.Div([
             f"Error creating simulation: {message}"
         ])
-
         modal_class = "notification-error"
-
         return(
             True,
             notification_body,
             modal_class,
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update, dash.no_update, dash.no_update,
-            dash.no_update
+            *([dash.no_update] * 7)
         )
 
 @callback(
@@ -795,7 +771,209 @@ def clear_simulation_form(n_clicks):
 
 
 # Prevention Operations
+@callback(
+    [
+        Output("notification-modal", "is_open", allow_duplicate=True),
+        Output("notification-modal-body", "children", allow_duplicate=True),
+        Output("notification-modal", "className", allow_duplicate=True),
+        Output("prevention-name", "value"),
+        Output({"type": "mask-checkbox", "mask": "N95"}, "value"),
+        Output({"type": "mask-effectiveness-slider", "mask": "N95"}, "value"),
+        Output({"type": "mask-checkbox", "mask": "HOME"}, "value"),
+        Output({"type": "mask-effectiveness-slider", "mask": "HOME"}, "value"),
+        Output({"type": "mask-checkbox", "mask": "CLOTH"}, "value"),
+        Output({"type": "mask-effectiveness-slider", "mask": "CLOTH"}, "value"),
+        Output({"type": "mask-checkbox", "mask": "SURGICAL"}, "value"),
+        Output({"type": "mask-effectiveness-slider", "mask": "SURGICAL"}, "value"),
+        Output({"type": "vaccine-checkbox", "vaccine": "MRNA"}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 1}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 2}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 3}, "value"),
+        Output({"type": "vaccine-checkbox", "vaccine": "ASTRA"}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 1}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 2}, "value"),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 3}, "value"),
+    ],
+    Input("create-prevention-btn", "n_clicks"),
+    [
+        State("prevention-name", "value"),
+        State({"type": "mask-checkbox", "mask": "N95"}, "value"),
+        State({"type": "mask-effectiveness-slider", "mask": "N95"}, "value"),
+        State({"type": "mask-checkbox", "mask": "HOME"}, "value"),
+        State({"type": "mask-effectiveness-slider", "mask": "HOME"}, "value"),
+        State({"type": "mask-checkbox", "mask": "CLOTH"}, "value"),
+        State({"type": "mask-effectiveness-slider", "mask": "CLOTH"}, "value"),
+        State({"type": "mask-checkbox", "mask": "SURGICAL"}, "value"),
+        State({"type": "mask-effectiveness-slider", "mask": "SURGICAL"}, "value"),
+        State({"type": "vaccine-checkbox", "vaccine": "MRNA"}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 1}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 2}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 3}, "value"),
+        State({"type": "vaccine-checkbox", "vaccine": "ASTRA"}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 1}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 2}, "value"),
+        State({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 3}, "value"),        
+    ],
+    prevent_initial_call=True,
+)
+def create_prevention(n_clicks, name,
+                          n95_checked, n95_eff,
+                          home_checked, home_eff,
+                          cloth_checked, cloth_eff,
+                          surgical_checked, surgical_eff,
+                          mrna_checked, mrna_dose1, mrna_dose2, mrna_dose3,
+                          astra_checked, astra_dose1, astra_dose2, astra_dose3):
+    """Create a new prevention configuration via backend API.
 
+    Args:
+        n_clicks (int): Number of clicks on the create prevention button.
+        name (str): Name of the prevention configuration.
+        n95_checked (list): N95 mask checkbox value.
+        n95_eff (float): N95 mask effectiveness.
+        home_checked (list): Home mask checkbox value.
+        home_eff (float): Home mask effectiveness.
+        cloth_checked (list): Cloth mask checkbox value.
+        cloth_eff (float): Cloth mask effectiveness.
+        surgical_checked (list): Surgical mask checkbox value.
+        surgical_eff (float): Surgical mask effectiveness.
+        mrna_checked (list): MRNA vaccine checkbox value.
+        mrna_dose1 (float): MRNA vaccine dose 1 effectiveness.
+        mrna_dose2 (float): MRNA vaccine dose 2 effectiveness.
+        mrna_dose3 (float): MRNA vaccine dose 3 effectiveness.
+        astra_checked (list): Astra vaccine checkbox value.
+        astra_dose1 (float): Astra vaccine dose 1 effectiveness.
+        astra_dose2 (float): Astra vaccine dose 2 effectiveness.
+        astra_dose3 (float): Astra vaccine dose 3 effectiveness.
+
+    Returns:
+        tuple: Notification modal states and cleared input values.
+    """
+    if n_clicks is None:
+        return dash.no_update
+
+    is_name_valid, validated_name, name_error = validators.validate_slug_name(name)
+    if not is_name_valid:
+        notification_body = html.Div([
+            name_error
+        ])
+        return (
+            True, notification_body, "notification-error",
+            *([dash.no_update] * 17)
+        )
+
+    mask_data = {}
+    if n95_checked and "N95" in n95_checked:
+        mask_data["N95"] = n95_eff if n95_eff is not None else 0.85
+    if home_checked and "HOME" in home_checked:
+        mask_data["HOME"] = home_eff if home_eff is not None else 0.0
+    if cloth_checked and "CLOTH" in cloth_checked:
+        mask_data["CLOTH"] = cloth_eff if cloth_eff is not None else 0.83
+    if surgical_checked and "SURGICAL" in surgical_checked:
+        mask_data["SURGICAL"] = surgical_eff if surgical_eff is not None else 0.85
+    
+    vaccine_data = {}
+    if mrna_checked and "MRNA" in mrna_checked:
+        vaccine_data["MRNA"] = [
+            mrna_dose1 if mrna_dose1 is not None else 0.0,
+            mrna_dose2 if mrna_dose2 is not None else 0.31,
+            mrna_dose3 if mrna_dose3 is not None else 0.88,
+        ]
+
+    if astra_checked and "ASTRA" in astra_checked:
+        vaccine_data["ASTRA"] = [
+            astra_dose1 if astra_dose1 is not None else 0.0,
+            astra_dose2 if astra_dose2 is not None else 0.31,
+            astra_dose3 if astra_dose3 is not None else 0.67,
+        ]
+
+    prevention_date = {
+        "name": validated_name,
+        "mask": mask_data,
+        "vax": vaccine_data,
+    }
+
+    success, data, message = dash_api.create('prevention', prevention_date)
+    if success:
+        notification_body = html.Div([
+            f"Prevention configuration '{name}' created successfully!"
+        ])
+        modal_class = "notification-success"
+        return(
+            True, notification_body, modal_class,
+            "",         # Clear prevention name
+            [], 0.85,   # Clear N95 - Reset to defaults
+            [], 0.0,    # Clear HOME - Reset to defaults
+            [], 0.83,   # Clear CLOTH - Reset to defaults
+            [], 0.85,   # Clear SURGICAL - Reset to defaults
+            [], 0.0, 0.31, 0.88,   # Clear MRNA - Reset to defaults
+            [], 0.0, 0.31, 0.67,   # Clear ASTRA - Reset to defaults
+        )
+    else:
+        notification_body = html.Div([
+            f"Error creating prevention configuration: {message}"
+        ])
+        modal_class = "notification-error"
+        return(
+            True,
+            notification_body,
+            modal_class,
+            *([dash.no_update] * 17)
+        )
+
+@callback(
+    [
+        Output("prevention-name", "value", allow_duplicate=True),
+        Output({"type": "mask-checkbox", "mask": "N95"}, "value", allow_duplicate=True),
+        Output({"type": "mask-effectiveness-slider", "mask": "N95"}, "value", allow_duplicate=True),
+        Output({"type": "mask-checkbox", "mask": "HOME"}, "value", allow_duplicate=True),
+        Output({"type": "mask-effectiveness-slider", "mask": "HOME"}, "value", allow_duplicate=True),
+        Output({"type": "mask-checkbox", "mask": "CLOTH"}, "value", allow_duplicate=True),
+        Output({"type": "mask-effectiveness-slider", "mask": "CLOTH"}, "value", allow_duplicate=True),
+        Output({"type": "mask-checkbox", "mask": "SURGICAL"}, "value", allow_duplicate=True),
+        Output({"type": "mask-effectiveness-slider", "mask": "SURGICAL"}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-checkbox", "vaccine": "MRNA"}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 1}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 2}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "MRNA", "dose": 3}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-checkbox", "vaccine": "ASTRA"}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 1}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 2}, "value", allow_duplicate=True),
+        Output({"type": "vaccine-dose", "vaccine": "ASTRA", "dose": 3}, "value", allow_duplicate=True),
+    ],
+    Input("clear-prevention-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def clear_prevention_form(n_clicks):
+    """Clear the prevention form."""
+    if not n_clicks:
+        return dash.no_update
+    return (
+        "",         # Clear prevention name
+        [], 0.85,   # Clear N95 - Reset to defaults
+        [], 0.0,    # Clear HOME - Reset to defaults
+        [], 0.83,   # Clear CLOTH - Reset to defaults
+        [], 0.85,   # Clear SURGICAL - Reset to defaults
+        [], 0.0, 0.31, 0.88,   # Clear MRNA - Reset to defaults
+        [], 0.0, 0.31, 0.67,   # Clear ASTRA - Reset to defaults
+    )
+
+# Agent Confiuration Operations
+# @callback(
+#     [
+#         Output("notification-modal", "is_open", allow_duplicate=True),
+#         Output("notification-modal-body", "children", allow_duplicate=True),
+#         Output("notification-modal", "className", allow_duplicate=True),
+#         Output("agent-config-name", "value"),
+#         Output("random-agents-input", "value"),
+#         Output("random-infected-input", "value"),
+#     ],
+#     Input("create-agent-config-btn", "n_clicks"),
+#     [
+#         State("agent-config-name", "value"),
+#         State("random-agents-input", "value"),
+#         State("random-infected-input", "value"),
+#     ]
+# )
 
 # Tab Switching Callback
 @callback(
@@ -846,7 +1024,6 @@ def switch_tabs(sim_clicks, prev_clicks):
                 {"label": mf.replace("_", " ").title(), "value": mf} 
                 for mf in map_files
             ]
-
 
         time_step_options = [
         {"label": "1 second", "value": 1},
@@ -991,13 +1168,19 @@ def switch_tabs(sim_clicks, prev_clicks):
         ])
         
         return content, "tab-button tab-button-active", "tab-button tab-button-inactive"
-    
     else:
         content = html.Div([
             html.H5("Prevention Configuration", className="prevention-header"),
-            
             html.Label(" Name", className="form-label"),
-            dcc.Input(type="text", placeholder="Enter prevention name", className="form-input"),
+            dcc.Input(
+            id="prevention-name", 
+            type="text",
+            placeholder="Enter prevention name",
+            className="form-input",
+            minLength=1,
+            maxLength=250,
+            pattern="^[a-zA-Z0-9\\s_-]+$",
+            ),
 
             html.H6("Mask Information", className="prevention-section-header"),
             html.Label("Mask Type", className="form-label"),
@@ -1020,15 +1203,13 @@ def switch_tabs(sim_clicks, prev_clicks):
                 create_vaccine_type("ASTRA", "ASTRA (AstraZeneca)", default_doses=[0.0, 0.31, 0.67], is_checked=True),
             ], className="vaccine-container"),
 
-            html.Div([
-                html.Button("Add Prevention", className="btn-primary"),
-                html.Button("Update Prevention", className="btn-secondary"),
-                html.Button("Clear", className="btn-secondary"),
-            ], className="btn-container"),
+              html.Div([
+            html.Button("Create Prevention", id="create-prevention-btn", className="btn-primary"), 
+            html.Button("Clear", id="clear-prevention-btn", className="btn-secondary"), 
+        ], className="btn-container"),
         ])
         
         return content, "tab-button tab-button-inactive", "tab-button tab-button-active"
-
 
 @callback(
     Output({"type": "mask-slider-container", "mask": MATCH}, "style"),
