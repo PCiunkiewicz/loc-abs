@@ -3,8 +3,8 @@ from dash import html, dcc, register_page, callback, Output, Input, MATCH, State
 import dash 
 import dash_daq as daq
 # import dash_bootstrap_components as dbc
-from components_.tooltip import create_tooltip
-from components_.notifications_modal import create_notification_modal
+from components.tooltip import create_tooltip
+from components.notifications_modal import create_notification_modal
 from utilities import dash_api
 from utilities import validators
 
@@ -1009,7 +1009,7 @@ def create_agent_config(n_clicks, name, random_agents, random_infected):
                         "vax_doses": 0,
                         "schedule": {},
                         "work_zone": None,
-                        "start_zone": None
+                        "start_zone": None   
                     },
                     "state": {
                         "x": 0,

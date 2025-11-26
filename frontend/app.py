@@ -1,34 +1,38 @@
-"""Main streamlit app."""
+"""Frontend Dash Application."""
+from dash import Dash, html
+import dash
+import dash_bootstrap_components as dbc
+import components.header as header
+import components.footer as footer
+import components.bottom_nav as bottom_nav
+from utilities.logging import configure_logger
+from loguru import logger
 
-import streamlit as st
+configure_logger(level="DEBUG")
 
-from components.sidebar import default_sidebar
+app = Dash(__name__, 
+            use_pages= True,
+            external_stylesheets=[dbc.themes.LUX],
+            suppress_callback_exceptions=True,)
 
-home_page = st.Page('content/home.py', title='Home')
-terrains_page = st.Page('content/terrains.py', title='Terrains')
-simulations_page = st.Page('content/simulations.py', title='Simulations')
-viruses_page = st.Page('content/viruses.py', title='Viruses')
-preventions_page = st.Page('content/preventions.py', title='Preventions')
-scenarios_page = st.Page('content/scenarios.py', title='Scenarios')
-agent_configs_page = st.Page('content/agent_configs.py', title='Agent Configs')
-runs_page = st.Page('content/runs.py', title='Runs')
-importer_page = st.Page('content/importer.py', title='Importer')
-admin_page = st.Page('content/admin.py', title='Admin')
+header = header.create_header()
 
-pg = st.navigation(
-    pages=[
-        home_page,
-        terrains_page,
-        simulations_page,
-        viruses_page,
-        preventions_page,
-        scenarios_page,
-        agent_configs_page,
-        runs_page,
-        importer_page,
-        admin_page,
-    ],
+footer = footer.create_footer()
+
+bottom_nav = bottom_nav.create_bottom_nav()
+
+app.layout = html.Div([
+    header,
+    dash.page_container,
+    footer,
+    bottom_nav
+], className="app-container",
+    style={"minHeight": "100vh", "backgroundColor": "#f5f5f5"}
 )
 
-default_sidebar()
-pg.run()
+
+if __name__ == '__main__':
+    logger.debug("Registered pages/routes:")
+    for p in dash.page_registry.values():
+        logger.debug(f"- {p['name']} -> {p['path']}")
+    app.run(host="0.0.0.0", port=8050, debug=True)

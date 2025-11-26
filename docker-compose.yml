@@ -71,9 +71,9 @@ services:
       - './backend/data/mapfiles:/data/mapfiles'
       - './backend/data/outputs:/data/outputs'
       - './backend/data/run_configs:/data/run_configs'
-    entrypoint: [ "streamlit", "run", "app.py" ]
+    entrypoint: [ "python", "app.py" ]
     ports:
-      - 8501:8501
+      - 8050:8050
     environment:
       TZ: America/Edmonton
     depends_on:
