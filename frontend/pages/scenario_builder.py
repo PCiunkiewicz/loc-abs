@@ -5,7 +5,7 @@ import dash_daq as daq
 # import dash_bootstrap_components as dbc
 from components.tooltip import create_tooltip
 from components.notifications_modal import create_notification_modal
-from utilities import dash_api
+from utilities import api
 from utilities import validators
 
 register_page(__name__, path="/scenario-builder", name="Scenario Builder", title="LocABS · Scenario Builder")
@@ -451,7 +451,7 @@ def create_terrain(n_clicks, name, walkable, interactive, restricted, access_lev
     }
 
     # Call API to create terrain
-    success, data, message = dash_api.create('terrain', terrain_data)
+    success, data, message = api.create('terrain', terrain_data)
     if success:
         # Success notification
         notification_body = html.Div([
@@ -570,7 +570,7 @@ def create_virus(n_clicks, name, attack_rate, infection_rate, fatality_rate):
         "fatality_rate": float(fatality_rate or 0.0),
     }
 
-    success, data, message = dash_api.create('virus', virus_data)
+    success, data, message = api.create('virus', virus_data)
     if success:
         # Success notification
         notification_body = html.Div([
@@ -717,7 +717,7 @@ def create_simulation(n_clicks, name, map_file, xy_scale, time_step, save_resolu
 
 
     # Call API to create simulation
-    success, data, message = dash_api.create('simulation', simulation_data)
+    success, data, message = api.create('simulation', simulation_data)
 
     if success:
         notification_body = html.Div([
@@ -892,7 +892,7 @@ def create_prevention(n_clicks, name,
         "vax": vaccine_data,
     }
 
-    success, data, message = dash_api.create('prevention', prevention_date)
+    success, data, message = api.create('prevention', prevention_date)
     if success:
         notification_body = html.Div([
             f"Prevention configuration '{name}' created successfully!"
@@ -1029,7 +1029,7 @@ def create_agent_config(n_clicks, name, random_agents, random_infected):
         
     }
 
-    success, data, message = dash_api.create('agent_config', agent_config_data)
+    success, data, message = api.create('agent_config', agent_config_data)
     if success:
         notification_body = html.Div([
             f"Agent configuration '{name}' created successfully!"
@@ -1085,7 +1085,7 @@ def switch_tabs(sim_clicks, prev_clicks):
     
     if active_tab == "simulations":
 
-        success_terrain, terrains, _ = dash_api.get_all('terrain')
+        success_terrain, terrains, _ = api.get_all('terrain')
         terrain_options = []
         if success_terrain and terrains:
             terrain_options = [
@@ -1093,7 +1093,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 for t in terrains
             ]
 
-        success_maps, map_files_paths, _ = dash_api.get_map_files()
+        success_maps, map_files_paths, _ = api.get_map_files()
         map_options = []
         if success_maps and map_files_paths:
             map_options = []
