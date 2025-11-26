@@ -1,7 +1,7 @@
 """API requests for loc-abs backend."""
 import requests
 import os
-
+from pathlib import Path
 class GenericAPI:
     """Generic API class to handle requests to the loc-abs backend.
     
@@ -14,7 +14,8 @@ class GenericAPI:
     # TODO: fOR WHEN CONNECTING TO DOCKER CONTAINER
     #base_url: str = 'http://api:8000/api/v1'
 
-    base_url: str = os.getenv('API_BASE_URL', 'http://localhost:8000/api/v1')
+    base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1')
+    print(f"API Base URL: {base_url}")
 
     def __init__(self, endpoint: str = '') -> None:
         """Initialize the GenericAPI class with an optional endpoint.

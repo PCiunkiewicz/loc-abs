@@ -1093,7 +1093,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 for t in terrains
             ]
 
-        success_maps, map_files_paths, _ = api.get_map_files()
+        success_maps, map_files_paths, _ = dash_api.get_map_files()
         map_options = []
         if success_maps and map_files_paths:
             map_options = []
