@@ -1,11 +1,9 @@
 """Run Builder Page for LocABS Application."""
 from dash import html, dcc, register_page, callback, Output, Input,  ALL
-from dash import ctx, callback_context
-import dash
 import json
 import dash_bootstrap_components as dbc
 from components.tooltip import create_tooltip
-from components.notifications_modal import create_notification_modal
+#from components.notifications_modal import create_notification_modal
 from utilities import api
 
 register_page(__name__, path="/run-builder", name="Run Builder", title="LocABS · Run Builder")
@@ -50,9 +48,9 @@ def dropdown(id, options, label):
             ], className="tooltip-container"),
         create_tooltip(f"Select a {label} from the dropdown. Click the buttons to edit, clone, or delete the selected {label.lower()}.", f"{id}-tooltip"),
         dcc.Dropdown(
-            id=f"{id}-dropdown",
+            id={"type": "dropdown", "resource": f"{id}"},
             options=[{"label": opt["name"], "value": opt["id"]} for opt in options],
-            placeholder=f"Select {label}",
+            placeholder=f"Select a {label}",
             className="dropdown-standard"
         ),
     ], className="dropdown-with-actions")
@@ -61,7 +59,7 @@ def create_generic_form(form_id, title, resource_type):
     """Create a reusable generic form that can be read-only or editable."""
     return html.Div([
         html.Div([
-            html.H4(title, className="form-title"),
+            html.Label(title, className="form-title"),
             html.Div([
                 html.Button("Cancel Edit", 
                            id=f"{form_id}-cancel-btn", 
@@ -91,6 +89,50 @@ def create_generic_form(form_id, title, resource_type):
         dcc.Store(id=f"{form_id}-original-data")
     ], className="generic-form-container")
 
+def create_scenario_form(resource_type):
+    """Create a reusable scenario form that can be read-only or editable."""
+    return html.Div([
+        html.Div([
+            html.Label("Scenario", className="form-label"),
+            html.Div([
+                html.Button("Cancel Edit", 
+                           id=f"{resource_type}-cancel-btn", 
+                           className="btn btn-secondary btn-sm",
+                           style={"display": "none"})
+            ], className="form-actions")
+        ], className="form-header"),
+
+        html.Div([
+            dropdown(id="virus", options=[], label="Virus"),
+            dropdown(id="prevention", options=[], label="Prevention"),
+            dropdown(id="simulation", options=[], label="Simulation")
+
+        ], className="scenario-form-dropdowns-container"),
+        create_resource_modal("virus", "Virus"),
+        create_resource_modal("prevention", "Prevention"),
+        create_resource_modal("simulation", "Simulation"),
+
+        create_generic_form("virus", "Virus", "Virus"),
+        create_generic_form("prevention", "Prevention", "Prevention"),
+        create_generic_form("simulation", "Simulation", "Simulation"),
+
+        dcc.Store(id={"type": "resource-store", "resource": "virus"}),
+        dcc.Store(id={"type": "resource-store", "resource": "prevention"}),
+        dcc.Store(id={"type": "resource-store", "resource": "simulation"}),
+        
+        # Form buttons (hidden by default)
+        html.Div([
+            html.Button("Save", id=f"{resource_type}-save-btn", className="btn btn-primary btn-sm me-2"),
+            html.Button("Cancel", id=f"{resource_type}-cancel-btn-bottom", className="btn btn-secondary btn-sm")
+        ], id=f"{resource_type}-button-group", 
+           className="form-button-group",
+           style={"display": "none"}),
+        
+        # Hidden stores for form state
+        dcc.Store(id=f"{resource_type}-mode", data={"mode": "readonly", "resource_id": None}),
+        dcc.Store(id=f"{resource_type}-original-data")
+    ], className="scenario-form-container")
+
 
 layout = html.Div([
     html.Div([
@@ -100,8 +142,8 @@ layout = html.Div([
 
     # Top Dropdowns for Scenario and Agent Config
     html.Div([
-        dropdown(id="scenario", options=[], label="Scenarios"),   
-        dropdown(id="agent-config", options=[], label="Agent Configurations"),
+        dropdown(id="scenario", options=[], label="Scenario"),   
+        dropdown(id="agent_config", options=[], label="Agent Configuration"),
     ], className="top-dropdowns"),
 
     # Action Modals for Scenario and Agent Config
@@ -113,7 +155,7 @@ layout = html.Div([
     # Forms Section
     html.Div([
         html.Div([
-            create_generic_form("scenario-form", "Scenario", "Scenario Details")
+            create_scenario_form("scenario")
         ], className="form-column"),
         html.Div([
             create_generic_form("agent-config-form", "Agent Config", "Agent Configuration Details")
@@ -139,31 +181,24 @@ layout = html.Div([
 
 @callback(
     [
-        Output("scenario-dropdown", "options"),
-        Output("agent-config-dropdown", "options"),
-
+        Output({"type": "dropdown", "resource": ALL}, "options"),
     ],
     [
-        Input("scenario-dropdown", "id"),
-        Input("agent-config-dropdown", "id"),
+        Input({"type": "dropdown", "resource": ALL}, "id"),
     ]
 )
-
-def populate_dropdown_options(_, __):
-    """Populate dropdown options from API - Scenarios and Agent Configs."""
-    success_scen, scenarios, _ = api.get_all('scenario')
-    success_agent, agent_configs, _ = api.get_all('agent_config')
-
-    scenario_options = []
-    agent_config_options = []
-
-    if success_scen and scenarios:
-        scenario_options = [{"label": sc["name"], "value": sc["id"]} for sc in scenarios]
-
-    if success_agent and agent_configs:
-        agent_config_options = [{"label": ac["name"], "value": ac["id"]} for ac in agent_configs]
-
-    return scenario_options, agent_config_options
+def populate_dropdown_options(dropdown_ids):
+    """Populate dropdown options from API for any resource type."""
+    options_list = []
+    for dropdown_id in dropdown_ids:
+        resource_type = dropdown_id["resource"]
+        success, resources, _ = api.get_all(resource_type)
+        if success and resources:
+            options = [{"label": r["name"], "value": r["id"]} for r in resources]
+        else:
+            options = []
+        options_list.append(options)
+    return [options_list]
 
 # TODO: Edit details to be more UI friendly
 @callback(
@@ -174,18 +209,17 @@ def populate_dropdown_options(_, __):
         Output({"type": "resource-store", "resource": ALL}, "data"),
     ],
     [
-        Input("scenario-dropdown", "value"),
-        Input("agent-config-dropdown", "value"),
+        Input({"type": "dropdown", "resource": ALL}, "value"),
     ]
 )
-def update_modal_content(*selected_ids):
+def update_modal_content(selected_ids):
     """Update modal content for any resource type."""
     modals_open = []
     summaries = []
     details = []
     stores = []
 
-    resource_types = ["scenario", "agent_config"]  # Add more types as needed
+    resource_types = ["scenario", "agent_config", "virus", "prevention", "simulation"]  # Add more types as needed
 
     # Ensure output lists have the same length as selected_ids
     for idx, resource_id in enumerate(selected_ids):
@@ -194,10 +228,21 @@ def update_modal_content(*selected_ids):
             success, resource, _ = api.get_by_id(resource_type, resource_id)
             title = resource_type.replace("_", " ").title()
             if success and resource:
+                desc = []
+                for k, v in resource.items():
+                    key_str = str(k).replace('_', ' ').title()
+                    if isinstance(v, dict):
+                        dict_items = []
+                        for dk, dv in v.items():
+                            dict_key = str(dk).replace('_', ' ').title()
+                            dict_items.append(html.Li(f"{dict_key}: {dv}"))
+                        value_str = html.Ul(dict_items, style={"marginLeft": "1em"})
+                    else:
+                        value_str = str(v)
+                    desc.append(html.P([f"{key_str}: ", value_str]))
                 summary = [
                     html.H5(f"{title}: {resource.get('name', '')}"),
-                    html.P(f"Description: {resource.get('description', 'N/A')}"),
-                    html.P(f"ID: {resource_id}")
+                    html.Div(desc),                 
                 ]
                 detail = json.dumps(resource, indent=2)
                 modals_open.append(True)
@@ -216,63 +261,3 @@ def update_modal_content(*selected_ids):
             stores.append(None)
 
     return modals_open, summaries, details, stores
-# # Delete the resource upon clicking delete button in the modal
-# @callback(
-#     [
-#         Output("notification-area", "children"),
-#         Output("scenario-action-modal", "is_open", allow_duplicate=True),
-#         Output("agent-config-action-modal", "is_open", allow_duplicate=True),
-#     ],
-#     Input({"type": "delete-btn", "resource": ALL}, "n_clicks"),
-    
-#     # TODO: Change this to dcc.Store later - better implemention - didn't understand at first but figured it out
-
-#     [
-#         State("scenario-resource-store", "data"),
-#         State("agent-config-resource-store", "data"),
-#     ],
-#     prevent_initial_call=True
-# )
-# def delete_any_resource(delete_clicks, scenario_id, agent_config_id):
-#     """Universal delete handler for all resource types."""
-#     if not delete_clicks :
-#         return dash.no_update, dash.no_update, dash.no_update
-#     # proceed with deletion
-#     if not ctx.triggered_id:
-#         return dash.no_update, dash.no_update, dash.no_update
-
-#     # Extract resource type from button ID
-#     resource_type = ctx.triggered_id["resource"]
-    
-#     # Map resource type to ID
-#     resource_ids = {
-#         "scenario": scenario_id,
-#         "agent_config": agent_config_id
-#     }
-    
-#     # Get the resource ID
-#     resource_id = resource_ids.get(resource_type)
-    
-#     if not resource_id:
-#         return create_notification_modal("No resource selected.", "error"), False, False
-    
-#     # Delete the resource
-#     success, _, msg = api.delete(resource_type, resource_id)
-    
-#     # Create notification
-#     resource_display_names = {
-#         "scenario": "Scenario",
-#         "agent_config": "Agent Configuration"
-#     }
-    
-#     display_name = resource_display_names.get(resource_type, "Resource")
-    
-#     if success:
-#         notification = create_notification_modal(f"{display_name} deleted successfully.", "success")
-#         # Close the appropriate modal
-#         close_scen = (resource_type == "scenario")
-#         close_ac = (resource_type == "agent_config")
-#         return notification, not close_scen, not close_ac
-#     else:
-#         notification = create_notification_modal(f"Failed to delete {display_name}: {msg}", "error")
-#         return notification, False, False

@@ -190,3 +190,8 @@
     background-color: #a71111;
 }
 
+.scenario-form-dropdowns-container{
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+}
