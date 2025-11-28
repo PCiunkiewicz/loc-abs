@@ -1,6 +1,6 @@
 """Run Builder Page for LocABS Application."""
-from dash import html, dcc, register_page, callback, Output, Input, State, ALL
-from dash import ctx
+from dash import html, dcc, register_page, callback, Output, Input,  ALL
+from dash import ctx, callback_context
 import dash
 import json
 import dash_bootstrap_components as dbc
@@ -8,21 +8,41 @@ from components.tooltip import create_tooltip
 from components.notifications_modal import create_notification_modal
 from utilities import api
 
-
 register_page(__name__, path="/run-builder", name="Run Builder", title="LocABS · Run Builder")
 
+def create_resource_modal(resource_type, title):
+    """Create a modal for viewing and managing any resource."""
+    return dbc.Modal([
+        #dbc.ModalHeader(dbc.ModalTitle(id={"type": "modal-title", "resource": resource_type}, children=title)),
+        dbc.ModalBody([
+            html.Div(id={"type": "action-modal-summary", "resource": resource_type}, className="resource-summary"),
+            html.Details([
+                html.Summary("View Full Details"),
+                html.Pre(id={"type": "action-modal-details", "resource": resource_type}, className="json-display")
+            ], className="details-expandable")
+        ]),
+        dbc.ModalFooter([
+            html.Button("Select", id={"type": "select-btn", "resource": resource_type}, className="btn btn-success btn-sm me-2"),
+            html.Button("Edit", id={"type": "edit-btn", "resource": resource_type}, className="btn btn-primary btn-sm me-2"),
+            html.Button("Clone", id={"type": "clone-btn", "resource": resource_type}, className="btn btn-info btn-sm me-2"),
+            html.Button("Delete", id={"type": "delete-btn", "resource": resource_type}, className="btn btn-danger btn-sm me-2"),
+            html.Button("Close", id={"type": "close-btn", "resource": resource_type}, className="btn btn-secondary btn-sm")
+        ])
+    ], id={"type": "action-modal", "resource": resource_type}, size="lg", is_open=False)
 
-def modal_action_buttons(resource_type):
-    """Return Edit, Clone, Delete buttons for a modal."""
-    return html.Div([
-        html.Button("Select", id={"type": "select-btn", "resource": resource_type}, n_clicks=0, className="btn-success btn-sm"),
-        html.Button("Edit", id={"type": "edit-btn", "resource": resource_type}, n_clicks=0, className="btn-primary btn-sm"),
-        html.Button("Clone", id={"type": "clone-btn", "resource": resource_type}, n_clicks=0, className="btn-primary btn-sm"),
-        html.Button("Delete", id={"type": "delete-btn", "resource": resource_type}, n_clicks=0, className="btn-danger btn-sm"),
-    ], className="dropdown-item-actions")
+def create_confirmation_modal(modal_id, title, message):
+    """Create a confirmation modal for destructive actions."""
+    return dbc.Modal([
+        dbc.ModalHeader(dbc.ModalTitle(title)),
+        dbc.ModalBody(html.P(id=f"{modal_id}-message", children=message)),
+        dbc.ModalFooter([
+            html.Button("Yes", id=f"{modal_id}-yes-btn", className="btn btn-danger btn-sm me-2"),
+            html.Button("No", id=f"{modal_id}-no-btn", className="btn btn-secondary btn-sm")
+        ])
+    ], id=modal_id, size="sm", is_open=False)
 
 def dropdown(id, options, label):
-    """Dropdown with Edit, Clone, Delete buttons for each item."""
+    """Create a dropdown with Edit, Clone, Delete action buttons."""
     return html.Div([
         html.Div([
                 html.Label(label, className="dropdown-label"),
@@ -35,51 +55,87 @@ def dropdown(id, options, label):
             placeholder=f"Select {label}",
             className="dropdown-standard"
         ),
-        dbc.Modal(
-            id=f"{id}-action-modal",
-            is_open=False,
-            children=[
-                html.Div(id=f"{id}-modal-content")
-            ],
-            className="action-modal"
-        )   
     ], className="dropdown-with-actions")
 
-def tab_content(title, content, editable=False):
-    """Tab content, editable if in edit/clone mode."""
-    if editable:
-        return html.Div([
-            html.H5(f"Edit {title}"),
-            html.Form(content),
-            html.Button("Save", id=f"save-{title.lower()}-btn", className="btn-primary")
-        ])
-    else:
-        return html.Div([
-            html.H5(f"{title} Summary"),
-            html.Div(content)
-        ])
+def create_generic_form(form_id, title, resource_type):
+    """Create a reusable generic form that can be read-only or editable."""
+    return html.Div([
+        html.Div([
+            html.H4(title, className="form-title"),
+            html.Div([
+                html.Button("Cancel Edit", 
+                           id=f"{form_id}-cancel-btn", 
+                           className="btn btn-secondary btn-sm",
+                           style={"display": "none"})
+            ], className="form-actions")
+        ], className="form-header"),
+        
+        # Read-only content display
+        html.Div(id=f"{form_id}-readonly-content", className="form-readonly-content"),
+        
+        # Editable fields (hidden by default)
+        html.Div(id=f"{form_id}-editable-fields", 
+                className="form-editable-fields",
+                style={"display": "none"}),
+        
+        # Form buttons (hidden by default)
+        html.Div([
+            html.Button("Save", id=f"{form_id}-save-btn", className="btn btn-primary btn-sm me-2"),
+            html.Button("Cancel", id=f"{form_id}-cancel-btn-bottom", className="btn btn-secondary btn-sm")
+        ], id=f"{form_id}-button-group", 
+           className="form-button-group",
+           style={"display": "none"}),
+        
+        # Hidden stores for form state
+        dcc.Store(id=f"{form_id}-mode", data={"mode": "readonly", "resource_id": None}),
+        dcc.Store(id=f"{form_id}-original-data")
+    ], className="generic-form-container")
 
 
 layout = html.Div([
     html.Div([
+        html.H1("Run Builder", className="page-title"),
+        html.P("Create and manage simulation runs", className="page-subtitle"),
+    ], className="page-header"),
+
+    # Top Dropdowns for Scenario and Agent Config
+    html.Div([
         dropdown(id="scenario", options=[], label="Scenarios"),   
         dropdown(id="agent-config", options=[], label="Agent Configurations"),
     ], className="top-dropdowns"),
-    dcc.Store(id="scenario-resource-store"),
-    dcc.Store(id="agent-config-resource-store"),
 
-    dcc.Tabs(id="main-tabs", value="scenario", children=[
-        dcc.Tab(label="Scenario", value="scenario", children=[
-            html.Div(id="scenario-tab-content")
-        ]),
-        dcc.Tab(label="Agent Config", value="agent-config", children=[
-            html.Div(id="agent-config-tab-content")
-        ]),
-    ]),
-    dcc.ConfirmDialog(id="clone-confirm-modal"),
-    html.Div(id="notification-area")
+    # Action Modals for Scenario and Agent Config
+    create_resource_modal("scenario", "Scenario"),
+    create_resource_modal("agent_config", "Agent Configuration"),
+    dcc.Store(id={"type": "resource-store", "resource": "scenario"}),
+    dcc.Store(id={"type": "resource-store", "resource": "agent_config"}),
+
+    # Forms Section
+    html.Div([
+        html.Div([
+            create_generic_form("scenario-form", "Scenario", "Scenario Details")
+        ], className="form-column"),
+        html.Div([
+            create_generic_form("agent-config-form", "Agent Config", "Agent Configuration Details")
+        ], className="form-column"),
+    ], className="forms-section"),
+
+    # Confirmation Modals 
+    dcc.ConfirmDialog(
+        id="clone-confirm-dialog",
+        message="Would you like to make changes to the cloned version?",
+    ),
+    dcc.ConfirmDialog(
+        id="delete-confirm-dialog",
+        message="Are you sure you want to delete this item?",
+    ),
+
+    # Notiication Area
+    html.Div(id="notification-area", className="notification-area"),
+
 ], className="page-container")
 
+# Callbacks
 
 @callback(
     [
@@ -112,61 +168,111 @@ def populate_dropdown_options(_, __):
 # TODO: Edit details to be more UI friendly
 @callback(
     [
-        Output("scenario-action-modal", "is_open"),
-        Output("scenario-modal-content", "children"),
-        Output("scenario-resource-store", "data"),
-        Output("agent-config-action-modal", "is_open"), 
-        Output("agent-config-modal-content", "children"),
-        Output("agent-config-resource-store", "data"),
+        Output({"type": "action-modal", "resource": ALL}, "is_open"),
+        Output({"type": "action-modal-summary", "resource": ALL}, "children"),
+        Output({"type": "action-modal-details", "resource": ALL}, "children"),
+        Output({"type": "resource-store", "resource": ALL}, "data"),
     ],
     [
         Input("scenario-dropdown", "value"),
         Input("agent-config-dropdown", "value"),
-    ],
-    [
-        State("scenario-action-modal", "is_open"),
-        State("agent-config-action-modal", "is_open"),
     ]
 )
-def display_action_modals(scenario_id, agent_config_id, scen_modal_open, ac_modal_open):
-    """Display action modals for Scenario and Agent Config dropdowns."""
-    scen_modal_content = html.Div("No Scenario Selected")
-    ac_modal_content = html.Div("No Agent Configuration Selected")
+def update_modal_content(*selected_ids):
+    """Update modal content for any resource type."""
+    modals_open = []
+    summaries = []
+    details = []
+    stores = []
 
-    if scenario_id:
-        success, scenario, _ = api.get_by_id('scenario', scenario_id)
-        if success and scenario:
-            scen_modal_content = html.Div([
-                html.H5(f"Scenario: {scenario['name']}"),
-                html.H5(f"ID:{scenario_id}", id ="scenario-id"),
-                html.Details([
-                    html.Summary("View Details"),
-                    html.Pre(json.dumps(scenario, indent=2)),
-                ]),
-                modal_action_buttons("scenario")
-            ])
-    if agent_config_id:
-        success, agent_config, _ = api.get_by_id('agent_config', agent_config_id)
-        if success and agent_config:
-            ac_modal_content = html.Div([
-                html.H5(f"Agent Configuration: {agent_config['name']}"),
-                html.H5(f"ID:{agent_config_id}"),             
-                html.Details([
-                    html.Summary("View Details"),
-                    html.Pre(json.dumps(agent_config, indent=2)),
-                ]),
-                html.Div([
+    resource_types = ["scenario", "agent_config"]  # Add more types as needed
 
-                ]),
-                # Additional agent config details can be added here
-                modal_action_buttons("agent_config")
-            ])
+    # Ensure output lists have the same length as selected_ids
+    for idx, resource_id in enumerate(selected_ids):
+        resource_type = resource_types[idx] if idx < len(resource_types) else "resource"
+        if resource_id:
+            success, resource, _ = api.get_by_id(resource_type, resource_id)
+            title = resource_type.replace("_", " ").title()
+            if success and resource:
+                summary = [
+                    html.H5(f"{title}: {resource.get('name', '')}"),
+                    html.P(f"Description: {resource.get('description', 'N/A')}"),
+                    html.P(f"ID: {resource_id}")
+                ]
+                detail = json.dumps(resource, indent=2)
+                modals_open.append(True)
+                summaries.append(summary)
+                details.append(detail)
+                stores.append(resource_id)
+            else:
+                modals_open.append(False)
+                summaries.append(f"No {title} Selected")
+                details.append("")
+                stores.append(None)
+        else:
+            modals_open.append(False)
+            summaries.append("No Resource Selected")
+            details.append("")
+            stores.append(None)
 
-    return (
-        True if scenario_id else False, 
-        scen_modal_content, 
-        scenario_id,
-        True if agent_config_id else False, 
-        ac_modal_content,
-        agent_config_id
-    )
+    return modals_open, summaries, details, stores
+# # Delete the resource upon clicking delete button in the modal
+# @callback(
+#     [
+#         Output("notification-area", "children"),
+#         Output("scenario-action-modal", "is_open", allow_duplicate=True),
+#         Output("agent-config-action-modal", "is_open", allow_duplicate=True),
+#     ],
+#     Input({"type": "delete-btn", "resource": ALL}, "n_clicks"),
+    
+#     # TODO: Change this to dcc.Store later - better implemention - didn't understand at first but figured it out
+
+#     [
+#         State("scenario-resource-store", "data"),
+#         State("agent-config-resource-store", "data"),
+#     ],
+#     prevent_initial_call=True
+# )
+# def delete_any_resource(delete_clicks, scenario_id, agent_config_id):
+#     """Universal delete handler for all resource types."""
+#     if not delete_clicks :
+#         return dash.no_update, dash.no_update, dash.no_update
+#     # proceed with deletion
+#     if not ctx.triggered_id:
+#         return dash.no_update, dash.no_update, dash.no_update
+
+#     # Extract resource type from button ID
+#     resource_type = ctx.triggered_id["resource"]
+    
+#     # Map resource type to ID
+#     resource_ids = {
+#         "scenario": scenario_id,
+#         "agent_config": agent_config_id
+#     }
+    
+#     # Get the resource ID
+#     resource_id = resource_ids.get(resource_type)
+    
+#     if not resource_id:
+#         return create_notification_modal("No resource selected.", "error"), False, False
+    
+#     # Delete the resource
+#     success, _, msg = api.delete(resource_type, resource_id)
+    
+#     # Create notification
+#     resource_display_names = {
+#         "scenario": "Scenario",
+#         "agent_config": "Agent Configuration"
+#     }
+    
+#     display_name = resource_display_names.get(resource_type, "Resource")
+    
+#     if success:
+#         notification = create_notification_modal(f"{display_name} deleted successfully.", "success")
+#         # Close the appropriate modal
+#         close_scen = (resource_type == "scenario")
+#         close_ac = (resource_type == "agent_config")
+#         return notification, not close_scen, not close_ac
+#     else:
+#         notification = create_notification_modal(f"Failed to delete {display_name}: {msg}", "error")
+#         return notification, False, False
