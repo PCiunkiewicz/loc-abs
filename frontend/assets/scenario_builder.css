@@ -397,8 +397,9 @@ change color picker settings
 .tooltip-container {
     display: flex;
     align-items: center;
+    align-content: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 /* Simulation Headers */

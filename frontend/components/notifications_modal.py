@@ -17,13 +17,13 @@ def create_notification_modal(message="", is_error=False, is_open=False):
                 dbc.ModalHeader(
                     dbc.ModalTitle(
                         "Error" if is_error else "Success",
-                        id="notification-modal-title"  # Added ID for potential future use
+                        id="notification-modal-title" 
                     ),
                     close_button=True,
                 ),
                 dbc.ModalBody(
                     message,
-                    id="notification-modal-body"  # ✅ ADDED THIS ID
+                    id="notification-modal-body"  
                 ),
                 dbc.ModalFooter(
                     dbc.Button(

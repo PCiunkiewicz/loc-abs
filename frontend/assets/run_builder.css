@@ -25,9 +25,37 @@
     width: 48%;
 }
 
+/* 70/30 split for the two .dropdown-with-actions inside .top-dropdowns */
+.top-dropdowns .dropdown-with-actions:first-child {
+    width: 57%;
+}
+.top-dropdowns .dropdown-with-actions:last-child {
+    width: 43%;
+}
+
+.drop-down-btn{
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+    
+}
+
+.dropdown-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+    justify-content: space-evenly ;
+}
+
+.tooltip-icon{
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .dropdown-label {
     font-weight: bold;
-    margin-bottom: 0.5rem;
+    /* margin-bottom: 0.5rem; */
 }
 
 .dropdown-standard {
@@ -110,7 +138,7 @@ div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    margin-top: 1rem;
+    
 }
 
 .btn-primary:hover {
@@ -250,6 +278,23 @@ div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
     display: flex;
     flex-direction: row;
     gap: 2rem;
+}
+
+.forms-section .form-column:first-child {
+    width: 70%;
+}
+.forms-section .form-column:last-child {
+    width: 30%;
+}
+
+
+resource-form-container{
+    width: 100%;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
+    /* margin-top: 2rem; */
 }
 
 .scenario-form-container{

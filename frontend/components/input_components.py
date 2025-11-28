@@ -3,12 +3,23 @@ from dash import html, dcc, callback, Input, Output, MATCH
 
 #import dash_bootstrap_components as dbc
 
-def create_mask_input(mask_type, label, default_value=0.5, is_checked=False):
-    """Create a mask input component with label and slider."""
+def create_mask_input(mask_type, label,is_disabled, default_value=0.5, is_checked=False):
+    """Create a mask input component with label and slider.
+    
+    Args:
+        mask_type (str): The type of mask (e.g., "N95").
+        label (str): The label to display next to the checkbox.
+        default_value (float): The default effectiveness value for the slider.
+        is_checked (bool): Whether the mask checkbox is checked by default.
+        is_disabled (bool): Whether the checkbox is disabled.
+
+    Returns:
+        html.Div: A Dash HTML Div component representing the mask input.
+    """
     return html.Div([
         dcc.Checklist(
             id={"type": "mask-checkbox", "mask": mask_type},
-            options=[{"label": f" {label}", "value": mask_type}],
+            options=[{"label": f" {label}", "value": mask_type, "disabled": is_disabled}],
             value=[mask_type] if is_checked else [],
             inline=True,
             labelClassName="mask-checkbox-label",
@@ -28,12 +39,13 @@ def create_mask_input(mask_type, label, default_value=0.5, is_checked=False):
     ], className="mask-input-wrapper")
 
 
-def create_vaccine_type(vaccine_type, label, default_doses=[0.5, 0.5, 0.5], is_checked=False):
+def create_vaccine_type(vaccine_type, label,is_disabled, default_doses=[0.5, 0.5, 0.5], is_checked=False):
     """Create a vaccine input component.
     
     Args:
         vaccine_type (str): The type of vaccine (e.g., "MRNA").
         label (str): The label to display next to the checkbox.
+        is_disabled (bool): Whether the checkbox is disabled.
         default_doses (list): List of default effectiveness values for doses 1, 2, and 3.
         is_checked (bool): Whether the vaccine checkbox is checked by default.
 
@@ -43,7 +55,7 @@ def create_vaccine_type(vaccine_type, label, default_doses=[0.5, 0.5, 0.5], is_c
     return html.Div([
         dcc.Checklist(
             id={"type": "vaccine-checkbox", "vaccine": vaccine_type},
-            options=[{"label": f" {label}", "value": vaccine_type}],
+            options=[{"label": f" {label}", "value": vaccine_type, "disabled": is_disabled}],
             value=[vaccine_type] if is_checked else [],
             inline=True,
             labelClassName="vaccine-checkbox-label",

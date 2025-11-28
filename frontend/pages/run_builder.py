@@ -40,12 +40,12 @@ simulation_fields = [
 
 prevention_fields = [
     {"id": "prevention-name", "label": "Name", "type": "text", "className": "form-input"},
-    {"id": "mask-n95", "component": lambda readonly, value: create_mask_input("N95", "N95", default_value=value or 0.85, is_checked=not readonly)},
-    {"id": "mask-home", "component": lambda readonly, value: create_mask_input("HOME", "Home/Cloth", default_value=value or 0.0, is_checked=not readonly)},
-    {"id": "mask-cloth", "component": lambda readonly, value: create_mask_input("CLOTH", "Cloth", default_value=value or 0.83, is_checked=not readonly)},
-    {"id": "mask-surgical", "component": lambda readonly, value: create_mask_input("SURGICAL", "Surgical", default_value=value or 0.85, is_checked=not readonly)},
-    {"id": "vaccine-mrna", "component": lambda readonly, value: create_vaccine_type("MRNA", "MRNA (Moderna)", default_doses=value or [0.0, 0.31, 0.88], is_checked=not readonly)},
-    {"id": "vaccine-astra", "component": lambda readonly, value: create_vaccine_type("ASTRA", "ASTRA (AstraZeneca)", default_doses=value or [0.0, 0.31, 0.67], is_checked=not readonly)},
+    {"id": "mask-n95", "component": lambda readonly, value: create_mask_input("N95", "N95", default_value=value or 0.85, is_checked=not readonly, is_disabled=readonly)},
+    {"id": "mask-home", "component": lambda readonly, value: create_mask_input("HOME", "Home/Cloth", default_value=value or 0.0, is_checked=not readonly, is_disabled=readonly)},
+    {"id": "mask-cloth", "component": lambda readonly, value: create_mask_input("CLOTH", "Cloth", default_value=value or 0.83, is_checked=not readonly, is_disabled=readonly)},
+    {"id": "mask-surgical", "component": lambda readonly, value: create_mask_input("SURGICAL", "Surgical", default_value=value or 0.85, is_checked=not readonly, is_disabled=readonly)},
+    {"id": "vaccine-mrna", "component": lambda readonly, value: create_vaccine_type("MRNA", "MRNA (Moderna)", default_doses=value or [0.0, 0.31, 0.88], is_checked=not readonly, is_disabled=readonly)},
+    {"id": "vaccine-astra", "component": lambda readonly, value: create_vaccine_type("ASTRA", "ASTRA (AstraZeneca)", default_doses=value or [0.0, 0.31, 0.67], is_checked=not readonly, is_disabled=readonly)},
 ]
 
 agentconfig_fields = [
@@ -90,8 +90,12 @@ def dropdown(id, options, label):
     """Create a dropdown with Edit, Clone, Delete action buttons."""
     return html.Div([
         html.Div([
-                html.Label(label, className="dropdown-label"),
-                html.Img(src="/static/tooltip.png", id=f"{id}-tooltip")
+                html.Div([
+                    html.Label(label, className="dropdown-label"),
+                    html.Img(src="/static/tooltip.png", id=f"{id}-tooltip", className="tooltip-icon"),
+                ], className="dropdown-actions"),
+                html.Button("Create", id={"type": "create-btn", "resource": f"{id}"}, title=f"Edit {label}", className="drop-down-btn btn-primary"),
+                
             ], className="tooltip-container"),
         create_tooltip(f"Select a {label} from the dropdown. Click the buttons to edit, clone, or delete the selected {label.lower()}.", f"{id}-tooltip"),
         dcc.Dropdown(
@@ -148,9 +152,7 @@ def create_generic_form(form_id, title, fields):
 
 
 def create_scenario_form(resource_type):
-    """Create a reusable scenario form that can be read-only or editable.
-    Only makes subforms (virus, prevention, simulation) editable when scenario is in edit mode.
-    """
+    """Create a reusable scenario form that can be read-only or editable."""
     form_fields_div_id = f"{resource_type}-editable-fields"
 
     # Callback to control readonly state for subforms based on scenario form mode
@@ -386,6 +388,7 @@ def update_modal_content(selected_ids, edit_clicks, delete_clicks, modals_open_s
     prevent_initial_call=True
 )
 def handle_edit_delete(edit_clicks, delete_clicks, resource_data):
+    """Handle edit and delete button functionality for any resource type."""
     output_data = []
     output_store = []
     output_mode = []
