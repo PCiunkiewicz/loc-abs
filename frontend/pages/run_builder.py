@@ -1,5 +1,5 @@
 """Run Builder Page for LocABS Application."""
-from dash import html, dcc, register_page, callback, Output, Input,  ALL
+from dash import html, dcc, register_page, callback, Output, Input, State, ctx,  ALL, no_update 
 import json
 import dash_bootstrap_components as dbc
 from components.tooltip import create_tooltip
@@ -9,6 +9,8 @@ from components.input_components import create_mask_input, create_vaccine_type
 from utilities import api
 
 register_page(__name__, path="/run-builder", name="Run Builder", title="LocABS · Run Builder")
+
+# TODO: Ensure that when an item is chosen it doesn't show
 
 virus_fields = [
     {"id": "virus-name", "label": "Name", "type": "text", "className": "form-input"},
@@ -100,41 +102,76 @@ def dropdown(id, options, label):
         ),
     ], className="dropdown-with-actions")
 
-def create_generic_form(form_id, title, form_content):
+def create_generic_form(form_id, title, fields):
     """Create a reusable generic form that can be read-only or editable, with custom content."""
+    form_fields_div_id = f"{form_id}-editable-fields"
+
+    @callback(
+        Output(form_fields_div_id, "children"),
+        [
+            Input({"type": "form-mode", "resource": form_id}, "data"),
+            Input({"type": "original-data", "resource": form_id}, "data"),
+        ],
+    )
+    def update_form_fields(mode_data, values_data):
+        readonly = True
+        if mode_data and mode_data.get("mode") == "edit":
+            readonly = False
+        return render_resource_form(fields, values=values_data, readonly=readonly)
+
     return html.Div([
         html.Div([
-            html.Label(title, className="form-label"),
+           
             html.Div([
+                html.Label(title, className="form-label"),
                 html.Button("Cancel Edit", 
                            id=f"{form_id}-cancel-btn", 
                            className="btn btn-secondary btn-sm",
                            style={"display": "none"})
             ], className="form-actions")
         ], className="form-header"),
-    
         html.Div(
-            form_content,
-            id=f"{form_id}-editable-fields", 
+            id=form_fields_div_id, 
             className="form-editable-fields",
         ),
-        
         # Form buttons (hidden by default)
         html.Div([
             html.Button("Save", id=f"{form_id}-save-btn", className="btn btn-primary btn-sm me-2"),
             html.Button("Cancel", id=f"{form_id}-cancel-btn-bottom", className="btn btn-secondary btn-sm")
-        ], id=f"{form_id}-button-group", 
+        ], id={"type": "form-button-group", "resource": form_id}, 
            className="form-button-group",
            style={"display": "none"}),
-        
         # Hidden stores for form state
-        dcc.Store(id=f"{form_id}-mode", data={"mode": "readonly", "resource_id": None}),
-        dcc.Store(id=f"{form_id}-original-data")
+        dcc.Store(id={"type": "form-mode", "resource": form_id}, data={"mode": "readonly", "resource_id": None}),
+        dcc.Store(id={"type": "original-data", "resource": form_id})
     ], className="generic-form-container")
 
 
 def create_scenario_form(resource_type):
-    """Create a reusable scenario form that can be read-only or editable."""
+    """Create a reusable scenario form that can be read-only or editable.
+    Only makes subforms (virus, prevention, simulation) editable when scenario is in edit mode.
+    """
+    form_fields_div_id = f"{resource_type}-editable-fields"
+
+    # Callback to control readonly state for subforms based on scenario form mode
+    @callback(
+        Output("virus-editable-fields", "children"),
+        Output("prevention-editable-fields", "children"),
+        Output("simulation-editable-fields", "children"),
+        Input({"type": "form-mode", "resource": resource_type}, "data"),
+        State({"type": "original-data", "resource": "virus"}, "data"),
+        State({"type": "original-data", "resource": "prevention"}, "data"),
+        State({"type": "original-data", "resource": "simulation"}, "data"),
+    )
+    def update_subforms(scenario_mode, virus_data, prevention_data, simulation_data):
+        readonly = True
+        if scenario_mode and scenario_mode.get("mode") == "edit":
+            readonly = False
+        virus_form = render_resource_form(virus_fields, values=virus_data, readonly=readonly)
+        prevention_form = render_resource_form(prevention_fields, values=prevention_data, readonly=readonly)
+        simulation_form = render_resource_form(simulation_fields, values=simulation_data, readonly=readonly)
+        return virus_form, prevention_form, simulation_form
+
     return html.Div([
         html.Div([
             html.Label("Scenario", className="form-label"),
@@ -150,39 +187,45 @@ def create_scenario_form(resource_type):
             dropdown(id="virus", options=[], label="Virus"),
             dropdown(id="prevention", options=[], label="Prevention"),
             dropdown(id="simulation", options=[], label="Simulation")
-
         ], className="scenario-form-dropdowns-container"),
+
         create_resource_modal("virus", "Virus"),
         create_resource_modal("prevention", "Prevention"),
         create_resource_modal("simulation", "Simulation"),
 
         html.Div([
-            
-            create_generic_form("virus", "Virus", render_resource_form(virus_fields)),
-            create_generic_form("prevention", "Prevention", render_resource_form(prevention_fields)),
-        ], className="scenario-form-subforms-container1"),
+            dcc.Tabs([
+                dcc.Tab(label="Viruses", children=[
+                    html.Div(id="virus-editable-fields", className="form-editable-fields"),
+                ]),
+                dcc.Tab(label="Preventions", children=[
+                    html.Div(id="prevention-editable-fields", className="form-editable-fields"),
+                ]),
+                dcc.Tab(label="Simulations", children=[
+                    html.Div(id="simulation-editable-fields", className="form-editable-fields"),
+                ]),
+            ])
+        ]),
 
-        html.Div([
-            create_generic_form("simulation", "Simulation", render_resource_form(simulation_fields)),
-        ], className="scenario-form-subforms-container2"),
-        
+        # Add these stores so the callback can access their data!
+        dcc.Store(id={"type": "original-data", "resource": "virus"}),
+        dcc.Store(id={"type": "original-data", "resource": "prevention"}),
+        dcc.Store(id={"type": "original-data", "resource": "simulation"}),
+
         dcc.Store(id={"type": "resource-store", "resource": "virus"}),
         dcc.Store(id={"type": "resource-store", "resource": "prevention"}),
         dcc.Store(id={"type": "resource-store", "resource": "simulation"}),
-        
-        # Form buttons (hidden by default)
+
         html.Div([
             html.Button("Save", id=f"{resource_type}-save-btn", className="btn btn-primary btn-sm me-2"),
             html.Button("Cancel", id=f"{resource_type}-cancel-btn-bottom", className="btn btn-secondary btn-sm")
-        ], id=f"{resource_type}-button-group", 
+        ], id={"type": "form-button-group", "resource": resource_type}, 
            className="form-button-group",
            style={"display": "none"}),
-        
-        # Hidden stores for form state
-        dcc.Store(id=f"{resource_type}-mode", data={"mode": "readonly", "resource_id": None}),
-        dcc.Store(id=f"{resource_type}-original-data")
-    ], className="scenario-form-container")
 
+        dcc.Store(id={"type": "form-mode", "resource": resource_type}, data={"mode": "readonly", "resource_id": None}),
+        dcc.Store(id={"type": "original-data", "resource": resource_type})
+    ], className="scenario-form-container")
 
 layout = html.Div([
     html.Div([
@@ -199,6 +242,7 @@ layout = html.Div([
     # Action Modals for Scenario and Agent Config
     create_resource_modal("scenario", "Scenario"),
     create_resource_modal("agent_config", "Agent Configuration"),
+
     dcc.Store(id={"type": "resource-store", "resource": "scenario"}),
     dcc.Store(id={"type": "resource-store", "resource": "agent_config"}),
 
@@ -208,8 +252,8 @@ layout = html.Div([
             create_scenario_form("scenario")
         ], className="form-column"),
         html.Div([
-            create_generic_form("agent-config-form", "Agent Config", render_resource_form(agentconfig_fields))
-        ], className="form-column"),
+            create_generic_form("agent_config", "Agent Config", agentconfig_fields)
+        ], className="agent-config-form-column"),
     ], className="forms-section"),
 
     # Confirmation Modals 
@@ -261,9 +305,13 @@ def populate_dropdown_options(dropdown_ids):
     ],
     [
         Input({"type": "dropdown", "resource": ALL}, "value"),
-    ]
+        Input({"type": "edit-btn", "resource": ALL}, "n_clicks"),
+        Input({"type": "delete-btn", "resource": ALL}, "n_clicks"),
+    ],
+    State({"type": "action-modal", "resource": ALL}, "is_open"),
+    prevent_initial_call=True
 )
-def update_modal_content(selected_ids):
+def update_modal_content(selected_ids, edit_clicks, delete_clicks, modals_open_state):
     """Update modal content for any resource type."""
     modals_open = []
     titles = []
@@ -275,6 +323,10 @@ def update_modal_content(selected_ids):
 
     # Ensure output lists have the same length as selected_ids
     for idx, resource_id in enumerate(selected_ids):
+        if edit_clicks[idx] or delete_clicks[idx]:
+            modals_open.append(False)
+        else:
+            modals_open.append(modals_open_state[idx])
         resource_type = resource_types[idx] if idx < len(resource_types) else "resource"
         if resource_id:
             success, resource, _ = api.get_by_id(resource_type, resource_id)
@@ -296,22 +348,88 @@ def update_modal_content(selected_ids):
                     html.Div(desc),                 
                 ]
                 detail = json.dumps(resource, indent=2)
-                modals_open.append(True)
+                if modals_open_state[idx] is False:
+                    modals_open[idx] = True # Open modal if it was previously closed
                 titles.append(title)
                 summaries.append(summary)
                 details.append(detail)
                 stores.append(resource_id)
             else:
-                modals_open.append(False)
+                if modals_open_state[idx] is True:
+                    modals_open[idx] = False # Close modal if resource fetch failed
                 titles.append(title)
                 summaries.append(f"No {title} Selected")
                 details.append("")
                 stores.append(None)
         else:
-            modals_open.append(False)
+            if modals_open_state[idx] is True:
+                modals_open[idx] = False # Close modal if no resource selected
             titles.append("No Resource Selected")
             summaries.append("No Resource Selected")
             details.append("")
             stores.append(None)
 
     return modals_open, titles, summaries, details, stores
+
+
+# --- Edit Button Functionality ---
+@callback(
+    [
+        Output({"type": "original-data", "resource": ALL}, "data"),
+        Output({"type": "form-mode", "resource": ALL}, "data"),  
+        Output({"type": "form-button-group", "resource": ALL}, "style"),
+    ],
+    [
+        Input({"type": "edit-btn", "resource": ALL}, "n_clicks"),
+        State({"type": "resource-store", "resource": ALL}, "data"),
+    ],
+    prevent_initial_call=True
+)
+def handle_edit_delete(edit_clicks, delete_clicks, resource_data):
+    output_data = []
+    output_store = []
+    output_mode = []
+    output_button_style = []
+
+    for idx in range(len(edit_clicks)):
+        edit_n = edit_clicks[idx]
+        delete_n = delete_clicks[idx]
+        resource_id = resource_data[idx]
+        resource_type = ctx.inputs_list[0][idx]["id"]["resource"]
+
+        if delete_n and delete_n > 0 and resource_id:
+            success = api.delete(resource_type, resource_id)
+            if success:
+                output_data.append(None)
+                output_store.append(None)
+                output_mode.append({"mode": "readonly", "resource_id": None})
+                output_button_style.append({"display": "none"})
+            else:
+                output_data.append(no_update)
+                output_store.append(no_update)
+                output_mode.append(no_update)
+                output_button_style.append(no_update)
+        elif edit_n and edit_n > 0 and resource_id:
+            success, resource, _ = api.get_by_id(resource_type, resource_id)
+            if success and resource:
+                output_data.append(resource)
+                output_store.append(resource_id)
+                output_mode.append({"mode": "edit", "resource_id": resource_id})
+                output_button_style.append({"display": "block"})
+            else:
+                output_data.append(no_update)
+                output_store.append(no_update)
+                output_mode.append(no_update)
+                output_button_style.append(no_update)
+        else:
+            output_data.append(no_update)
+            output_store.append(no_update)
+            output_mode.append(no_update)
+            output_button_style.append(no_update)
+
+    return (
+        output_data[:len(edit_clicks)],
+        output_store[:len(edit_clicks)],
+        output_mode[:len(edit_clicks)],
+        output_button_style[:len(edit_clicks)]
+    )

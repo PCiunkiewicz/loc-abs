@@ -18,7 +18,11 @@
     display: flex;
     flex-direction: column;
     min-width: 300px;
-    width: 50vw;
+    /* width: 50vw; */
+}
+
+.top-dropdowns .dropdown-with-actions {
+    width: 48%;
 }
 
 .dropdown-label {
@@ -34,6 +38,21 @@
     display: flex;
     gap: 0.5rem;
     margin-top: 0.5rem;
+}
+
+div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
+    width: 50vw;
+}
+
+
+.agent-config-form-column{
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
 }
 
 .action-btn {
@@ -220,11 +239,26 @@
 
 .generic-form-container{
     width: 100%;
+    /* background-color: #ffffff; */
+    padding: 1rem;
+    border-radius: 8px;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217); */
+    /* margin-top: 2rem; */
+}
+
+.forms-section{
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+}
+
+.scenario-form-container{
+    width: 100%;
     background-color: #ffffff;
     padding: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    margin-top: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
+    /* margin-top: 2rem; */
 }
 
 .btn{
@@ -239,41 +273,41 @@
 }
 
 .btn .btn-primary{
-    background-color: #1976d2;
+    background-color: #1976d2 !important;
 }
 
 .btn .btn-primary:hover {
-    background-color: #0a2f5a;
+    background-color: #0a2f5a !important;
 }
 
 .btn .btn-secondary{
-    background-color: #6c757d;
+    background-color: #6c757d !important;
 }
 
 .btn .btn-secondary:hover {
-    background-color: #565e64;
+    background-color: #565e64 !important;
 }
 
 .btn .btn-success{
-    background-color: #198754;
+    background-color: #198754 !important;
 }
 
 .btn .btn-success:hover {
-    background-color: #0b6510;
+    background-color: #0b6510 !important;
 }
 
 .btn .btn-danger{
-    background-color: #d32f2f;
+    background-color: #d32f2f !important;
 }
 
 .btn .btn-danger:hover {
-    background-color: #a71111;
+    background-color: #a71111 !important;
 }   
 
 
 .btn .btn-info{
-    background-color: #17a2b8;
+    background-color: #17a2b8 !important;
 }
 .btn .btn-info:hover {
-    background-color: #117a8b;
+    background-color: #117a8b !important;
 }
