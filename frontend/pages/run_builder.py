@@ -3,15 +3,60 @@ from dash import html, dcc, register_page, callback, Output, Input,  ALL
 import json
 import dash_bootstrap_components as dbc
 from components.tooltip import create_tooltip
+from components.resource_form import render_resource_form
+from components.input_components import create_mask_input, create_vaccine_type
 #from components.notifications_modal import create_notification_modal
 from utilities import api
 
 register_page(__name__, path="/run-builder", name="Run Builder", title="LocABS · Run Builder")
 
+virus_fields = [
+    {"id": "virus-name", "label": "Name", "type": "text", "className": "form-input"},
+    {"id": "virus-attack-rate", "label": "Attack Rate", "type": "number", "min": 0, "max": 1, "step": 0.001, "className": "form-input"},
+    {"id": "virus-infection-rate", "label": "Infection Rate", "type": "number", "min": 0, "max": 1, "step": 0.001, "className": "form-input"},
+    {"id": "virus-fatality-rate", "label": "Fatality Rate", "type": "number", "min": 0, "max": 1, "step": 0.001, "className": "form-input"},
+]
+
+simulation_fields = [
+    {"id": "simulation-name", "label": "Name", "type": "text", "className": "form-input"},
+    {"id": "map-file-dropdown", "label": "Map File", "type": "dropdown", "options": [], "className": "dropdown-standard"},
+    {"id": "xy-scale-input", "label": "XY Scale", "type": "number", "min": 1.0, "max": 1000000.0, "step": 0.01, "className": "form-input"},
+    {"id": "time-step-input", "label": "Time Step (s)", "type": "dropdown", "options": [
+                                                                                        {"label": "1 second", "value": 1},
+                                                                                        {"label": "5 seconds", "value": 5},
+                                                                                        {"label": "10 seconds", "value": 10},
+                                                                                        {"label": "30 seconds", "value": 30},
+                                                                                        {"label": "1 minute (60s)", "value": 60},
+                                                                                        {"label": "5 minutes (300s)", "value": 300},
+                                                                                        {"label": "10 minutes (600s)", "value": 600},
+                                                                                        {"label": "30 minutes (1800s)", "value": 1800},
+                                                                                        {"label": "1 hour (3600s)", "value": 3600}, ], "className": "dropdown-standard"},
+    {"id": "save-resolution-input", "label": "Save Resolution", "type": "number", "min": 1, "max": 2147483647, "step": 1, "className": "form-input"},
+    {"id": "max-iterations-input", "label": "Max Iterations", "type": "number", "min": 1, "max": 2147483647, "step": 1, "className": "form-input"},
+    {"id": "terrain-dropdown", "label": "Terrain", "type": "dropdown", "options": [], "className": "dropdown-standard", "multi": True},
+]
+
+prevention_fields = [
+    {"id": "prevention-name", "label": "Name", "type": "text", "className": "form-input"},
+    {"id": "mask-n95", "component": lambda readonly, value: create_mask_input("N95", "N95", default_value=value or 0.85, is_checked=not readonly)},
+    {"id": "mask-home", "component": lambda readonly, value: create_mask_input("HOME", "Home/Cloth", default_value=value or 0.0, is_checked=not readonly)},
+    {"id": "mask-cloth", "component": lambda readonly, value: create_mask_input("CLOTH", "Cloth", default_value=value or 0.83, is_checked=not readonly)},
+    {"id": "mask-surgical", "component": lambda readonly, value: create_mask_input("SURGICAL", "Surgical", default_value=value or 0.85, is_checked=not readonly)},
+    {"id": "vaccine-mrna", "component": lambda readonly, value: create_vaccine_type("MRNA", "MRNA (Moderna)", default_doses=value or [0.0, 0.31, 0.88], is_checked=not readonly)},
+    {"id": "vaccine-astra", "component": lambda readonly, value: create_vaccine_type("ASTRA", "ASTRA (AstraZeneca)", default_doses=value or [0.0, 0.31, 0.67], is_checked=not readonly)},
+]
+
+agentconfig_fields = [
+    {"id": "agent-config-name", "label": "Name", "type": "text", "className": "form-input"},
+    {"id": "random-agents-input", "label": "Random Agents", "type": "number", "min": 0, "max": 10000, "className": "form-input-number"},
+    {"id": "random-infected-input", "label": "Random Infected", "type": "number", "min": 0, "max": 10000, "className": "form-input-number"},
+    # Add more fields as needed for default/custom agent config
+]
+
 def create_resource_modal(resource_type, title):
     """Create a modal for viewing and managing any resource."""
     return dbc.Modal([
-        #dbc.ModalHeader(dbc.ModalTitle(id={"type": "modal-title", "resource": resource_type}, children=title)),
+        dbc.ModalHeader(dbc.ModalTitle(id={"type": "action-modal-title", "resource": resource_type}, children=title)),
         dbc.ModalBody([
             html.Div(id={"type": "action-modal-summary", "resource": resource_type}, className="resource-summary"),
             html.Details([
@@ -55,11 +100,11 @@ def dropdown(id, options, label):
         ),
     ], className="dropdown-with-actions")
 
-def create_generic_form(form_id, title, resource_type):
-    """Create a reusable generic form that can be read-only or editable."""
+def create_generic_form(form_id, title, form_content):
+    """Create a reusable generic form that can be read-only or editable, with custom content."""
     return html.Div([
         html.Div([
-            html.Label(title, className="form-title"),
+            html.Label(title, className="form-label"),
             html.Div([
                 html.Button("Cancel Edit", 
                            id=f"{form_id}-cancel-btn", 
@@ -67,14 +112,12 @@ def create_generic_form(form_id, title, resource_type):
                            style={"display": "none"})
             ], className="form-actions")
         ], className="form-header"),
-        
-        # Read-only content display
-        html.Div(id=f"{form_id}-readonly-content", className="form-readonly-content"),
-        
-        # Editable fields (hidden by default)
-        html.Div(id=f"{form_id}-editable-fields", 
-                className="form-editable-fields",
-                style={"display": "none"}),
+    
+        html.Div(
+            form_content,
+            id=f"{form_id}-editable-fields", 
+            className="form-editable-fields",
+        ),
         
         # Form buttons (hidden by default)
         html.Div([
@@ -88,6 +131,7 @@ def create_generic_form(form_id, title, resource_type):
         dcc.Store(id=f"{form_id}-mode", data={"mode": "readonly", "resource_id": None}),
         dcc.Store(id=f"{form_id}-original-data")
     ], className="generic-form-container")
+
 
 def create_scenario_form(resource_type):
     """Create a reusable scenario form that can be read-only or editable."""
@@ -112,10 +156,16 @@ def create_scenario_form(resource_type):
         create_resource_modal("prevention", "Prevention"),
         create_resource_modal("simulation", "Simulation"),
 
-        create_generic_form("virus", "Virus", "Virus"),
-        create_generic_form("prevention", "Prevention", "Prevention"),
-        create_generic_form("simulation", "Simulation", "Simulation"),
+        html.Div([
+            
+            create_generic_form("virus", "Virus", render_resource_form(virus_fields)),
+            create_generic_form("prevention", "Prevention", render_resource_form(prevention_fields)),
+        ], className="scenario-form-subforms-container1"),
 
+        html.Div([
+            create_generic_form("simulation", "Simulation", render_resource_form(simulation_fields)),
+        ], className="scenario-form-subforms-container2"),
+        
         dcc.Store(id={"type": "resource-store", "resource": "virus"}),
         dcc.Store(id={"type": "resource-store", "resource": "prevention"}),
         dcc.Store(id={"type": "resource-store", "resource": "simulation"}),
@@ -158,7 +208,7 @@ layout = html.Div([
             create_scenario_form("scenario")
         ], className="form-column"),
         html.Div([
-            create_generic_form("agent-config-form", "Agent Config", "Agent Configuration Details")
+            create_generic_form("agent-config-form", "Agent Config", render_resource_form(agentconfig_fields))
         ], className="form-column"),
     ], className="forms-section"),
 
@@ -204,6 +254,7 @@ def populate_dropdown_options(dropdown_ids):
 @callback(
     [
         Output({"type": "action-modal", "resource": ALL}, "is_open"),
+        Output({"type": "action-modal-title", "resource": ALL}, "children"),
         Output({"type": "action-modal-summary", "resource": ALL}, "children"),
         Output({"type": "action-modal-details", "resource": ALL}, "children"),
         Output({"type": "resource-store", "resource": ALL}, "data"),
@@ -215,6 +266,7 @@ def populate_dropdown_options(dropdown_ids):
 def update_modal_content(selected_ids):
     """Update modal content for any resource type."""
     modals_open = []
+    titles = []
     summaries = []
     details = []
     stores = []
@@ -226,7 +278,7 @@ def update_modal_content(selected_ids):
         resource_type = resource_types[idx] if idx < len(resource_types) else "resource"
         if resource_id:
             success, resource, _ = api.get_by_id(resource_type, resource_id)
-            title = resource_type.replace("_", " ").title()
+            title = resource["name"] if success and resource else "Resource Details"
             if success and resource:
                 desc = []
                 for k, v in resource.items():
@@ -241,23 +293,25 @@ def update_modal_content(selected_ids):
                         value_str = str(v)
                     desc.append(html.P([f"{key_str}: ", value_str]))
                 summary = [
-                    html.H5(f"{title}: {resource.get('name', '')}"),
                     html.Div(desc),                 
                 ]
                 detail = json.dumps(resource, indent=2)
                 modals_open.append(True)
+                titles.append(title)
                 summaries.append(summary)
                 details.append(detail)
                 stores.append(resource_id)
             else:
                 modals_open.append(False)
+                titles.append(title)
                 summaries.append(f"No {title} Selected")
                 details.append("")
                 stores.append(None)
         else:
             modals_open.append(False)
+            titles.append("No Resource Selected")
             summaries.append("No Resource Selected")
             details.append("")
             stores.append(None)
 
-    return modals_open, summaries, details, stores
+    return modals_open, titles, summaries, details, stores

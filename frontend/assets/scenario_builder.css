@@ -1,4 +1,4 @@
-/* change color picker settings */
+change color picker settings
 #terrain-color-input .chrome-picker {
     border-radius: 0% !important;
     border: 1px solid #000000 !important;
@@ -300,34 +300,6 @@
     margin-top: 20px;
 }
 
-.btn-primary {
-    margin-right: 10px;
-    padding: 10px 20px;
-    background-color: #198754;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-secondary {
-    margin-right: 10px;
-    padding: 10px 20px;
-    background-color: #6c757d;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-danger {
-    padding: 10px 20px;
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
 
 /* Dropdown */
 .dropdown-standard {

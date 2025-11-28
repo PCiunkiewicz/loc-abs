@@ -1,5 +1,4 @@
 /* Styles for Run Builder page */
-
 .page-container {
     display: flex;
     flex-direction: column;
@@ -174,6 +173,22 @@
     background-color: #0a2f5a;
 }
 
+.dropdown-item-actions .btn-info {
+    background-color: #d32f2f;
+    margin: 10px;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item-actions .btn-info:hover {
+    background-color: #a71111;
+}
+
 .dropdown-item-actions .btn-danger {
     background-color: #d32f2f;
     margin: 10px;
@@ -194,4 +209,71 @@
     display: flex;
     gap: 2rem;
     justify-content: space-between;
+}
+
+.scenario-form-subforms-container1{
+    display: flex;
+    gap: 2rem;
+    justify-content: space-around;
+    flex-direction: row;
+}
+
+.generic-form-container{
+    width: 100%;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-top: 2rem;
+}
+
+.btn{
+    margin: 10px;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn .btn-primary{
+    background-color: #1976d2;
+}
+
+.btn .btn-primary:hover {
+    background-color: #0a2f5a;
+}
+
+.btn .btn-secondary{
+    background-color: #6c757d;
+}
+
+.btn .btn-secondary:hover {
+    background-color: #565e64;
+}
+
+.btn .btn-success{
+    background-color: #198754;
+}
+
+.btn .btn-success:hover {
+    background-color: #0b6510;
+}
+
+.btn .btn-danger{
+    background-color: #d32f2f;
+}
+
+.btn .btn-danger:hover {
+    background-color: #a71111;
+}   
+
+
+.btn .btn-info{
+    background-color: #17a2b8;
+}
+.btn .btn-info:hover {
+    background-color: #117a8b;
 }

@@ -1292,20 +1292,20 @@ def switch_tabs(sim_clicks, prev_clicks):
         
         return content, "tab-button tab-button-inactive", "tab-button tab-button-active"
 
-@callback(
-    Output({"type": "mask-slider-container", "mask": MATCH}, "style"),
-    Input({"type": "mask-checkbox", "mask": MATCH}, "value"),
-)
-def toggle_slider_visibility(checkbox_value):
-    """Show slider only when checkbox is checked."""
-    is_checked = len(checkbox_value) > 0
-    return {"display": "block" if is_checked else "none"}
+# @callback(
+#     Output({"type": "mask-slider-container", "mask": MATCH}, "style"),
+#     Input({"type": "mask-checkbox", "mask": MATCH}, "value"),
+# )
+# def toggle_slider_visibility(checkbox_value):
+#     """Show slider only when checkbox is checked."""
+#     is_checked = len(checkbox_value) > 0
+#     return {"display": "block" if is_checked else "none"}
 
-@callback(
-    Output({"type": "vaccine-doses-container", "vaccine": MATCH}, "style"),
-    Input({"type": "vaccine-checkbox", "vaccine": MATCH}, "value"),
-)
-def toggle_vaccine_doses_visibility(checkbox_value):
-    """Show vaccine dose inputs only when checkbox is checked."""
-    is_checked = len(checkbox_value) > 0
-    return {"display": "block" if is_checked else "none"}
+# @callback(
+#     Output({"type": "vaccine-doses-container", "vaccine": MATCH}, "style"),
+#     Input({"type": "vaccine-checkbox", "vaccine": MATCH}, "value"),
+# )
+# def toggle_vaccine_doses_visibility(checkbox_value):
+#     """Show vaccine dose inputs only when checkbox is checked."""
+#     is_checked = len(checkbox_value) > 0
+#     return {"display": "block" if is_checked else "none"}
