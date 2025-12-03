@@ -25,6 +25,14 @@
     width: 48%;
 }
 
+.tab-content {
+    background-color: #ffffff;
+    /* padding: 20px; */
+    border-radius: 0 0 8px 8px;
+    /* min-height: 500px; */
+}
+
+
 /* 70/30 split for the two .dropdown-with-actions inside .top-dropdowns */
 .top-dropdowns .dropdown-with-actions:first-child {
     width: 57%;
@@ -59,7 +67,23 @@
 }
 
 .dropdown-standard {
-    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.dropdown-row{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between ;
+    width: 100%;
+    margin: auto;
+}
+
+.dropdown-col{
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 10px;
 }
 
 #scenario-actions-container, #agent-config-actions-container {
@@ -68,9 +92,9 @@
     margin-top: 0.5rem;
 }
 
-div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
+/* div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
     width: 50vw;
-}
+} */
 
 
 .agent-config-form-column{
@@ -300,7 +324,7 @@ resource-form-container{
 .scenario-form-container{
     width: 100%;
     background-color: #ffffff;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
     /* margin-top: 2rem; */

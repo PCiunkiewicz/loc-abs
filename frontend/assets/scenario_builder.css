@@ -69,12 +69,12 @@ change color picker settings
 }
 
 /* Tab Content */
-.tab-content {
+/* .tab-content {
     background-color: #ffffff;
     padding: 20px;
     border-radius: 0 0 8px 8px;
     min-height: 500px;
-}
+} */
 
 /* Side Panel */
 .side-panel {
@@ -302,9 +302,9 @@ change color picker settings
 
 
 /* Dropdown */
-.dropdown-standard {
+/* .dropdown-standard {
     margin-bottom: 20px;
-}
+} */
 
 .dropdown-with-margin {
     margin-bottom: 16px;
