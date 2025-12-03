@@ -1,21 +1,25 @@
 """API requests for loc-abs backend."""
+
 import requests
 import os
 from pathlib import Path
+
+
 class GenericAPI:
     """Generic API class to handle requests to the loc-abs backend.
-    
+
     Attributes:
         base_url (str): The base URL for the API.
         endpoint (str): The specific endpoint for the API.
         session (requests.Session): The session object for making requests.
 
     """
+
     # TODO: fOR WHEN CONNECTING TO DOCKER CONTAINER
-    #base_url: str = 'http://api:8000/api/v1'
+    # base_url: str = 'http://api:8000/api/v1'
 
     base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1')
-    print(f"API Base URL: {base_url}")
+    print(f'API Base URL: {base_url}')
 
     def __init__(self, endpoint: str = '') -> None:
         """Initialize the GenericAPI class with an optional endpoint.
@@ -40,7 +44,7 @@ class GenericAPI:
             self.url if obj_id is None else f'{self.url}/{obj_id}',
             timeout=10,
         )
-    
+
     def patch(self, obj_id: int, data: dict) -> requests.Response:
         """Make a PATCH request to the API."""
         return self.session.patch(
@@ -48,7 +52,7 @@ class GenericAPI:
             timeout=10,
             json=data,
         )
-    
+
     def delete(self, obj_id: int) -> requests.Response:
         """Make a DELETE request to the API."""
         return self.session.delete(
@@ -75,7 +79,7 @@ def handle_response(response: requests.Response) -> dict:
     try:
         if response.ok:
             data = response.json() if response.content else None
-            return True, data, "Success"
+            return True, data, 'Success'
         else:
             error_msg = response.json().get('detail', response.reason) if response.content else response.reason
             return False, None, error_msg
@@ -83,7 +87,7 @@ def handle_response(response: requests.Response) -> dict:
         return False, None, str(e)
 
 
-# Operations for Specific Endpoints 
+# Operations for Specific Endpoints
 def get_all(resource: str) -> dict:
     """Get all objects from a specific resource endpoint."""
     api = APIS.get(resource)
@@ -98,6 +102,7 @@ def get_by_id(resource: str, obj_id: int) -> dict:
     if not api:
         return False, None, f"Resource '{resource}' not found."
     return handle_response(APIS[resource].get(obj_id))
+
 
 def create(resource: str, data: dict) -> dict:
     """Create a new object in a specific resource endpoint."""
@@ -114,6 +119,7 @@ def update(resource: str, obj_id: int, data: dict) -> dict:
         return False, None, f"Resource '{resource}' not found."
     return handle_response(APIS[resource].patch(obj_id, data))
 
+
 def delete(resource: str, obj_id: int) -> dict:
     """Delete an existing object in a specific resource endpoint."""
     api = APIS.get(resource)
@@ -121,20 +127,20 @@ def delete(resource: str, obj_id: int) -> dict:
         return False, None, f"Resource '{resource}' not found."
     return handle_response(APIS[resource].delete(obj_id))
 
+
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
     try:
-        mapfiles_dir = Path("/app/backend/data/mapfiles")
+        mapfiles_dir = Path('/app/backend/data/mapfiles')
 
         if not mapfiles_dir.exists():
-            mapfiles_dir = Path(__file__).parent.parent.parent / "backend" / "data" / "mapfiles"
-        
-        if not mapfiles_dir.exists():
-            return False, [], "Mapfiles directory not found."
+            mapfiles_dir = Path(__file__).parent.parent.parent / 'backend' / 'data' / 'mapfiles'
 
-        file_paths = [f"data/mapfiles/{f.name}" for f in mapfiles_dir.iterdir() if f.is_file()]
-        return True, file_paths, "Success"
-    
+        if not mapfiles_dir.exists():
+            return False, [], 'Mapfiles directory not found.'
+
+        file_paths = [f'data/mapfiles/{f.name}' for f in mapfiles_dir.iterdir() if f.is_file()]
+        return True, file_paths, 'Success'
+
     except Exception as e:
-        return False, [], f"Error accessing map files: {str(e)}"
-    
+        return False, [], f'Error accessing map files: {str(e)}'
