@@ -1,4 +1,4 @@
-name: Ruff
+name: Pylint
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - dev
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,8 +19,8 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install Ruff
-        run: pip install ruff
+      - name: Install pylint
+        run: pip install pylint pylint-django
 
-      - name: Run Ruff
-        uses: astral-sh/ruff-action@v3.3.1
+      - name: Run pylint
+        run: pylint -v $(git ls-files '*.py')
