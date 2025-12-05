@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "loc-abs"
+dynamic = ["version"]
+description = 'Localized Epidemiological Agent-Based Simulation'
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Philip Ciunkiewicz", email = "philip.ciunkiewicz@ucalgary.ca" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
+
+[project.urls]
+Documentation = "https://github.com/Philip Ciunkiewicz/loc-abs#readme"
+Issues = "https://github.com/Philip Ciunkiewicz/loc-abs/issues"
+Source = "https://github.com/Philip Ciunkiewicz/loc-abs"
+
+[tool.hatch.version]
+path = "src/loc_abs/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = ["mypy>=1.0.0"]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/loc_abs tests}"
+
+[tool.coverage.run]
+source_pkgs = ["loc_abs", "tests"]
+branch = true
+parallel = true
+omit = ["src/loc_abs/__about__.py"]
+
+[tool.coverage.paths]
+loc_abs = ["src/loc_abs", "*/loc-abs/src/loc_abs"]
+tests = ["tests", "*/loc-abs/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
