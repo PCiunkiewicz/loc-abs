@@ -1,14 +1,14 @@
 """Scenario Builder Page for LocABS Application."""
 
-from dash import html, dcc, register_page, callback, Output, Input, MATCH, State
 import dash
 import dash_daq as daq
+from dash import Input, Output, State, callback, dcc, html, register_page
+
+from components.notifications_modal import create_notification_modal
 
 # import dash_bootstrap_components as dbc
 from components.tooltip import create_tooltip
-from components.notifications_modal import create_notification_modal
-from utilities import api
-from utilities import validators
+from utilities import api, validators
 
 register_page(__name__, path='/scenario-builder', name='Scenario Builder', title='LocABS · Scenario Builder')
 
@@ -1107,20 +1107,6 @@ def switch_tabs(sim_clicks, prev_clicks):
         if success_terrain and terrains:
             terrain_options = [{'label': f'{t["id"]} - {t["name"]}', 'value': t['id']} for t in terrains]
 
-        success_maps, map_files_paths, _ = dash_api.get_map_files()
-        map_options = []
-        if success_maps and map_files_paths:
-            map_options = []
-            for mp in map_files_paths:
-                display_name = mp.replace('data/mapfiles/', '').replace('_', ' ').title()
-
-                map_options.append(
-                    {
-                        'label': display_name,  # "Bow View Manor"
-                        'value': mp,  # "data/mapfiles/bow_view_manor"
-                    }
-                )
-
         time_step_options = [
             {'label': '1 second', 'value': 1},
             {'label': '5 seconds', 'value': 5},
@@ -1145,7 +1131,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 html.Div(
                     [
                         html.Label('Map File', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='map-file-tooltip'),
+                        html.I(className='fa fa-circle-question', id='map-file-tooltip'),
                     ],
                     className='tooltip-container',
                 ),
@@ -1153,17 +1139,11 @@ def switch_tabs(sim_clicks, prev_clicks):
                     'Select the map file that defines the terrain and environment for the simulation.',
                     'map-file-tooltip',
                 ),
-                dcc.Dropdown(
-                    id='map-file-dropdown',
-                    options=map_options,
-                    placeholder='Select map file',
-                    className='dropdown-standard',
-                ),
                 # Plot Scale with Tooltip
                 html.Div(
                     [
                         html.Label('Plot Scale', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='xy-scale-tooltip'),
+                        html.I(className='fa fa-circle-question', id='xy-scale-tooltip'),
                     ],
                     className='tooltip-container',
                 ),
@@ -1182,7 +1162,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 html.Div(
                     [
                         html.Label('Time Step (s)', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='time-step-tooltip'),
+                        html.I(className='fa fa-circle-question', id='time-step-tooltip'),
                     ],
                     className='tooltip-container',
                 ),
@@ -1199,7 +1179,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 html.Div(
                     [
                         html.Label('Save Resolution', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='save-resolution-tooltip'),
+                        html.I(className='fa fa-circle-question', id='save-resolution-tooltip'),
                     ],
                     className='tooltip-container',
                 ),
@@ -1218,7 +1198,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 html.Div(
                     [
                         html.Label('Max Iterations', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='max-iterations-tooltip'),
+                        html.I(className='fa fa-circle-question', id='max-iterations-tooltip'),
                     ],
                     className='tooltip-container',
                 ),
@@ -1237,7 +1217,7 @@ def switch_tabs(sim_clicks, prev_clicks):
                 html.Div(
                     [
                         html.Label('Terrain', className='form-label'),
-                        html.Img(src='/static/tooltip.png', id='terrain-tooltip'),
+                        html.I(className='fa fa-circle-question', id='terrain-tooltip'),
                     ],
                     className='tooltip-container',
                 ),

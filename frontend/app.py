@@ -1,20 +1,19 @@
 """Frontend Dash Application."""
 
-from dash import Dash, html
 import dash
 import dash_bootstrap_components as dbc
-import components.header as header
-import components.footer as footer
-import components.bottom_nav as bottom_nav
-from utilities.logging import configure_logger
+from dash import Dash, html
 from loguru import logger
+
+from components import bottom_nav, footer, header
+from utilities.logging import configure_logger
 
 configure_logger(level='DEBUG')
 
 app = Dash(
     __name__,
     use_pages=True,
-    external_stylesheets=[dbc.themes.LUX],
+    external_stylesheets=[dbc.themes.LUX, dbc.icons.FONT_AWESOME],
     suppress_callback_exceptions=True,
 )
 
