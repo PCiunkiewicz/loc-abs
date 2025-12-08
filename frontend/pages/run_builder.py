@@ -1,17 +1,18 @@
 """Run Builder Page for LocABS Application."""
 
-from dash import html, dcc, register_page, callback, Output, Input, State, ctx, ALL, no_update
+import copy
+import json
+
+import dash_bootstrap_components as dbc
+from dash import ALL, Input, Output, State, callback, ctx, dcc, html, no_update, register_page
 from dash.exceptions import PreventUpdate
 from loguru import logger
-import json
-import copy
-import dash_bootstrap_components as dbc
-from utilities import api
-from components.resource_form import render_resource_form
-from components.input_components import create_mask_input, create_vaccine_type
-from utilities.normalizers import normalize_values
 
+from components.input_components import create_mask_input, create_vaccine_type
+from components.resource_form import render_resource_form
+from utilities import api
 from utilities.logging import configure_logger
+from utilities.normalizers import normalize_values
 
 configure_logger(level='DEBUG')
 
@@ -305,7 +306,7 @@ def create_resource_modal(resource_type, title):
     )
 
 
-def create_resource_tab(resource_type, form_fields, label=None):
+def create_resource_tab(resource_type, label=None):
     """Create a tab with dropdown, create button, and editable form area."""
     label = label or resource_type.replace('_', ' ').title()
     return dbc.Tab(
@@ -424,13 +425,9 @@ layout = html.Div(
                                 html.Div(id='scenario-editable-fields', className='form-editable-fields'),
                                 dbc.Tabs(
                                     [
-                                        create_resource_tab('virus', virus_fields, 'Virus Configuration'),
-                                        create_resource_tab(
-                                            'prevention', prevention_fields, 'Prevention Configuration'
-                                        ),
-                                        create_resource_tab(
-                                            'simulation', simulation_fields, 'Simulation Configuration'
-                                        ),
+                                        create_resource_tab('virus', 'Virus Configuration'),
+                                        create_resource_tab('prevention', 'Prevention Configuration'),
+                                        create_resource_tab('simulation', 'Simulation Configuration'),
                                     ]
                                 ),
                                 html.Div(
@@ -448,7 +445,7 @@ layout = html.Div(
                         ),
                     ],
                 ),
-                create_resource_tab('agent_config', agentconfig_fields, 'Agent Configuration'),
+                create_resource_tab('agent_config', 'Agent Configuration'),
             ],
             id='main-tabs',
             active_tab='scenario-tab',
@@ -513,7 +510,7 @@ def populate_dropdowns(dropdown_ids):
 )
 def load_simulation_mapfiles(_):
     """Load mapfile options for simulation form."""
-    success, mapfiles, err = api.get_map_files()
+    success, mapfiles, _ = api.get_map_files()
     if not success:
         return []
 
@@ -527,7 +524,7 @@ def load_simulation_mapfiles(_):
 )
 def load_simulation_terrain(_):
     """Load terrain options for simulation form."""
-    success, terrains, err = api.get_all('terrain')
+    success, terrains, _ = api.get_all('terrain')
     if not success:
         return []
 
@@ -558,12 +555,12 @@ def register_modal_loader(resource):
         if not selected_id:
             raise PreventUpdate
 
-        success, item, err = api.get_by_id(resource, selected_id)
+        success, item, _ = api.get_by_id(resource, selected_id)
         if not success:
             raise PreventUpdate
 
         summary = html.Div(
-            [html.P([html.Strong(f'{k.title().replace("_", " ")}: '), str(v)]) for k, v in item.items() if k != 'id']
+            [html.P([html.Strong(f'{k.title().replace('_', ' ')}: '), str(v)]) for k, v in item.items() if k != 'id']
         )
 
         return (
@@ -588,7 +585,7 @@ def register_create(resource):
         Input({'type': 'create-btn', 'resource': resource}, 'n_clicks'),
         prevent_initial_call=True,
     )
-    def _create(n):
+    def _create(_n):
         return {'mode': 'edit', 'resource_id': None}, {}, {'display': 'flex'}
 
 
@@ -606,12 +603,12 @@ def register_edit_clone(resource):
         State({'type': 'resource-store', 'resource': resource}, 'data'),
         prevent_initial_call=True,
     )
-    def _edit_clone(edit, clone, stored_id):
+    def _edit_clone(_edit, _clone, stored_id):
         if not ctx.triggered_id:
             raise PreventUpdate
 
         is_clone = ctx.triggered_id['type'] == 'clone-btn'
-        success, item, err = api.get_by_id(resource, stored_id)
+        success, item, _ = api.get_by_id(resource, stored_id)
 
         if not success:
             raise PreventUpdate
@@ -619,7 +616,7 @@ def register_edit_clone(resource):
         item = copy.deepcopy(item)
         if is_clone:
             item.pop('id', None)
-            item['name'] = f'{item["name"]}-copy'
+            item['name'] = f'{item['name']}-copy'
             stored_id = None
 
         return item, {'mode': 'edit', 'resource_id': stored_id}, {'display': 'flex'}, False, stored_id
@@ -645,7 +642,7 @@ def register_delete(resource):
         success, _, err = api.delete(resource, stored_id)
 
         alert = dbc.Alert(
-            f'{"Deleted" if success else "Delete failed"} {resource}',
+            f'{'Deleted' if success else f'Delete failed {err}'} {resource}',
             color='success' if success else 'danger',
             duration=3000,
         )

@@ -41,19 +41,20 @@ layout = html.Div(
                             [
                                 dbc.Label('Runs', html_for='dv-runs-input'),
                                 dbc.Input(
-                                            id='dv-runs-input',
-                                            type='number',
-                                            min=1,
-                                            step=1,
-                                            value=1,
-                                            className='dv-runs-input w-100',
-                                        ),
-                                
+                                    id='dv-runs-input',
+                                    type='number',
+                                    min=1,
+                                    step=1,
+                                    value=1,
+                                    className='dv-runs-input w-100',
+                                ),
                             ]
                         ),
-    dbc.Button('Run Simulation', id='dv-run-btn', color='primary', className='btn w-100'),
-    dbc.Button('Save Scenario', id='dv-save-scenario-btn', color='dark', className='btn w-100 mt-2'),
-    dbc.Button('Reset to Default', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
+                        dbc.Button('Run Simulation', id='dv-run-btn', color='primary', className='btn w-100'),
+                        dbc.Button(
+                            'Save Scenario', id='dv-save-scenario-btn', color='dark', className='btn w-100 mt-2'
+                        ),
+                        dbc.Button('Reset to Default', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
                         html.Hr(),
                         html.Div(
                             id='dv-run-details',
@@ -61,7 +62,7 @@ layout = html.Div(
                             children=[html.H6('Run Details'), html.Div('No run yet.', id='dv-run-details-body')],
                         ),
                         html.Br(),
-    dbc.Button('Go to Decision Support', id='dv-goto-decision', color='info', className='w-100'),
+                        dbc.Button('Go to Decision Support', id='dv-goto-decision', color='info', className='w-100'),
                     ],
                     width=3,
                     className='dv-sidebar',
@@ -119,7 +120,9 @@ layout = html.Div(
         dcc.Store(id='dv-current-run'),
         dcc.Interval(id='dv-init', interval=1000, n_intervals=0, max_intervals=0),
         html.Div(id='dv-notification-area'),
-    ], className='data-viz-page-container')
+    ],
+    className='data-viz-page-container',
+)
 
 
 @callback(
@@ -130,15 +133,15 @@ layout = html.Div(
     Input('dv-init', 'n_intervals'),
     prevent_initial_call=False,
 )
-
 def _populate_dropdowns(_):
     """Populate agent_config and scenario dropdown options on load."""
+    agents = []
+    scenarios = []
     try:
-        success_a, agents, _ = api.get_all('agent_config')
-        success_s, scenarios, _ = api.get_all('scenario')
-    except Exception as e:
-        logger.exception(f'Error fetching dropdown options: {e}')
-        agents = scenarios = []
+        _, agents, _ = api.get_all('agent_config')
+        _, scenarios, _ = api.get_all('scenario')
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching dropdown options: %s', exc)
 
     agent_opts = [{'label': a['name'], 'value': a['id']} for a in (agents or [])]
     scenario_opts = [{'label': s['name'], 'value': s['id']} for s in (scenarios or [])]
@@ -151,10 +154,11 @@ def _populate_dropdowns(_):
     State('dv-runs-input', 'value'),
     prevent_initial_call=True,
 )
-def _change_runs(incr, decr, current):
+def _change_runs(_incr, _decr, current):
+    """Increment or decrement runs count."""
     triggered = ctx.triggered_id
     if not triggered:
-        raise no_update
+        return no_update
     if triggered == 'dv-runs-incr':
         return (current or 1) + 1
     return max(1, (current or 1) - 1)
@@ -175,10 +179,10 @@ def _change_runs(incr, decr, current):
     ],
     prevent_initial_call=True,
 )
-def _start_run(n, name, agent_id, scenario_id, runs):
+def _start_run(_n, name, agent_id, scenario_id, runs):
     """Build a minimal Run payload and store/display it (no backend run invocation)."""
     if not ctx.triggered_id:
-        raise no_update
+        return no_update
 
     payload = {
         'name': name or 'unnamed-run',
@@ -200,6 +204,6 @@ def _start_run(n, name, agent_id, scenario_id, runs):
         html.P([html.Strong('Status: '), payload['status']]),
     ]
 
-    notification = dbc.Alert(f'Run prepared: {payload["name"]}', color='success', duration=3000)
+    notification = dbc.Alert(f'Run prepared: {payload['name']}', color='success', duration=3000)
 
     return payload, details, notification

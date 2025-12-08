@@ -1,12 +1,12 @@
 """Dashboard Page for LocABS Application."""
 
-from dash import html, dcc, register_page, callback, Output, Input
-import dash_bootstrap_components as dbc
-import dash_ag_grid as dag
-import plotly.express as px
-import pandas as pd
 from datetime import datetime
 
+import dash_ag_grid as dag
+import dash_bootstrap_components as dbc
+import pandas as pd
+import plotly.express as px
+from dash import Input, Output, callback, dcc, html, register_page
 
 register_page(__name__, path='/', name='Dashboard', title='LocABS · Dashboard')
 
@@ -205,7 +205,7 @@ recent_activity_card = dbc.Card(
     Output('recent-activity-grid', 'rowData'),
     Input('interval-component', 'n_intervals'),
 )
-def update_recent_activity(n_intervals):
+def update_recent_activity(_n_intervals):
     """Fetch data from API and return updated row data periodically."""
     # TODO: Replace with actual API call
     updated_data = recent_activity_data.copy()

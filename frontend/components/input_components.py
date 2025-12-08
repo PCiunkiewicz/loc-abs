@@ -2,8 +2,6 @@
 
 from dash import html, dcc, callback, Input, Output, MATCH
 
-# import dash_bootstrap_components as dbc
-
 
 def create_mask_input(mask_type, label, is_disabled, default_value):
     """Create a mask input component with label and slider.

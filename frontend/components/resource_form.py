@@ -72,16 +72,20 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                 if prop in field:
                     input_props[prop] = field[prop]
 
-            form_items.append(html.Div(
-                [
-                    html.Div(
+            form_items.append(
+                html.Div(
                     [
-                        html.Label(label, className='form-label'),
-                        html.I(className='fa fa-circle-question', id='input-tooltip'),
-                    ],
-                    className='tooltip-container'), 
-                    create_tooltip('input-tooltip', 'Please enter a valid value for this field.'),
-                    dcc.Input(**input_props),            
-                     ]), )
+                        html.Div(
+                            [
+                                html.Label(label, className='form-label'),
+                                html.I(className='fa fa-circle-question', id=f'{resource_type}-input-tooltip'),
+                            ],
+                            className='tooltip-container',
+                        ),
+                        create_tooltip(f'{resource_type}-input-tooltip', 'Please enter a valid value for this field.'),
+                        dcc.Input(**input_props),
+                    ]
+                ),
+            )
 
     return html.Div(form_items, className='resource-form-container')
