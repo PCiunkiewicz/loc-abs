@@ -13,10 +13,6 @@ class GenericAPI:
         session (requests.Session): The session object for making requests.
 
     """
-
-    # TODO: fOR WHEN CONNECTING TO DOCKER CONTAINER
-    # base_url: str = 'http://api:8000/api/v1'
-
     base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1')
     print(f'API Base URL: {base_url}')
 
@@ -58,7 +54,6 @@ class GenericAPI:
             f'{self.url}/{obj_id}/',
             timeout=10,
         )
-
 
 ## API Instances for Specific Endpoints
 APIS = {
@@ -130,15 +125,13 @@ def delete(resource: str, obj_id: int) -> dict:
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
     try:
-        mapfiles_dir = Path('/app/backend/data/mapfiles')
+        mapfiles_dir = Path('/data/mapfiles')   # <-- correct container path
 
         if not mapfiles_dir.exists():
-            mapfiles_dir = Path(__file__).parent.parent.parent / 'backend' / 'data' / 'mapfiles'
+            return False, [], 'Mapfiles directory not found in container at /data/mapfiles.'
 
-        if not mapfiles_dir.exists():
-            return False, [], 'Mapfiles directory not found.'
+        file_paths = [f.name for f in mapfiles_dir.iterdir() if f.is_file() or f.is_dir()]
 
-        file_paths = [f'data/mapfiles/{f.name}' for f in mapfiles_dir.iterdir() if f.is_file()]
         return True, file_paths, 'Success'
 
     except Exception as e:

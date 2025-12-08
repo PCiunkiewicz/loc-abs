@@ -5,22 +5,21 @@ from dash import html, dcc, callback, Input, Output, MATCH
 # import dash_bootstrap_components as dbc
 
 
-def create_mask_input(mask_type, label, is_disabled, default_value=0.5, is_checked=False):
+def create_mask_input(mask_type, label, is_disabled, default_value):
     """Create a mask input component with label and slider.
 
     Args:
         mask_type (str): The type of mask (e.g., "N95").
         label (str): The label to display next to the checkbox.
         default_value (float): The default effectiveness value for the slider.
-        is_checked (bool): Whether the mask checkbox is checked by default.
         is_disabled (bool): Whether the checkbox is disabled.
 
     Returns:
         html.Div: A Dash HTML Div component representing the mask input.
     """
+    is_checked = default_value is not None and float(default_value) > 0
     return html.Div(
         [
-            
             dcc.Checklist(
                 id={'type': 'mask-checkbox', 'mask': mask_type},
                 options=[{'label': f' {label}', 'value': mask_type, 'disabled': is_disabled}],
@@ -48,7 +47,7 @@ def create_mask_input(mask_type, label, is_disabled, default_value=0.5, is_check
     )
 
 
-def create_vaccine_type(vaccine_type, label, is_disabled, default_doses=[0.5, 0.5, 0.5], is_checked=False):
+def create_vaccine_type(vaccine_type, label, is_disabled, default_doses):
     """Create a vaccine input component.
 
     Args:
@@ -61,6 +60,10 @@ def create_vaccine_type(vaccine_type, label, is_disabled, default_doses=[0.5, 0.
     Returns:
         html.Div: A Dash HTML Div component representing the vaccine input.
     """
+    doses = default_doses or [0.0, 0.0, 0.0]
+
+    # Vaccine is "checked" if any dose has a value > 0
+    is_checked = any(float(d) > 0 for d in doses)
     return html.Div(
         [
             dcc.Checklist(
@@ -89,7 +92,7 @@ def create_vaccine_type(vaccine_type, label, is_disabled, default_doses=[0.5, 0.
                                 min=0,
                                 max=1,
                                 step=0.01,
-                                value=default_doses[0],
+                                value=doses[0],
                                 placeholder='0.00',
                                 className='vaccine-dose-input',
                             ),
@@ -99,7 +102,7 @@ def create_vaccine_type(vaccine_type, label, is_disabled, default_doses=[0.5, 0.
                                 min=0,
                                 max=1,
                                 step=0.01,
-                                value=default_doses[1],
+                                value=doses[1],
                                 placeholder='0.00',
                                 className='vaccine-dose-input',
                             ),
@@ -109,7 +112,7 @@ def create_vaccine_type(vaccine_type, label, is_disabled, default_doses=[0.5, 0.
                                 min=0,
                                 max=1,
                                 step=0.01,
-                                value=default_doses[2],
+                                value=doses[2],
                                 placeholder='0.00',
                                 className='vaccine-dose-input',
                             ),

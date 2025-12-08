@@ -1,5 +1,7 @@
 """Normalization utilities for the LocABS frontend."""
 
+from pathlib import Path
+
 
 def normalize_values(resource, values):
     """Normalize values for specific resources before rendering forms.
@@ -41,6 +43,8 @@ def normalize_values(resource, values):
         mapfile = values.get('mapfile')
         if isinstance(mapfile, dict):
             normalized['mapfile'] = mapfile.get('id') or mapfile.get('name')
+        elif isinstance(mapfile, str):
+            normalized['mapfile'] = Path(mapfile).name
         else:
             normalized['mapfile'] = mapfile
 

@@ -1,4 +1,5 @@
 """Run Builder Page for LocABS Application."""
+
 from dash import html, dcc, register_page, callback, Output, Input, State, ctx, ALL, no_update
 from dash.exceptions import PreventUpdate
 from loguru import logger
@@ -131,26 +132,24 @@ prevention_fields = [
     {'id': 'mask_group_label', 'section_label': 'Mask Information'},
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_n95'},
-        'component': lambda readonly, value: create_mask_input(
-            'N95', 'N95', default_value=value or 0.85, is_checked=False, is_disabled=readonly
-        ),
+        'component': lambda readonly, value: create_mask_input('N95', 'N95', default_value=value, is_disabled=readonly),
     },
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_home'},
         'component': lambda readonly, value: create_mask_input(
-            'HOME', 'Home/Cloth', default_value=value or 0.0, is_checked=False, is_disabled=readonly
+            'HOME', 'Home/Cloth', default_value=value, is_disabled=readonly
         ),
     },
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_cloth'},
         'component': lambda readonly, value: create_mask_input(
-            'CLOTH', 'Cloth', default_value=value or 0.83, is_checked=False, is_disabled=readonly
+            'CLOTH', 'Cloth', default_value=value, is_disabled=readonly
         ),
     },
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_surgical'},
         'component': lambda readonly, value: create_mask_input(
-            'SURGICAL', 'Surgical', default_value=value or 0.85, is_checked=False, is_disabled=readonly
+            'SURGICAL', 'Surgical', default_value=value, is_disabled=readonly
         ),
     },
     {'id': 'mask_group_label', 'section_label': 'Vaccines'},
@@ -159,8 +158,7 @@ prevention_fields = [
         'component': lambda readonly, value: create_vaccine_type(
             'MRNA',
             'MRNA (Moderna)',
-            default_doses=value or [0.0, 0.31, 0.88],
-            is_checked=False,
+            default_doses=value,
             is_disabled=readonly,
         ),
     },
@@ -169,8 +167,7 @@ prevention_fields = [
         'component': lambda readonly, value: create_vaccine_type(
             'ASTRA',
             'ASTRA (AstraZeneca)',
-            default_doses=value or [0.0, 0.31, 0.67],
-            is_checked=False,
+            default_doses=value,
             is_disabled=readonly,
         ),
     },
@@ -178,13 +175,13 @@ prevention_fields = [
 
 agentconfig_fields = [
     {
-        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'name'},
+        'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'name'},
         'label': 'Name',
         'type': 'text',
         'className': 'form-input',
     },
     {
-        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'random_agents'},
+        'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'random_agents'},
         'label': 'Random Agents',
         'type': 'number',
         'min': 0,
@@ -192,7 +189,7 @@ agentconfig_fields = [
         'className': 'form-input-number',
     },
     {
-        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'random_infected'},
+        'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'random_infected'},
         'label': 'Random Infected',
         'type': 'number',
         'min': 0,
@@ -201,6 +198,53 @@ agentconfig_fields = [
     },
     # Add more fields as needed for default/custom agent config
 ]
+
+AGENT_LOCKED_FIELDS = {
+    'default': {
+        'info': {
+            'mask_type': '',
+            'vax_type': '',
+            'vax_doses': 0,
+            'age': None,
+            'start_zone': None,
+            'work_zone': None,
+            'home_zone': None,
+            'schedule': {},
+            'access_level': 0,
+            'urgency': 1.0,
+        },
+        'state': {'dt': None, 'status': 'UNKNOWN', 'pos': (0, 0, 0), 'path': []},
+    },
+    'custom': [],
+}
+
+
+def build_payload(resource, form_data, original=None, extras=None):
+    """Minimal, resource-aware payload builder."""
+    data = dict(form_data)
+    extras = extras or {}
+
+    if resource == 'agent_config':
+        locked = original or {}
+        data['default'] = copy.deepcopy(locked.get('default', AGENT_LOCKED_FIELDS['default']))
+        data['custom'] = copy.deepcopy(locked.get('custom', AGENT_LOCKED_FIELDS['custom']))
+
+    elif resource == 'prevention':
+        data['mask'] = extras.get('mask', {})
+        data['vax'] = extras.get('vax', {})
+        for key in list(data.keys()):
+            if key.startswith('mask_') or key.startswith('vaccine_'):
+                data.pop(key, None)
+
+    elif resource == 'simulation':
+        terrain = data.get('terrain')
+        if isinstance(terrain, list):
+            data['terrain'] = [t['id'] if isinstance(t, dict) else t for t in terrain]
+        mapfile = data.get('mapfile')
+        if isinstance(mapfile, dict):
+            data['mapfile'] = mapfile.get('id') or mapfile.get('name')
+
+    return data
 
 
 def create_resource_modal(resource_type, title):
@@ -345,7 +389,6 @@ layout = html.Div(
                                                     options=[],
                                                     placeholder='Select Scenario',
                                                     className='dropdown-standard',
-                                                    
                                                 )
                                             ],
                                             width=10,
@@ -455,11 +498,11 @@ def populate_dropdowns(dropdown_ids):
 )
 def load_simulation_mapfiles(_):
     """Load mapfile options for simulation form."""
-    success, mapfiles, err = api.get_all('mapfile')
+    success, mapfiles, err = api.get_map_files()
     if not success:
         return []
 
-    return [{'label': m['name'], 'value': m['id']} for m in mapfiles]
+    return [{'label': m, 'value': m} for m in mapfiles]
 
 
 @callback(
@@ -585,6 +628,18 @@ def register_delete(resource):
 
 def register_save(resource):
     """Register a save callback for a resource."""
+    extra_states = []
+    if resource == 'prevention':
+        extra_states = [
+            State({'type': 'mask-effectiveness-slider', 'mask': ALL}, 'value'),
+            State({'type': 'mask-effectiveness-slider', 'mask': ALL}, 'id'),
+            State({'type': 'mask-checkbox', 'mask': ALL}, 'value'),
+            State({'type': 'mask-checkbox', 'mask': ALL}, 'id'),
+            State({'type': 'vaccine-dose', 'vaccine': ALL, 'dose': ALL}, 'value'),
+            State({'type': 'vaccine-dose', 'vaccine': ALL, 'dose': ALL}, 'id'),
+            State({'type': 'vaccine-checkbox', 'vaccine': ALL}, 'value'),
+            State({'type': 'vaccine-checkbox', 'vaccine': ALL}, 'id'),
+        ]
 
     @callback(
         Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
@@ -597,23 +652,70 @@ def register_save(resource):
         State({'type': 'form-input', 'resource': resource, 'field': ALL}, 'id'),
         # Current mode store
         State({'type': 'form-mode', 'resource': resource}, 'data'),
+        State({'type': 'original-data', 'resource': resource}, 'data'),
+        *extra_states,
         prevent_initial_call=True,
     )
-    def _save(n, values, ids, mode):
+    def _save(n, values, ids, mode, original, *extras):
         if not n:
             raise PreventUpdate
-        form_data = {}
-        form_data = {field_id['field']: value for field_id, value in zip(ids, values)}
+        form_data = {input_id['field']: value for input_id, value in zip(ids, values)}
+
+        extras_map = {}
+        if resource == 'prevention' and extras:
+            (
+                mask_values,
+                mask_ids,
+                mask_checks,
+                mask_check_ids,
+                vaccine_dose_values,
+                vaccine_dose_ids,
+                vaccine_checks,
+                vaccine_check_ids,
+            ) = extras
+
+            selected_masks = {
+                chk_id.get('mask')
+                for chk_id, chk_val in zip(mask_check_ids, mask_checks)
+                if chk_val and chk_id.get('mask') in chk_val
+            }
+            mask_payload = {
+                m_id.get('mask'): (float(m_val) if m_id.get('mask') in selected_masks else 0.0)
+                for m_id, m_val in zip(mask_ids, mask_values)
+                if isinstance(m_id, dict)
+            }
+
+            selected_vax = {
+                chk_id.get('vaccine')
+                for chk_id, chk_val in zip(vaccine_check_ids, vaccine_checks)
+                if chk_val and chk_id.get('vaccine') in chk_val
+            }
+            vax_payload = {}
+            for v_id, v_val in zip(vaccine_dose_ids, vaccine_dose_values):
+                if not isinstance(v_id, dict):
+                    continue
+                v_type, dose_idx = v_id.get('vaccine'), (v_id.get('dose') or 1) - 1
+                doses = vax_payload.setdefault(v_type, [0.0, 0.0, 0.0])
+                if v_type and 0 <= dose_idx < 3:
+                    doses[dose_idx] = float(v_val) if v_type in selected_vax else 0.0
+
+            for v_type in selected_vax:
+                vax_payload.setdefault(v_type, [0.0, 0.0, 0.0])
+
+            extras_map = {'mask': mask_payload, 'vax': vax_payload}
+
+        payload = build_payload(resource, form_data, original, extras_map)
 
         logger.debug(f'\n=== SAVE {resource.upper()} ===')
         logger.debug('Payload:', form_data)
+        logger.debug(f'Final Payload Sent to API: {payload}')
 
         rid = mode.get('resource_id')
 
         if rid:
-            success, item, err = api.update(resource, rid, form_data)
+            success, item, err = api.update(resource, rid, payload)
         else:
-            success, item, err = api.create(resource, form_data)
+            success, item, err = api.create(resource, payload)
 
         if not success:
             alert = dbc.Alert(f'Save failed: {err}', color='danger', duration=5000)

@@ -19,18 +19,22 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
     values = values or {}
     form_items = []
     for field in fields:
-
         if 'section_label' in field:
             form_items.append(html.H5(field['section_label'], className='form-section-label'))
             continue
 
-        pm_id = field['id']
-        dom_id = pm_id['field']
+        field_id = field.get('id')
+        if isinstance(field_id, dict):
+            field_key = field_id.get('field')
+        else:
+            field_key = field_id  # simple id (rare)
+
+        field_value = values.get(field_key, None)
 
         # If a custom component function is provided, use it
         if 'component' in field and callable(field['component']):
             # Pass readonly and value to the component
-            form_items.append(field['component'](readonly=readonly, value=values.get(dom_id, None)))
+            form_items.append(field['component'](readonly=readonly, value=field_value))
             continue
 
         label = field.get('label', '')
@@ -43,22 +47,22 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                     [
                         html.Label(label, className='form-label'),
                         dcc.Dropdown(
-                            id=pm_id,
+                            id=field_id,
                             options=field.get('options', []),
-                            value=values.get(dom_id, None),
+                            value=field_value,
                             placeholder=field.get('placeholder', ''),
                             className=class_name,
                             disabled=readonly,
-                            multi=field.get('multi', False)
+                            multi=field.get('multi', False),
                         ),
                     ]
                 )
             )
         else:
             input_props = {
-                'id': pm_id,
+                'id': field_id,
                 'type': field_type,
-                'value': values.get(dom_id, ''),
+                'value': field_value,
                 'placeholder': field.get('placeholder', ''),
                 'className': class_name,
                 'disabled': readonly,
