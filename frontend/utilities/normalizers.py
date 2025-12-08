@@ -59,4 +59,12 @@ def normalize_values(resource, values):
         else:
             normalized['mapfile'] = mapfile
 
+    if resource == 'scenario':
+        for fk in ['sim', 'virus', 'prevention']:
+            val = values.get(fk)
+            if isinstance(val, dict):
+                normalized[fk] = val.get('id') or val.get('name') or val
+            else:
+                normalized[fk] = val
+
     return normalized

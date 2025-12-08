@@ -102,6 +102,21 @@
     margin-bottom: 1rem;;
     border-bottom: 1px solid #000000;
 }
+
+.form-input-number{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-input{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
 .agent-config-form-column{
     display: flex;
     flex-direction: row;

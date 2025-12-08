@@ -16,7 +16,9 @@ from utilities.logging import configure_logger
 configure_logger(level='DEBUG')
 
 
-register_page(__name__, path='/run-builder', name='Run Builder', title='LocABS · Run Builder')
+register_page(__name__, path='/scenario-builder', name='Run Builder', title='LocABS · Run Builder')
+# Child resources that should stay read-only until a scenario is being created/edited
+SCENARIO_CHILD_RESOURCES = ['virus', 'prevention', 'simulation']
 
 virus_fields = [
     {
@@ -173,6 +175,15 @@ prevention_fields = [
     },
 ]
 
+scenario_fields = [
+    {
+        'id': {'type': 'form-input', 'resource': 'scenario', 'field': 'name'},
+        'label': 'Name',
+        'type': 'text',
+        'className': 'form-input',
+    },
+]
+
 agentconfig_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'name'},
@@ -180,6 +191,7 @@ agentconfig_fields = [
         'type': 'text',
         'className': 'form-input',
     },
+    {'id': 'mask_group_label', 'section_label': 'Agent Population'},
     {
         'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'random_agents'},
         'label': 'Random Agents',
@@ -358,6 +370,7 @@ def create_stores_for_resource(resource_type):
             dcc.Store(
                 id={'type': 'form-mode', 'resource': resource_type}, data={'mode': 'readonly', 'resource_id': None}
             ),
+            dcc.Store(id={'type': 'modal-suppress', 'resource': resource_type}, data=False),
         ]
     )
 
@@ -408,6 +421,7 @@ layout = html.Div(
                                     ],
                                     className='dropdown-row',
                                 ),
+                                html.Div(id='scenario-editable-fields', className='form-editable-fields'),
                                 dbc.Tabs(
                                     [
                                         create_resource_tab('virus', virus_fields, 'Virus Configuration'),
@@ -474,6 +488,7 @@ register_form_renderer('agent_config', agentconfig_fields)
 register_form_renderer('virus', virus_fields)
 register_form_renderer('prevention', prevention_fields)
 register_form_renderer('simulation', simulation_fields)
+register_form_renderer('scenario', scenario_fields)
 
 
 @callback(
@@ -528,10 +543,18 @@ def register_modal_loader(resource):
         Output({'type': 'action-modal-summary', 'resource': resource}, 'children', allow_duplicate=True),
         Output({'type': 'action-modal-details', 'resource': resource}, 'children', allow_duplicate=True),
         Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'original-data', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'modal-suppress', 'resource': resource}, 'data', allow_duplicate=True),
         Input({'type': 'dropdown', 'resource': resource}, 'value'),
+        Input({'type': 'modal-suppress', 'resource': resource}, 'data'),
         prevent_initial_call=True,
     )
-    def _modal_loader(selected_id):
+    def _modal_loader(selected_id, suppress):
+        if suppress:
+            # Reset suppress flag and skip reopening
+            return False, no_update, no_update, no_update, no_update, no_update, no_update, False
+
         if not selected_id:
             raise PreventUpdate
 
@@ -549,6 +572,9 @@ def register_modal_loader(resource):
             summary,
             json.dumps(item, indent=2),
             selected_id,
+            item,
+            {'mode': 'readonly', 'resource_id': selected_id},
+            False,
         )
 
 
@@ -633,6 +659,41 @@ def register_delete(resource):
         return None, opts, None, False, alert
 
 
+def register_confirm(resource):
+    """Register a confirm/select callback for a resource modal."""
+
+    @callback(
+        Output({'type': 'dropdown', 'resource': resource}, 'value', allow_duplicate=True),
+        Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
+        Output({'type': 'modal-suppress', 'resource': resource}, 'data', allow_duplicate=True),
+        Input({'type': 'select-btn', 'resource': resource}, 'n_clicks'),
+        State({'type': 'resource-store', 'resource': resource}, 'data'),
+        prevent_initial_call=True,
+    )
+    def _confirm(n, stored_id):
+        if not n:
+            raise PreventUpdate
+        # Set selection, close modal, and suppress reopen for this cycle
+        return stored_id, False, True
+
+
+def register_cancel(resource):
+    """Register a cancel callback for a resource form."""
+
+    @callback(
+        Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
+        Input(f'{resource}-cancel-btn-bottom', 'n_clicks'),
+        State({'type': 'resource-store', 'resource': resource}, 'data'),
+        prevent_initial_call=True,
+    )
+    def _cancel(n, stored_id):
+        if not n:
+            raise PreventUpdate
+        # Return to readonly; keep current selection
+        return {'mode': 'readonly', 'resource_id': stored_id}, {'display': 'none'}
+
+
 def register_save(resource):
     """Register a save callback for a resource."""
     extra_states = []
@@ -646,6 +707,12 @@ def register_save(resource):
             State({'type': 'vaccine-dose', 'vaccine': ALL, 'dose': ALL}, 'id'),
             State({'type': 'vaccine-checkbox', 'vaccine': ALL}, 'value'),
             State({'type': 'vaccine-checkbox', 'vaccine': ALL}, 'id'),
+        ]
+    if resource == 'scenario':
+        extra_states = [
+            State({'type': 'dropdown', 'resource': 'virus'}, 'value'),
+            State({'type': 'dropdown', 'resource': 'prevention'}, 'value'),
+            State({'type': 'dropdown', 'resource': 'simulation'}, 'value'),
         ]
 
     @callback(
@@ -711,6 +778,11 @@ def register_save(resource):
                 vax_payload.setdefault(v_type, [0.0, 0.0, 0.0])
 
             extras_map = {'mask': mask_payload, 'vax': vax_payload}
+        elif resource == 'scenario' and extras:
+            virus_id, prevention_id, simulation_id = extras
+            form_data['virus'] = virus_id
+            form_data['prevention'] = prevention_id
+            form_data['sim'] = simulation_id
 
         payload = build_payload(resource, form_data, original, extras_map)
 
@@ -743,5 +815,7 @@ for res in RESOURCES:
     register_create(res)
     register_edit_clone(res)
     register_delete(res)
+    register_confirm(res)
+    register_cancel(res)
     register_save(res)
     register_modal_loader(res)

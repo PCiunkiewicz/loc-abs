@@ -10,7 +10,7 @@ from components.notifications_modal import create_notification_modal
 from components.tooltip import create_tooltip
 from utilities import api, validators
 
-register_page(__name__, path='/scenario-builder', name='Scenario Builder', title='LocABS · Scenario Builder')
+register_page(__name__, path='/run-builder', name='Scenario Builder', title='LocABS · Scenario Builder')
 
 
 # TODO: Add save verbose - you accidentally skipped it in the UI
