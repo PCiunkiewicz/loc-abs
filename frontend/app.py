@@ -33,5 +33,5 @@ app.layout = html.Div(
 if __name__ == '__main__':
     logger.debug('Registered pages/routes:')
     for p in dash.page_registry.values():
-        logger.debug(f'- {p['name']} -> {p['path']}')
+        logger.debug(f'- {p["name"]} -> {p["path"]}')
     app.run(host='0.0.0.0', port=8050, debug=True)

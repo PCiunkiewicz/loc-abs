@@ -560,7 +560,7 @@ def register_modal_loader(resource):
             raise PreventUpdate
 
         summary = html.Div(
-            [html.P([html.Strong(f'{k.title().replace('_', ' ')}: '), str(v)]) for k, v in item.items() if k != 'id']
+            [html.P([html.Strong(f'{k.title().replace("_", " ")}: '), str(v)]) for k, v in item.items() if k != 'id']
         )
 
         return (
@@ -616,7 +616,7 @@ def register_edit_clone(resource):
         item = copy.deepcopy(item)
         if is_clone:
             item.pop('id', None)
-            item['name'] = f'{item['name']}-copy'
+            item['name'] = f'{item["name"]}-copy'
             stored_id = None
 
         return item, {'mode': 'edit', 'resource_id': stored_id}, {'display': 'flex'}, False, stored_id
@@ -642,7 +642,7 @@ def register_delete(resource):
         success, _, err = api.delete(resource, stored_id)
 
         alert = dbc.Alert(
-            f'{'Deleted' if success else f'Delete failed {err}'} {resource}',
+            f'{"Deleted" if success else f"Delete failed {err}"} {resource}',
             color='success' if success else 'danger',
             duration=3000,
         )

@@ -204,6 +204,6 @@ def _start_run(_n, name, agent_id, scenario_id, runs):
         html.P([html.Strong('Status: '), payload['status']]),
     ]
 
-    notification = dbc.Alert(f'Run prepared: {payload['name']}', color='success', duration=3000)
+    notification = dbc.Alert(f'Run prepared: {payload["name"]}', color='success', duration=3000)
 
     return payload, details, notification
