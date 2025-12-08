@@ -604,6 +604,7 @@ def register_delete(resource):
 
     @callback(
         Output({'type': 'dropdown', 'resource': resource}, 'value', allow_duplicate=True),
+        Output({'type': 'dropdown', 'resource': resource}, 'options', allow_duplicate=True),
         Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
         Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
         Output('notification-area', 'children', allow_duplicate=True),
@@ -623,7 +624,13 @@ def register_delete(resource):
             duration=3000,
         )
 
-        return None, None, False, alert
+        opts = []
+        if success:
+            success_all, resources, _ = api.get_all(resource)
+            if success_all and resources:
+                opts = [{'label': r['name'], 'value': r['id']} for r in resources]
+
+        return None, opts, None, False, alert
 
 
 def register_save(resource):
@@ -645,6 +652,7 @@ def register_save(resource):
         Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
         Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
         Output({'type': 'dropdown', 'resource': resource}, 'value', allow_duplicate=True),
+        Output({'type': 'dropdown', 'resource': resource}, 'options', allow_duplicate=True),
         Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
         Output('notification-area', 'children', allow_duplicate=True),
         Input(f'{resource}-save-btn', 'n_clicks'),
@@ -719,12 +727,15 @@ def register_save(resource):
 
         if not success:
             alert = dbc.Alert(f'Save failed: {err}', color='danger', duration=5000)
-            return no_update, no_update, no_update, no_update, alert
+            return no_update, no_update, no_update, no_update, no_update, alert
 
         new_id = item['id']
         alert = dbc.Alert(f'Saved {resource}', color='success', duration=5000)
 
-        return {'mode': 'readonly', 'resource_id': new_id}, {'display': 'none'}, new_id, new_id, alert
+        success_all, resources, _ = api.get_all(resource)
+        opts = [{'label': r['name'], 'value': r['id']} for r in resources] if success_all and resources else []
+
+        return {'mode': 'readonly', 'resource_id': new_id}, {'display': 'none'}, new_id, opts, new_id, alert
 
 
 # Register create, edit/clone, delete, and save callbacks for all resources

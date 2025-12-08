@@ -1,7 +1,5 @@
 """Normalization utilities for the LocABS frontend."""
-
 from pathlib import Path
-
 
 def normalize_values(resource, values):
     """Normalize values for specific resources before rendering forms.
