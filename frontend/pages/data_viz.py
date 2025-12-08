@@ -52,7 +52,7 @@ layout = html.Div(
                         ),
                         dbc.Button('Run Simulation', id='dv-run-btn', color='primary', className='btn w-100'),
                         dbc.Button(
-                            'Save Scenario', id='dv-save-scenario-btn', color='dark', className='btn w-100 mt-2'
+                            'Save Run', id='dv-save-scenario-btn', color='dark', className='btn w-100 mt-2'
                         ),
                         dbc.Button('Reset to Default', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
                         html.Hr(),
@@ -62,7 +62,13 @@ layout = html.Div(
                             children=[html.H6('Run Details'), html.Div('No run yet.', id='dv-run-details-body')],
                         ),
                         html.Br(),
-                        dbc.Button('Go to Decision Support', id='dv-goto-decision', color='info', className='w-100'),
+                        dbc.Button(
+                            'Go to Decision Support',
+                            id='dv-goto-decision',
+                            color='info',
+                            className='w-100',
+                            href='/decision-support',
+                        ),
                     ],
                     width=3,
                     className='dv-sidebar',
@@ -207,3 +213,80 @@ def _start_run(_n, name, agent_id, scenario_id, runs):
     notification = dbc.Alert(f'Run prepared: {payload["name"]}', color='success', duration=3000)
 
     return payload, details, notification
+
+
+def _safe_resource_name(resource, obj_id):
+    """Return a readable name for a related resource id."""
+    if not obj_id:
+        return 'Not selected'
+    try:
+        success, item, _ = api.get_by_id(resource, obj_id)
+        if success and item:
+            return item.get('name') or str(obj_id)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching %s %s: %s', resource, obj_id, exc)
+    return f'ID {obj_id}'
+
+
+def _get_scenario_details(scenario_id):
+    """Fetch scenario data by id with graceful fallback."""
+    if not scenario_id:
+        return None
+    try:
+        success, scenario, _ = api.get_by_id('scenario', scenario_id)
+        if success and scenario:
+            return scenario
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching scenario %s: %s', scenario_id, exc)
+    return None
+
+
+@callback(
+    Output('dv-summary-table', 'children'),
+    [
+        Input('dv-scenario-dropdown', 'value'),
+        Input('dv-agent-dropdown', 'value'),
+        Input('dv-runs-input', 'value'),
+        Input('dv-name-input', 'value'),
+    ],
+    prevent_initial_call=False,
+)
+def _render_summary(scenario_id, agent_id, runs, run_name):
+    """Render a summary of the selected scenario and run settings."""
+    scenario = _get_scenario_details(scenario_id)
+    if scenario_id and scenario is None:
+        return dbc.Alert('Unable to load scenario details right now.', color='danger', className='mb-0')
+
+    scenario_name = (scenario or {}).get('name', 'No scenario selected')
+    virus_name = _safe_resource_name('virus', (scenario or {}).get('virus'))
+    prevention_name = _safe_resource_name('prevention', (scenario or {}).get('prevention'))
+    simulation_name = _safe_resource_name('simulation', (scenario or {}).get('sim') or (scenario or {}).get('simulation'))
+    agent_name = _safe_resource_name('agent_config', agent_id)
+    run_total = runs or 1
+
+    rows = [
+        ('Scenario', scenario_name),
+        ('Virus Config', virus_name),
+        ('Prevention Config', prevention_name),
+        ('Simulation', simulation_name),
+        ('Agent Config', agent_name),
+        ('Runs', run_total),
+        ('Run Name', run_name or 'unnamed-run'),
+    ]
+
+    table_rows = [
+        html.Tr([html.Th(label, className='w-25 text-muted small'), html.Td(value)]) for label, value in rows
+    ]
+
+    decision_link = dbc.Button('Open Decision Support', color='info', href='/decision-support', className='mt-3')
+
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H5('Scenario Summary', className='mb-3'),
+                dbc.Table(table_rows, bordered=False, hover=False, striped=False, responsive=True, size='sm'),
+                html.Div(decision_link, className='text-end'),
+            ]
+        ),
+        className='h-100',
+    )

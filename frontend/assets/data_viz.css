@@ -88,7 +88,7 @@ button[id^="dv-"] {
 }
 
 .dv-summary {
-    height: 380px;
+    /* height: 380px; */
 }
 
 .row.justify-between {
