@@ -96,7 +96,12 @@
     width: 50vw;
 } */
 
-
+.form-section-label{
+    margin-top: 1rem;
+    padding-bottom: .7rem;
+    margin-bottom: 1rem;;
+    border-bottom: 1px solid #000000;
+}
 .agent-config-form-column{
     display: flex;
     flex-direction: row;

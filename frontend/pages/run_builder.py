@@ -128,6 +128,7 @@ prevention_fields = [
         'type': 'text',
         'className': 'form-input',
     },
+    {'id': 'mask_group_label', 'section_label': 'Mask Information'},
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_n95'},
         'component': lambda readonly, value: create_mask_input(
@@ -152,6 +153,7 @@ prevention_fields = [
             'SURGICAL', 'Surgical', default_value=value or 0.85, is_checked=False, is_disabled=readonly
         ),
     },
+    {'id': 'mask_group_label', 'section_label': 'Vaccines'},
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'vaccine_mrna'},
         'component': lambda readonly, value: create_vaccine_type(
@@ -343,6 +345,7 @@ layout = html.Div(
                                                     options=[],
                                                     placeholder='Select Scenario',
                                                     className='dropdown-standard',
+                                                    
                                                 )
                                             ],
                                             width=10,

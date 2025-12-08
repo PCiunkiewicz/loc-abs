@@ -19,6 +19,11 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
     values = values or {}
     form_items = []
     for field in fields:
+
+        if 'section_label' in field:
+            form_items.append(html.H5(field['section_label'], className='form-section-label'))
+            continue
+
         pm_id = field['id']
         dom_id = pm_id['field']
 
@@ -44,6 +49,7 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                             placeholder=field.get('placeholder', ''),
                             className=class_name,
                             disabled=readonly,
+                            multi=field.get('multi', False)
                         ),
                     ]
                 )

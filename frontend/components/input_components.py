@@ -20,6 +20,7 @@ def create_mask_input(mask_type, label, is_disabled, default_value=0.5, is_check
     """
     return html.Div(
         [
+            
             dcc.Checklist(
                 id={'type': 'mask-checkbox', 'mask': mask_type},
                 options=[{'label': f' {label}', 'value': mask_type, 'disabled': is_disabled}],
