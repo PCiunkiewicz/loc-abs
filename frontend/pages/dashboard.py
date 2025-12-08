@@ -166,7 +166,7 @@ graph_card = dbc.Card(
                     y=[2, 3, 2.5, 4],
                     labels={'x': 'Date', 'y': 'Duration (hours)'},
                     title='Simulation Duration Over Time',
-                ).update_layout(margin=dict(l=20, r=20, t=40, b=20))
+                ).update_layout(margin={'l': 20, 'r': 20, 't': 40, 'b': 20})
             ),
         ],
     ),

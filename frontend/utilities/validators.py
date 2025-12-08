@@ -46,8 +46,7 @@ def validate_hex_color(color: str) -> dict:
 
     if re.match(hex_pattern, color):
         return True, color, ''
-    else:
-        return False, '', 'Invalid hex color code. Must be in format #RRGGBB or #RGB.'
+    return False, '', 'Invalid hex color code. Must be in format #RRGGBB or #RGB.'
 
 
 def validate_positive_integer(

@@ -1,7 +1,9 @@
 """API requests for loc-abs backend."""
-import requests
+
 import os
 from pathlib import Path
+
+import requests
 
 
 class GenericAPI:
@@ -13,6 +15,7 @@ class GenericAPI:
         session (requests.Session): The session object for making requests.
 
     """
+
     base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1')
     print(f'API Base URL: {base_url}')
 
@@ -55,6 +58,7 @@ class GenericAPI:
             timeout=10,
         )
 
+
 ## API Instances for Specific Endpoints
 APIS = {
     'terrain': GenericAPI('terrains'),
@@ -74,10 +78,9 @@ def handle_response(response: requests.Response) -> dict:
         if response.ok:
             data = response.json() if response.content else None
             return True, data, 'Success'
-        else:
-            error_msg = response.json().get('detail', response.reason) if response.content else response.reason
-            return False, None, error_msg
-    except Exception as e:
+        error_msg = response.json().get('detail', response.reason) if response.content else response.reason
+        return False, None, error_msg
+    except (ValueError, requests.exceptions.JSONDecodeError) as e:
         return False, None, str(e)
 
 
@@ -125,7 +128,7 @@ def delete(resource: str, obj_id: int) -> dict:
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
     try:
-        mapfiles_dir = Path('/data/mapfiles')  
+        mapfiles_dir = Path('/data/mapfiles')
 
         if not mapfiles_dir.exists():
             return False, [], 'Mapfiles directory not found in container at /data/mapfiles.'
@@ -134,5 +137,5 @@ def get_map_files() -> dict:
 
         return True, file_paths, 'Success'
 
-    except Exception as e:
+    except (OSError, PermissionError) as e:
         return False, [], f'Error accessing map files: {str(e)}'

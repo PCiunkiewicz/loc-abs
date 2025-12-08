@@ -91,12 +91,12 @@ def formatter(record: loguru.Record) -> str:
     elif record['level'].name == 'RELOADER':
         record.update(json.loads(record['message']))
         if len(record['path']) > 30:
-            record['path'] = f'..{record["path"][-28:]}'
+            record['path'] = f'..{record['path'][-28:]}'
         if record['path']:
-            record['path'] = f'file::{record["path"]}'
+            record['path'] = f'file::{record['path']}'
         return RELOADER_FORMAT
     else:
-        record['path'] = f'{Path(*Path(record["file"].path).parts[-2:])}:{record["line"]}'
+        record['path'] = f'{Path(*Path(record["file"].path).parts[-2:])}:{record['line']}'
         return LOGGER_FORMAT
 
 
