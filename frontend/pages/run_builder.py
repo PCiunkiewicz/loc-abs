@@ -13,9 +13,14 @@ from utilities import api
 register_page(__name__, path='/run-builder', name='Run Builder', title='LocABS · Run Builder')
 
 virus_fields = [
-    {'id': 'virus-name', 'label': 'Name', 'type': 'text', 'className': 'form-input'},
     {
-        'id': 'virus-attack-rate',
+        'id': {'type': 'form-input', 'resource': 'virus', 'field': 'name'},
+        'label': 'Name',
+        'type': 'text',
+        'className': 'form-input',
+    },
+    {
+        'id': {'type': 'form-input', 'resource': 'virus', 'field': 'attack_rate'},
         'label': 'Attack Rate',
         'type': 'number',
         'min': 0,
@@ -24,7 +29,7 @@ virus_fields = [
         'className': 'form-input',
     },
     {
-        'id': 'virus-infection-rate',
+        'id': {'type': 'form-input', 'resource': 'virus', 'field': 'infection_rate'},
         'label': 'Infection Rate',
         'type': 'number',
         'min': 0,
@@ -33,7 +38,7 @@ virus_fields = [
         'className': 'form-input',
     },
     {
-        'id': 'virus-fatality-rate',
+        'id': {'type': 'form-input', 'resource': 'virus', 'field': 'fatality_rate'},
         'label': 'Fatality Rate',
         'type': 'number',
         'min': 0,
@@ -44,16 +49,21 @@ virus_fields = [
 ]
 
 simulation_fields = [
-    {'id': 'simulation-name', 'label': 'Name', 'type': 'text', 'className': 'form-input'},
     {
-        'id': 'map-file-dropdown',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'name'},
+        'label': 'Name',
+        'type': 'text',
+        'className': 'form-input',
+    },
+    {
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'mapfile'},
         'label': 'Map File',
         'type': 'dropdown',
         'options': [],
         'className': 'dropdown-standard',
     },
     {
-        'id': 'xy-scale-input',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'xy_scale'},
         'label': 'XY Scale',
         'type': 'number',
         'min': 1.0,
@@ -62,7 +72,7 @@ simulation_fields = [
         'className': 'form-input',
     },
     {
-        'id': 'time-step-input',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 't_step'},
         'label': 'Time Step (s)',
         'type': 'dropdown',
         'options': [
@@ -79,7 +89,7 @@ simulation_fields = [
         'className': 'dropdown-standard',
     },
     {
-        'id': 'save-resolution-input',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'save_resolution'},
         'label': 'Save Resolution',
         'type': 'number',
         'min': 1,
@@ -88,7 +98,7 @@ simulation_fields = [
         'className': 'form-input',
     },
     {
-        'id': 'max-iterations-input',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'max_iter'},
         'label': 'Max Iterations',
         'type': 'number',
         'min': 1,
@@ -97,7 +107,7 @@ simulation_fields = [
         'className': 'form-input',
     },
     {
-        'id': 'terrain-dropdown',
+        'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'terrain'},
         'label': 'Terrain',
         'type': 'dropdown',
         'options': [],
@@ -107,57 +117,67 @@ simulation_fields = [
 ]
 
 prevention_fields = [
-    {'id': 'prevention-name', 'label': 'Name', 'type': 'text', 'className': 'form-input'},
     {
-        'id': 'mask-n95',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'name'},
+        'label': 'Name',
+        'type': 'text',
+        'className': 'form-input',
+    },
+    {
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_n95'},
         'component': lambda readonly, value: create_mask_input(
-            'N95', 'N95', default_value=value or 0.85, is_checked=not readonly, is_disabled=readonly
+            'N95', 'N95', default_value=value or 0.85, is_checked=False, is_disabled=readonly
         ),
     },
     {
-        'id': 'mask-home',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_home'},
         'component': lambda readonly, value: create_mask_input(
-            'HOME', 'Home/Cloth', default_value=value or 0.0, is_checked=not readonly, is_disabled=readonly
+            'HOME', 'Home/Cloth', default_value=value or 0.0, is_checked=False, is_disabled=readonly
         ),
     },
     {
-        'id': 'mask-cloth',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_cloth'},
         'component': lambda readonly, value: create_mask_input(
-            'CLOTH', 'Cloth', default_value=value or 0.83, is_checked=not readonly, is_disabled=readonly
+            'CLOTH', 'Cloth', default_value=value or 0.83, is_checked=False, is_disabled=readonly
         ),
     },
     {
-        'id': 'mask-surgical',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'mask_surgical'},
         'component': lambda readonly, value: create_mask_input(
-            'SURGICAL', 'Surgical', default_value=value or 0.85, is_checked=not readonly, is_disabled=readonly
+            'SURGICAL', 'Surgical', default_value=value or 0.85, is_checked=False, is_disabled=readonly
         ),
     },
     {
-        'id': 'vaccine-mrna',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'vaccine_mrna'},
         'component': lambda readonly, value: create_vaccine_type(
             'MRNA',
             'MRNA (Moderna)',
             default_doses=value or [0.0, 0.31, 0.88],
-            is_checked=not readonly,
+            is_checked=False,
             is_disabled=readonly,
         ),
     },
     {
-        'id': 'vaccine-astra',
+        'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'vaccine_astra'},
         'component': lambda readonly, value: create_vaccine_type(
             'ASTRA',
             'ASTRA (AstraZeneca)',
             default_doses=value or [0.0, 0.31, 0.67],
-            is_checked=not readonly,
+            is_checked=False,
             is_disabled=readonly,
         ),
     },
 ]
 
 agentconfig_fields = [
-    {'id': 'agent-config-name', 'label': 'Name', 'type': 'text', 'className': 'form-input'},
     {
-        'id': 'random-agents-input',
+        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'name'},
+        'label': 'Name',
+        'type': 'text',
+        'className': 'form-input',
+    },
+    {
+        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'random_agents'},
         'label': 'Random Agents',
         'type': 'number',
         'min': 0,
@@ -165,7 +185,7 @@ agentconfig_fields = [
         'className': 'form-input-number',
     },
     {
-        'id': 'random-infected-input',
+        'id': {'type': 'form-input', 'resource': 'agentconfig', 'field': 'random_infected'},
         'label': 'Random Infected',
         'type': 'number',
         'min': 0,
@@ -292,7 +312,6 @@ def create_stores_for_resource(resource_type):
 
 
 RESOURCES = ['scenario', 'agent_config', 'virus', 'prevention', 'simulation']
-
 layout = html.Div(
     [
         html.Div(
@@ -384,13 +403,16 @@ def register_form_renderer(resource_type, fields):
 
     @callback(
         Output(f'{resource_type}-editable-fields', 'children'),
-        [Input({'type': 'form-mode', 'resource': resource_type}, 'data')],
-        [State({'type': 'original-data', 'resource': resource_type}, 'data')],
+        [
+            Input({'type': 'form-mode', 'resource': resource_type}, 'data'),
+            Input({'type': 'original-data', 'resource': resource_type}, 'data'),  # <-- LISTEN TO DATA TOO
+        ],
         prevent_initial_call=False,
     )
     def render_form(mode_data, values_data):
         readonly = not (mode_data and mode_data.get('mode') == 'edit')
-        return render_resource_form(fields, values=values_data, readonly=readonly)
+        print(f'RENDERING {resource_type} form - readonly={readonly}, has_data={values_data is not None}')  # Debug
+        return render_resource_form(resource_type, fields, values=values_data, readonly=readonly)
 
 
 # Register all form renderers
@@ -415,218 +437,158 @@ def populate_dropdowns(dropdown_ids):
     ]
 
 
-@callback(
-    [
-        Output({'type': 'action-modal', 'resource': ALL}, 'is_open'),
-        Output({'type': 'action-modal-title', 'resource': ALL}, 'children'),
-        Output({'type': 'action-modal-summary', 'resource': ALL}, 'children'),
-        Output({'type': 'action-modal-details', 'resource': ALL}, 'children'),
-        Output({'type': 'resource-store', 'resource': ALL}, 'data'),
-    ],
-    [Input({'type': 'dropdown', 'resource': ALL}, 'value')],
-    [State({'type': 'dropdown', 'resource': ALL}, 'id')],
-    prevent_initial_call=True,
-)
-def update_modal(selected_ids, dropdown_ids):
-    """Open modal when dropdown selection changes."""
-    triggered = ctx.triggered_id
-    if not triggered:
-        raise PreventUpdate
+def register_modal_loader(resource):
+    """Register a modal loader callback for a resource."""
 
-    triggered_resource = triggered['resource']
-    outputs = [[], [], [], [], []]  # modals_open, titles, summaries, details, stores
+    @callback(
+        Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
+        Output({'type': 'action-modal-title', 'resource': resource}, 'children', allow_duplicate=True),
+        Output({'type': 'action-modal-summary', 'resource': resource}, 'children', allow_duplicate=True),
+        Output({'type': 'action-modal-details', 'resource': resource}, 'children', allow_duplicate=True),
+        Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
+        Input({'type': 'dropdown', 'resource': resource}, 'value'),
+        prevent_initial_call=True,
+    )
+    def _modal_loader(selected_id):
+        if not selected_id:
+            raise PreventUpdate
 
-    for idx, dropdown_id in enumerate(dropdown_ids):
-        resource_type = dropdown_id['resource']
-        resource_id = selected_ids[idx]
+        success, item, err = api.get_by_id(resource, selected_id)
+        if not success:
+            raise PreventUpdate
 
-        if resource_type == triggered_resource and resource_id:
-            success, resource, _ = api.get_by_id(resource_type, resource_id)
-            if success and resource:
-                outputs[0].append(True)  # open modal
-                outputs[1].append(resource.get('name', 'Details'))
-                outputs[2].append(
-                    html.Div(
-                        [
-                            html.P([html.Strong(f'{k.replace("_", " ").title()}: '), str(v)])
-                            for k, v in resource.items()
-                            if k != 'id'
-                        ]
-                    )
-                )
-                outputs[3].append(json.dumps(resource, indent=2))
-                outputs[4].append(resource_id)
-                continue
+        summary = html.Div(
+            [html.P([html.Strong(f'{k.title().replace("_", " ")}: '), str(v)]) for k, v in item.items() if k != 'id']
+        )
 
-        # No update for other resources
-        for out in outputs:
-            out.append(no_update)
-
-    return outputs
+        return (
+            True,
+            item.get('name', resource.title()),
+            summary,
+            json.dumps(item, indent=2),
+            selected_id,
+        )
 
 
-@callback(
-    [
-        Output({'type': 'form-mode', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'original-data', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'form-button-group', 'resource': ALL}, 'style', allow_duplicate=True),
-    ],
-    [Input({'type': 'create-btn', 'resource': ALL}, 'n_clicks')],
-    [State({'type': 'form-mode', 'resource': ALL}, 'id')],
-    prevent_initial_call=True,
-)
-def handle_create(_, mode_ids):
-    """Create: clear form, enable editing."""
-    triggered_resource = ctx.triggered_id['resource']
-    return [
-        [{'mode': 'edit', 'resource_id': None} if m['resource'] == triggered_resource else no_update for m in mode_ids],
-        [{} if m['resource'] == triggered_resource else no_update for m in mode_ids],
-        [{'display': 'flex'} if m['resource'] == triggered_resource else no_update for m in mode_ids],
-    ]
+def register_create(resource):
+    """Register a create callback for a resource."""
+
+    @callback(
+        Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'original-data', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
+        Input({'type': 'create-btn', 'resource': resource}, 'n_clicks'),
+        prevent_initial_call=True,
+    )
+    def _create(n):
+        return {'mode': 'edit', 'resource_id': None}, {}, {'display': 'flex'}
 
 
-@callback(
-    [
-        Output({'type': 'original-data', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'form-mode', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'form-button-group', 'resource': ALL}, 'style', allow_duplicate=True),
-        Output({'type': 'action-modal', 'resource': ALL}, 'is_open', allow_duplicate=True),
-    ],
-    [
-        Input({'type': 'edit-btn', 'resource': ALL}, 'n_clicks'),
-        Input({'type': 'clone-btn', 'resource': ALL}, 'n_clicks'),
-    ],
-    [
-        State({'type': 'resource-store', 'resource': ALL}, 'data'),
-        State({'type': 'resource-store', 'resource': ALL}, 'id'),
-        State({'type': 'original-data', 'resource': ALL}, 'id'),
-        State({'type': 'form-mode', 'resource': ALL}, 'id'),
-    ],
-    prevent_initial_call=True,
-)
-def handle_edit_clone(edit_clicks, clone_clicks, store_data, store_ids, data_ids, mode_ids):
-    """Edit/Clone: fetch resource, populate form."""
-    triggered = ctx.triggered_id
-    if not triggered:
-        raise PreventUpdate
+def register_edit_clone(resource):
+    """Register an edit and clone callback for a resource."""
 
-    triggered_resource = triggered['resource']
-    is_clone = triggered['type'] == 'clone-btn'
+    @callback(
+        Output({'type': 'original-data', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
+        Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
+        Input({'type': 'edit-btn', 'resource': resource}, 'n_clicks'),
+        Input({'type': 'clone-btn', 'resource': resource}, 'n_clicks'),
+        State({'type': 'resource-store', 'resource': resource}, 'data'),
+        prevent_initial_call=True,
+    )
+    def _edit_clone(edit, clone, stored_id):
+        if not ctx.triggered_id:
+            raise PreventUpdate
 
-    print(f'EDIT/CLONE triggered for resource: {triggered_resource}, button type: {triggered["type"]}')
+        is_clone = ctx.triggered_id['type'] == 'clone-btn'
+        success, item, err = api.get_by_id(resource, stored_id)
 
-    # Get resource ID using proper index mapping
-    idx = next((i for i, s in enumerate(store_ids) if s['resource'] == triggered_resource), None)
-    if idx is None or not store_data[idx]:
-        print(f'ERROR: No data found for {triggered_resource} at index {idx}')
-        raise PreventUpdate
+        if not success:
+            raise PreventUpdate
 
-    resource_id = store_data[idx]
-    print(f'Fetching {triggered_resource} with ID {resource_id}')
+        if is_clone:
+            item.pop('id', None)
+            item['name'] = f'{item["name"]} (copy)'
+            stored_id = None
 
-    success, resource, err = api.get_by_id(triggered_resource, resource_id)
-    if not success or not resource:
-        print(f'ERROR: API failed - {err}')
-        raise PreventUpdate
-
-    if is_clone:
-        resource = dict(resource)
-        resource.pop('id', None)
-        resource['name'] = f'{resource.get("name", "")} (copy)'
-        resource_id = None  # Clear ID for clone
-
-    # Build outputs using ID matching (not index)
-    return [
-        [resource if d['resource'] == triggered_resource else no_update for d in data_ids],
-        [
-            {'mode': 'edit', 'resource_id': resource_id} if m['resource'] == triggered_resource else no_update
-            for m in mode_ids
-        ],
-        [{'display': 'flex'} if m['resource'] == triggered_resource else no_update for m in mode_ids],
-        [False if m['resource'] == triggered_resource else no_update for m in mode_ids],
-    ]
+        return item, {'mode': 'edit', 'resource_id': stored_id}, {'display': 'flex'}, False
 
 
-@callback(
-    [
-        Output({'type': 'dropdown', 'resource': ALL}, 'value', allow_duplicate=True),
-        Output({'type': 'resource-store', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'action-modal', 'resource': ALL}, 'is_open', allow_duplicate=True),
+def register_delete(resource):
+    """Register a delete callback for a resource."""
+
+    @callback(
+        Output({'type': 'dropdown', 'resource': resource}, 'value', allow_duplicate=True),
+        Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
         Output('notification-area', 'children', allow_duplicate=True),
-    ],
-    [Input({'type': 'delete-btn', 'resource': ALL}, 'n_clicks')],
-    [
-        State({'type': 'resource-store', 'resource': ALL}, 'data'),
-        State({'type': 'resource-store', 'resource': ALL}, 'id'),
-        State({'type': 'dropdown', 'resource': ALL}, 'id'),
-        State({'type': 'action-modal', 'resource': ALL}, 'id'),
-        State({'type': 'delete-btn', 'resource': ALL}, 'id'),  # <-- ADD THIS
-    ],
-    prevent_initial_call=True,
-)
-def handle_delete(delete_clicks, store_data, store_ids, dropdown_ids, modal_ids, delete_btn_ids):  # <-- ADD PARAM
-    """Delete: remove resource from DB."""
-    triggered = ctx.triggered_id
-    if not triggered:
-        raise PreventUpdate
+        Input({'type': 'delete-btn', 'resource': resource}, 'n_clicks'),
+        State({'type': 'resource-store', 'resource': resource}, 'data'),
+        prevent_initial_call=True,
+    )
+    def _delete(n, stored_id):
+        if not n:
+            raise PreventUpdate
 
-    triggered_resource = triggered['resource']
+        success, _, err = api.delete(resource, stored_id)
 
-    print(f'DELETE triggered for resource: {triggered_resource}')
-    print(f'Delete button IDs order: {[b["resource"] for b in delete_btn_ids]}')
-    print(f'Store IDs order: {[s["resource"] for s in store_ids]}')
-    print(f'Dropdown IDs order: {[d["resource"] for d in dropdown_ids]}')
-    print(f'Modal IDs order: {[m["resource"] for m in modal_ids]}')
-    # print(f"Store data: {store_data}")
-
-    # Get resource ID using proper index mapping
-    idx = next((i for i, s in enumerate(store_ids) if s['resource'] == triggered_resource), None)
-
-    if idx is None or not store_data[idx]:
-        print(f'ERROR: No data found for {triggered_resource} at index {idx}')
-        raise PreventUpdate
-
-    resource_id = store_data[idx]
-    print(f'Deleting {triggered_resource} with ID {resource_id}')
-
-    success, _, err = api.delete(triggered_resource, resource_id)
-
-    # Build outputs using ID matching (not index)
-    return [
-        [None if d['resource'] == triggered_resource else no_update for d in dropdown_ids],
-        [None if s['resource'] == triggered_resource else no_update for s in store_ids],
-        [False if m['resource'] == triggered_resource else no_update for m in modal_ids],
-        dbc.Alert(
-            f'Successfully deleted {triggered_resource}' if success else f'Failed to delete: {err}',
+        alert = dbc.Alert(
+            f'{"Deleted" if success else "Delete failed"} {resource}',
             color='success' if success else 'danger',
             duration=3000,
-        ),
-    ]
+        )
+
+        return None, None, False, alert
 
 
-@callback(
-    [
-        Output({'type': 'form-mode', 'resource': ALL}, 'data', allow_duplicate=True),
-        Output({'type': 'form-button-group', 'resource': ALL}, 'style', allow_duplicate=True),
-        Output({'type': 'original-data', 'resource': ALL}, 'data', allow_duplicate=True),
-    ],
-    [
-        Input(f'{r}-cancel-btn-bottom', 'n_clicks')
-        for r in ['scenario', 'agent_config', 'virus', 'prevention', 'simulation']
-    ],
-    [State({'type': 'form-mode', 'resource': ALL}, 'id')],
-    prevent_initial_call=True,
-)
-def handle_cancel(*args):
-    """Cancel: revert to readonly."""
-    triggered_resource = ctx.triggered_id.split('-cancel-btn')[0]
-    mode_ids = args[-1]
+def register_save(resource):
+    """Register a save callback for a resource."""
 
-    return [
-        [
-            {'mode': 'readonly', 'resource_id': None} if m['resource'] == triggered_resource else no_update
-            for m in mode_ids
-        ],
-        [{'display': 'none'} if m['resource'] == triggered_resource else no_update for m in mode_ids],
-        [None if m['resource'] == triggered_resource else no_update for m in mode_ids],
-    ]
+    @callback(
+        Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
+        Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
+        Output({'type': 'dropdown', 'resource': resource}, 'value', allow_duplicate=True),
+        Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
+        Output('notification-area', 'children', allow_duplicate=True),
+        Input(f'{resource}-save-btn', 'n_clicks'),
+        State({'type': 'form-input', 'resource': resource, 'field': ALL}, 'value'),
+        State({'type': 'form-input', 'resource': resource, 'field': ALL}, 'id'),
+
+        # Current mode store
+        State({'type': 'form-mode', 'resource': resource}, 'data'),
+        prevent_initial_call=True,
+    )
+    def _save(n, values, ids, mode):
+        if not n:
+            raise PreventUpdate
+        form_data = {
+            field_id['field']: value
+            for field_id, value in zip(ids, values)
+        }
+        print(f"SAVING resource={resource}: {form_data}")
+
+        rid = mode.get('resource_id')
+
+        if rid:
+            success, item, err = api.update(resource, rid, form_data)
+        else:
+            success, item, err = api.create(resource, form_data)
+
+        if not success:
+            alert = dbc.Alert(f'Save failed: {err}', color='danger', duration=3000)
+            return no_update, no_update, no_update, no_update, alert
+
+        new_id = item['id']
+        alert = dbc.Alert(f'Saved {resource}', color='success', duration=3000)
+
+        return {'mode': 'readonly', 'resource_id': new_id}, {'display': 'none'}, new_id, new_id, alert
+
+
+# Register create, edit/clone, delete, and save callbacks for all resources
+for res in RESOURCES:
+    register_create(res)
+    register_edit_clone(res)
+    register_delete(res)
+    register_save(res)
+    register_modal_loader(res)
