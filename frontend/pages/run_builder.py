@@ -1,15 +1,19 @@
 """Run Builder Page for LocABS Application."""
-
 from dash import html, dcc, register_page, callback, Output, Input, State, ctx, ALL, no_update
 from dash.exceptions import PreventUpdate
+from loguru import logger
 import json
 import copy
 import dash_bootstrap_components as dbc
+from utilities import api
 from components.resource_form import render_resource_form
 from components.input_components import create_mask_input, create_vaccine_type
+from utilities.normalizers import normalize_values
 
-# from components.notifications_modal import create_notification_modal
-from utilities import api
+from utilities.logging import configure_logger
+
+configure_logger(level='DEBUG')
+
 
 register_page(__name__, path='/run-builder', name='Run Builder', title='LocABS · Run Builder')
 
@@ -406,14 +410,17 @@ def register_form_renderer(resource_type, fields):
         Output(f'{resource_type}-editable-fields', 'children'),
         [
             Input({'type': 'form-mode', 'resource': resource_type}, 'data'),
-            Input({'type': 'original-data', 'resource': resource_type}, 'data'),  # <-- LISTEN TO DATA TOO
+            Input({'type': 'original-data', 'resource': resource_type}, 'data'),
         ],
         prevent_initial_call=False,
     )
     def render_form(mode_data, values_data):
         readonly = not (mode_data and mode_data.get('mode') == 'edit')
-        print(f'RENDERING {resource_type} form - readonly={readonly}, has_data={values_data is not None}')  # Debug
-        return render_resource_form(resource_type, fields, values=values_data, readonly=readonly)
+        logger.debug(
+            f'RENDERING {resource_type} form - readonly={readonly}, has_data={values_data is not None}'
+        )  # Debug
+        clean = normalize_values(resource_type, values_data)
+        return render_resource_form(resource_type, fields, values=clean, readonly=readonly)
 
 
 # Register all form renderers
@@ -436,6 +443,34 @@ def populate_dropdowns(dropdown_ids):
             for d in dropdown_ids
         ]
     ]
+
+
+@callback(
+    Output({'type': 'form-input', 'resource': 'simulation', 'field': 'mapfile'}, 'options'),
+    Input({'type': 'form-input', 'resource': 'simulation', 'field': 'mapfile'}, 'id'),
+    prevent_initial_call=False,
+)
+def load_simulation_mapfiles(_):
+    """Load mapfile options for simulation form."""
+    success, mapfiles, err = api.get_all('mapfile')
+    if not success:
+        return []
+
+    return [{'label': m['name'], 'value': m['id']} for m in mapfiles]
+
+
+@callback(
+    Output({'type': 'form-input', 'resource': 'simulation', 'field': 'terrain'}, 'options'),
+    Input({'type': 'form-input', 'resource': 'simulation', 'field': 'terrain'}, 'id'),
+    prevent_initial_call=False,
+)
+def load_simulation_terrain(_):
+    """Load terrain options for simulation form."""
+    success, terrains, err = api.get_all('terrain')
+    if not success:
+        return []
+
+    return [{'label': t['name'], 'value': t['id']} for t in terrains]
 
 
 def register_modal_loader(resource):
@@ -567,8 +602,8 @@ def register_save(resource):
         form_data = {}
         form_data = {field_id['field']: value for field_id, value in zip(ids, values)}
 
-        print(f'\n=== SAVE {resource.upper()} ===')
-        print('Payload:', form_data)
+        logger.debug(f'\n=== SAVE {resource.upper()} ===')
+        logger.debug('Payload:', form_data)
 
         rid = mode.get('resource_id')
 

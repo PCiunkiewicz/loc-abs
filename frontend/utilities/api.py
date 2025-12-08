@@ -1,5 +1,4 @@
 """API requests for loc-abs backend."""
-
 import requests
 import os
 from pathlib import Path
