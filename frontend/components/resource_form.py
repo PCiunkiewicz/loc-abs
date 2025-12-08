@@ -2,6 +2,7 @@
 
 from dash import html, dcc
 
+
 def render_resource_form(resource_type, fields, values=None, readonly=True):
     """Render a resource form with given fields and values.
 
@@ -18,35 +19,34 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
     values = values or {}
     form_items = []
     for field in fields:
-
         pm_id = field['id']
         dom_id = pm_id['field']
-        
+
         # If a custom component function is provided, use it
         if 'component' in field and callable(field['component']):
             # Pass readonly and value to the component
             form_items.append(field['component'](readonly=readonly, value=values.get(dom_id, None)))
             continue
 
-        field_id = field.get('id')
         label = field.get('label', '')
         field_type = field.get('type', 'text')
         class_name = field.get('className', 'form-input')
 
-
         if field_type == 'dropdown':
             form_items.append(
-                html.Div([
-                    html.Label(label, className='form-label'),
-                    dcc.Dropdown(
-                        id=pm_id,
-                        options=field.get('options', []),
-                        value=values.get(dom_id, None),
-                        placeholder=field.get('placeholder', ''),
-                        className=class_name,
-                        disabled=readonly,
-                    ),
-                ])
+                html.Div(
+                    [
+                        html.Label(label, className='form-label'),
+                        dcc.Dropdown(
+                            id=pm_id,
+                            options=field.get('options', []),
+                            value=values.get(dom_id, None),
+                            placeholder=field.get('placeholder', ''),
+                            className=class_name,
+                            disabled=readonly,
+                        ),
+                    ]
+                )
             )
         else:
             input_props = {
@@ -61,11 +61,6 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                 if prop in field:
                     input_props[prop] = field[prop]
 
-            form_items.append(
-                html.Div([
-                    html.Label(label, className='form-label'),
-                    dcc.Input(**input_props)
-                ])
-            )
+            form_items.append(html.Div([html.Label(label, className='form-label'), dcc.Input(**input_props)]))
 
     return html.Div(form_items, className='resource-form-container')

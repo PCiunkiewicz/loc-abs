@@ -3,6 +3,7 @@
 from dash import html, dcc, register_page, callback, Output, Input, State, ctx, ALL, no_update
 from dash.exceptions import PreventUpdate
 import json
+import copy
 import dash_bootstrap_components as dbc
 from components.resource_form import render_resource_form
 from components.input_components import create_mask_input, create_vaccine_type
@@ -492,6 +493,7 @@ def register_edit_clone(resource):
         Output({'type': 'form-mode', 'resource': resource}, 'data', allow_duplicate=True),
         Output({'type': 'form-button-group', 'resource': resource}, 'style', allow_duplicate=True),
         Output({'type': 'action-modal', 'resource': resource}, 'is_open', allow_duplicate=True),
+        Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
         Input({'type': 'edit-btn', 'resource': resource}, 'n_clicks'),
         Input({'type': 'clone-btn', 'resource': resource}, 'n_clicks'),
         State({'type': 'resource-store', 'resource': resource}, 'data'),
@@ -507,12 +509,13 @@ def register_edit_clone(resource):
         if not success:
             raise PreventUpdate
 
+        item = copy.deepcopy(item)
         if is_clone:
             item.pop('id', None)
-            item['name'] = f'{item["name"]} (copy)'
+            item['name'] = f'{item["name"]}-copy'
             stored_id = None
 
-        return item, {'mode': 'edit', 'resource_id': stored_id}, {'display': 'flex'}, False
+        return item, {'mode': 'edit', 'resource_id': stored_id}, {'display': 'flex'}, False, stored_id
 
 
 def register_delete(resource):
@@ -554,7 +557,6 @@ def register_save(resource):
         Input(f'{resource}-save-btn', 'n_clicks'),
         State({'type': 'form-input', 'resource': resource, 'field': ALL}, 'value'),
         State({'type': 'form-input', 'resource': resource, 'field': ALL}, 'id'),
-
         # Current mode store
         State({'type': 'form-mode', 'resource': resource}, 'data'),
         prevent_initial_call=True,
@@ -562,11 +564,11 @@ def register_save(resource):
     def _save(n, values, ids, mode):
         if not n:
             raise PreventUpdate
-        form_data = {
-            field_id['field']: value
-            for field_id, value in zip(ids, values)
-        }
-        print(f"SAVING resource={resource}: {form_data}")
+        form_data = {}
+        form_data = {field_id['field']: value for field_id, value in zip(ids, values)}
+
+        print(f'\n=== SAVE {resource.upper()} ===')
+        print('Payload:', form_data)
 
         rid = mode.get('resource_id')
 
@@ -576,11 +578,11 @@ def register_save(resource):
             success, item, err = api.create(resource, form_data)
 
         if not success:
-            alert = dbc.Alert(f'Save failed: {err}', color='danger', duration=3000)
+            alert = dbc.Alert(f'Save failed: {err}', color='danger', duration=5000)
             return no_update, no_update, no_update, no_update, alert
 
         new_id = item['id']
-        alert = dbc.Alert(f'Saved {resource}', color='success', duration=3000)
+        alert = dbc.Alert(f'Saved {resource}', color='success', duration=5000)
 
         return {'mode': 'readonly', 'resource_id': new_id}, {'display': 'none'}, new_id, new_id, alert
 
