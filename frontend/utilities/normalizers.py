@@ -37,14 +37,27 @@ def normalize_values(resource, values):
     if resource == 'simulation':
         terrain = values.get('terrain')
         if isinstance(terrain, list):
-            normalized['terrain'] = [t['id'] if isinstance(t, dict) else t for t in terrain]
+            normalized['terrain'] = []
+            for t in terrain:
+                tid = t['id'] if isinstance(t, dict) else t
+                try:
+                    tid = int(tid)
+                except Exception:
+                    pass
+                normalized['terrain'].append(tid)
 
         # Mapfile
         mapfile = values.get('mapfile')
         if isinstance(mapfile, dict):
             normalized['mapfile'] = mapfile.get('id') or mapfile.get('name')
         elif isinstance(mapfile, str):
-            normalized['mapfile'] = Path(mapfile).name
+            p = Path(mapfile)
+            parts = p.parts
+            if 'mapfiles' in parts:
+                idx = parts.index('mapfiles')
+                normalized['mapfile'] = Path(*parts[idx + 1 :]).as_posix()
+            else:
+                normalized['mapfile'] = p.as_posix()
         else:
             normalized['mapfile'] = mapfile
 

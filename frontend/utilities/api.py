@@ -125,7 +125,7 @@ def delete(resource: str, obj_id: int) -> dict:
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
     try:
-        mapfiles_dir = Path('/data/mapfiles')   # <-- correct container path
+        mapfiles_dir = Path('/data/mapfiles')  
 
         if not mapfiles_dir.exists():
             return False, [], 'Mapfiles directory not found in container at /data/mapfiles.'
