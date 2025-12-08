@@ -19,7 +19,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install pylint
-        run: pip install pylint pylint-django
+        run: pip install pylint pylint-django django
 
       - name: Run pylint
         run: pylint -v $(git ls-files '*.py')
