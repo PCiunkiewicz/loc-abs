@@ -1,6 +1,6 @@
 /* Styles for Run Builder page */
 .page-container {
-    display: flex;
+      display: flex;
     flex-direction: column;
     padding: 2rem;
     gap: 2rem;
@@ -113,8 +113,10 @@
 .form-input{
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #d9d9e0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #11131a;
 }
 
 .agent-config-form-column{
@@ -128,19 +130,20 @@
 }
 
 .action-btn {
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    color: #333;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
+    background-color: #eef1f7;
+    border: 1px solid #d9d9e0;
+    color: #1f232d;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s, border 0.2s;
     font-size: 0.95rem;
 }
 
 .action-btn:hover {
-    background-color: #e0e0e0;
-    border-color: #888;
+    background-color: #dde4f0;
+    border-color: #b8c3d6;
+    color: #0f1118;
 }
 
 .dash-tabs {
@@ -361,42 +364,13 @@ resource-form-container{
     transition: background 0.2s;
 }
 
-.btn .btn-primary{
-    background-color: #1976d2 !important;
-}
-
-.btn .btn-primary:hover {
-    background-color: #0a2f5a !important;
-}
-
-.btn .btn-secondary{
-    background-color: #6c757d !important;
-}
-
-.btn .btn-secondary:hover {
-    background-color: #565e64 !important;
-}
-
-.btn .btn-success{
-    background-color: #198754 !important;
-}
-
-.btn .btn-success:hover {
-    background-color: #0b6510 !important;
-}
-
-.btn .btn-danger{
-    background-color: #d32f2f !important;
-}
-
-.btn .btn-danger:hover {
-    background-color: #a71111 !important;
-}   
-
-
-.btn .btn-info{
-    background-color: #17a2b8 !important;
-}
-.btn .btn-info:hover {
-    background-color: #117a8b !important;
-}
+.btn.btn-primary{ background-color: #f5c400 !important; color: #0b0b0d; }
+.btn.btn-primary:hover { background-color: #ffd84d !important; }
+.btn.btn-secondary{ background-color: #2b2b31 !important; color: #f5f5f7; }
+.btn.btn-secondary:hover { background-color: #3a3a42 !important; }
+.btn.btn-success{ background-color: #00c38a !important; }
+.btn.btn-success:hover { background-color: #06d39a !important; }
+.btn.btn-danger{ background-color: #e63946 !important; }
+.btn.btn-danger:hover { background-color: #ff5f6b !important; }
+.btn.btn-info{ background-color: #5aa8ff !important; }
+.btn.btn-info:hover { background-color: #7cb8ff !important; }
