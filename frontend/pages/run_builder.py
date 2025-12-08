@@ -57,6 +57,7 @@ virus_fields = [
     },
 ]
 
+# TODO: Remove terrain and mapfile fields, - configure using defaults values - work on this !!!!!
 simulation_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'name'},

@@ -51,10 +51,7 @@ layout = html.Div(
                             ]
                         ),
                         dbc.Button('Run Simulation', id='dv-run-btn', color='primary', className='btn w-100'),
-                        dbc.Button(
-                            'Save Run', id='dv-save-scenario-btn', color='dark', className='btn w-100 mt-2'
-                        ),
-                        dbc.Button('Reset to Default', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
+                        dbc.Button('Clear', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
                         html.Hr(),
                         html.Div(
                             id='dv-run-details',
@@ -260,7 +257,9 @@ def _render_summary(scenario_id, agent_id, runs, run_name):
     scenario_name = (scenario or {}).get('name', 'No scenario selected')
     virus_name = _safe_resource_name('virus', (scenario or {}).get('virus'))
     prevention_name = _safe_resource_name('prevention', (scenario or {}).get('prevention'))
-    simulation_name = _safe_resource_name('simulation', (scenario or {}).get('sim') or (scenario or {}).get('simulation'))
+    simulation_name = _safe_resource_name(
+        'simulation', (scenario or {}).get('sim') or (scenario or {}).get('simulation')
+    )
     agent_name = _safe_resource_name('agent_config', agent_id)
     run_total = runs or 1
 
@@ -274,9 +273,7 @@ def _render_summary(scenario_id, agent_id, runs, run_name):
         ('Run Name', run_name or 'unnamed-run'),
     ]
 
-    table_rows = [
-        html.Tr([html.Th(label, className='w-25 text-muted small'), html.Td(value)]) for label, value in rows
-    ]
+    table_rows = [html.Tr([html.Th(label, className='w-25 text-muted small'), html.Td(value)]) for label, value in rows]
 
     decision_link = dbc.Button('Open Decision Support', color='info', href='/decision-support', className='mt-3')
 
