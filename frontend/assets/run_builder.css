@@ -119,6 +119,21 @@
     color: #11131a;
 }
 
+/* Radio items styling - horizontal layout with spacing */
+.form-radio-items {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: center;
+}
+
+.form-radio-items label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
 .agent-config-form-column{
     display: flex;
     flex-direction: row;
@@ -374,3 +389,36 @@ resource-form-container{
 .btn.btn-danger:hover { background-color: #ff5f6b !important; }
 .btn.btn-info{ background-color: #5aa8ff !important; }
 .btn.btn-info:hover { background-color: #7cb8ff !important; }
+
+/* Notification Modal Styling */
+.notification-success .modal-content {
+    border: 3px solid #00c38a;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 195, 138, 0.2);
+}
+
+.notification-success .modal-header {
+    background-color: #e6f9f4;
+    color: #00a372;
+}
+
+.notification-success .modal-body {
+    background-color: #ffffff;
+    color: #2b2b31;
+}
+
+.notification-error .modal-content {
+    border: 3px solid #e63946;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(230, 57, 70, 0.2);
+}
+
+.notification-error .modal-header {
+    background-color: #fef0f1;
+    color: #c62828;
+}
+
+.notification-error .modal-body {
+    background-color: #ffffff;
+    color: #2b2b31;
+}

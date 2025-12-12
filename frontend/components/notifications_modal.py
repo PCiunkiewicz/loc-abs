@@ -1,6 +1,7 @@
 """Notification Modal Component for LocABS Application."""
 
 import dash_bootstrap_components as dbc
+from dash import html
 
 
 def create_notification_modal(message='', is_error=False, is_open=False):
@@ -17,21 +18,45 @@ def create_notification_modal(message='', is_error=False, is_open=False):
     return dbc.Modal(
         [
             dbc.ModalHeader(
-                dbc.ModalTitle('Error' if is_error else 'Success', id='notification-modal-title'),
+                html.Div(
+                    [
+                        html.Span(id='notification-modal-title', style={'fontSize': '1.3rem', 'fontWeight': 'bold'}),
+                    ],
+                    style={'width': '100%', 'textAlign': 'center'},
+                ),
                 close_button=True,
+                style={'border': 'none', 'paddingBottom': '0'},
             ),
-            dbc.ModalBody(message, id='notification-modal-body'),
+            dbc.ModalBody(
+                html.Div(
+                    id='notification-modal-body',
+                    style={
+                        'fontSize': '1.1rem',
+                        'textAlign': 'center',
+                        'padding': '1.5rem 1rem',
+                        'lineHeight': '1.6',
+                    },
+                ),
+                style={'paddingTop': '0.5rem'},
+            ),
             dbc.ModalFooter(
                 dbc.Button(
-                    'Close',
+                    'OK',
                     id='close-notification-modal',
-                    className='ms-auto',
+                    className='btn-primary',
                     n_clicks=0,
-                )
+                    style={
+                        'minWidth': '100px',
+                        'fontWeight': '500',
+                    },
+                ),
+                style={'border': 'none', 'justifyContent': 'center'},
             ),
         ],
         id='notification-modal',
         is_open=is_open,
         centered=True,
         className='notification-error' if is_error else 'notification-success',
+        style={'borderRadius': '10px'},
+        size='md',
     )

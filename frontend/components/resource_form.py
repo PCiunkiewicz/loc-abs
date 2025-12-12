@@ -59,6 +59,21 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                     ]
                 )
             )
+        elif field_type == 'radio':
+            form_items.append(
+                html.Div(
+                    [
+                        html.Label(label, className='form-label'),
+                        dcc.RadioItems(
+                            id=field_id,
+                            options=field.get('options', []),
+                            value=field_value,
+                            className='form-radio-items',
+                            inline=field.get('inline', True),
+                        ),
+                    ]
+                )
+            )
         else:
             input_props = {
                 'id': field_id,

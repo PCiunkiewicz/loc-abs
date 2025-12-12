@@ -36,11 +36,12 @@ class GenericAPI:
             json=data,
         )
 
-    def get(self, obj_id: int | None = None) -> requests.Response:
+    def get(self, obj_id: int | None = None, params: dict | None = None) -> requests.Response:
         """Make a GET request to the API."""
         return self.session.get(
             self.url if obj_id is None else f'{self.url}/{obj_id}',
             timeout=10,
+            params=params,
         )
 
     def patch(self, obj_id: int, data: dict) -> requests.Response:
@@ -68,6 +69,7 @@ APIS = {
     'simulation': GenericAPI('simulations'),
     'scenario': GenericAPI('scenarios'),
     'run': GenericAPI('runs'),
+    'export': GenericAPI('exports'),
 }
 
 
@@ -85,12 +87,12 @@ def handle_response(response: requests.Response) -> dict:
 
 
 # Operations for Specific Endpoints
-def get_all(resource: str) -> dict:
+def get_all(resource: str, params: dict | None = None) -> dict:
     """Get all objects from a specific resource endpoint."""
     api = APIS.get(resource)
     if not api:
         return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].get())
+    return handle_response(APIS[resource].get(params=params))
 
 
 def get_by_id(resource: str, obj_id: int) -> dict:
@@ -139,3 +141,5 @@ def get_map_files() -> dict:
 
     except (OSError, PermissionError) as e:
         return False, [], f'Error accessing map files: {str(e)}'
+
+

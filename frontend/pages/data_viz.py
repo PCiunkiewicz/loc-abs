@@ -50,6 +50,18 @@ layout = html.Div(
                                 ),
                             ]
                         ),
+                        html.Div(
+                            [
+                                dbc.Label('Run', html_for='dv-run-dropdown'),
+                                dcc.Dropdown(
+                                    id='dv-run-dropdown',
+                                    options=[],
+                                    placeholder='Select a run to view exports',
+                                    clearable=True,
+                                ),
+                            ],
+                            className='mb-3',
+                        ),
                         dbc.Button('Run Simulation', id='dv-run-btn', color='primary', className='btn w-100'),
                         dbc.Button('Clear', id='dv-reset-btn', color='light', className='btn w-100 mt-2'),
                         html.Hr(),
@@ -113,6 +125,12 @@ layout = html.Div(
                             children=[html.Div('SCENARIO SUMMARY DATA TABLE', className='text-center text-muted mt-5')],
                             className='dv-summary',
                         ),
+                        html.Hr(),
+                        html.Div(
+                            id='dv-export-list',
+                            children=[html.Div('Select a run to view exports', className='text-center text-muted')],
+                            className='dv-summary',
+                        ),
                     ],
                     width=9,
                 ),
@@ -132,6 +150,7 @@ layout = html.Div(
     [
         Output('dv-agent-dropdown', 'options'),
         Output('dv-scenario-dropdown', 'options'),
+        Output('dv-run-dropdown', 'options'),
     ],
     Input('dv-init', 'n_intervals'),
     prevent_initial_call=False,
@@ -140,38 +159,29 @@ def _populate_dropdowns(_):
     """Populate agent_config and scenario dropdown options on load."""
     agents = []
     scenarios = []
+    runs = []
     try:
         _, agents, _ = api.get_all('agent_config')
         _, scenarios, _ = api.get_all('scenario')
+        _, runs, _ = api.get_all('run')
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching dropdown options: %s', exc)
 
     agent_opts = [{'label': a['name'], 'value': a['id']} for a in (agents or [])]
     scenario_opts = [{'label': s['name'], 'value': s['id']} for s in (scenarios or [])]
-    return agent_opts, scenario_opts
-
-
-@callback(
-    Output('dv-runs-input', 'value'),
-    [Input('dv-runs-incr', 'n_clicks'), Input('dv-runs-decr', 'n_clicks')],
-    State('dv-runs-input', 'value'),
-    prevent_initial_call=True,
-)
-def _change_runs(_incr, _decr, current):
-    """Increment or decrement runs count."""
-    triggered = ctx.triggered_id
-    if not triggered:
-        return no_update
-    if triggered == 'dv-runs-incr':
-        return (current or 1) + 1
-    return max(1, (current or 1) - 1)
+    run_opts = [
+        {'label': f"{r.get('name', 'run')} ({r.get('status', '').lower()})", 'value': r['id']} for r in (runs or [])
+    ]
+    return agent_opts, scenario_opts, run_opts
 
 
 @callback(
     [
         Output('dv-current-run', 'data'),
         Output('dv-run-details-body', 'children'),
-        Output('dv-notification-area', 'children'),
+        Output('dv-notification-area', 'children', allow_duplicate=True),
+        Output('dv-run-dropdown', 'options', allow_duplicate=True),
+        Output('dv-run-dropdown', 'value', allow_duplicate=True),
     ],
     Input('dv-run-btn', 'n_clicks'),
     [
@@ -183,33 +193,64 @@ def _change_runs(_incr, _decr, current):
     prevent_initial_call=True,
 )
 def _start_run(_n, name, agent_id, scenario_id, runs):
-    """Build a minimal Run payload and store/display it (no backend run invocation)."""
+    """Trigger a run creation via API and refresh run selection."""
     if not ctx.triggered_id:
-        return no_update
+        return no_update, no_update, no_update, no_update, no_update
 
+    if not scenario_id or not agent_id:
+        alert = dbc.Alert('Select both scenario and agent config before running.', color='warning', duration=3000)
+        return no_update, no_update, alert, no_update, no_update
+
+    safe_name = (name or 'unnamed_run').replace(' ', '_')
     payload = {
-        'name': name or 'unnamed-run',
-        'status': 'CREATED',
-        'save_dir': None,
-        'config': None,
-        'logfile': None,
-        'scenario_id': scenario_id,
-        'agents_id': agent_id,
+        'name': safe_name,
+        'scenario': scenario_id,
+        'agents': agent_id,
         'runs': int(runs or 1),
     }
 
-    # store payload locally (frontend store). Backend start-invocation can be added later.
+    try:
+        success, run_obj, err = api.create('run', payload)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error starting run: %s', exc)
+        alert = dbc.Alert('Failed to start run.', color='danger', duration=3000)
+        return no_update, no_update, alert, no_update, no_update
+
+    if not success or not run_obj:
+        alert = dbc.Alert(f'Failed to start run: {err}', color='danger', duration=3000)
+        return no_update, no_update, alert, no_update, no_update
+
+    details = _render_run_details(run_obj)
+    notification = dbc.Alert(f'Run started: {run_obj.get("name", "run")}', color='success', duration=3000)
+
+    # refresh run list
+    run_opts = []
+    try:
+        success_runs, runs_all, _ = api.get_all('run')
+        if success_runs and runs_all:
+            run_opts = [
+                {'label': f"{r.get('name', 'run')} ({r.get('status', '').lower()})", 'value': r['id']}
+                for r in runs_all
+            ]
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error refreshing runs list: %s', exc)
+
+    return run_obj, details, notification, run_opts or no_update, run_obj.get('id')
+
+
+def _render_run_details(run_obj):
+    """Format run details for display."""
+    if not run_obj:
+        return html.Div('No run yet.')
+
     details = [
-        html.P([html.Strong('Name: '), payload['name']]),
-        html.P([html.Strong('Agents id: '), str(payload['agents_id'])]),
-        html.P([html.Strong('Scenario id: '), str(payload['scenario_id'])]),
-        html.P([html.Strong('Runs: '), str(payload['runs'])]),
-        html.P([html.Strong('Status: '), payload['status']]),
+        html.P([html.Strong('Name: '), run_obj.get('name')]),
+        html.P([html.Strong('Status: '), run_obj.get('status', 'UNKNOWN')]),
+        html.P([html.Strong('Scenario id: '), str(run_obj.get('scenario'))]),
+        html.P([html.Strong('Agents id: '), str(run_obj.get('agents'))]),
+        html.P([html.Strong('Runs: '), str(run_obj.get('runs'))]),
     ]
-
-    notification = dbc.Alert(f'Run prepared: {payload["name"]}', color='success', duration=3000)
-
-    return payload, details, notification
+    return details
 
 
 def _safe_resource_name(resource, obj_id):
@@ -236,6 +277,54 @@ def _get_scenario_details(scenario_id):
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching scenario %s: %s', scenario_id, exc)
     return None
+
+
+def _render_exports(exports):
+    """Render a simple table/list of exports for a run."""
+    if not exports:
+        return html.Div('No exports found for this run yet.', className='text-muted')
+
+    rows = []
+    for exp in exports:
+        link = (
+            html.A('Download', href=exp.get('outfile'), target='_blank')
+            if exp.get('outfile')
+            else html.Span('Pending', className='text-muted')
+        )
+        rows.append(
+            html.Tr(
+                [
+                    html.Td(exp.get('name', 'unnamed'), className='fw-semibold'),
+                    html.Td(exp.get('export_type', '')),
+                    html.Td(exp.get('created_at', '')),
+                    html.Td(link),
+                ]
+            )
+        )
+
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H5('Exports', className='mb-3'),
+                dbc.Table(
+                    [
+                        html.Thead(
+                            html.Tr(
+                                [html.Th('Name'), html.Th('Type'), html.Th('Created'), html.Th('File')],
+                                className='table-light',
+                            )
+                        ),
+                        html.Tbody(rows),
+                    ],
+                    bordered=False,
+                    striped=False,
+                    hover=False,
+                    responsive=True,
+                    size='sm',
+                ),
+            ]
+        )
+    )
 
 
 @callback(
@@ -287,3 +376,29 @@ def _render_summary(scenario_id, agent_id, runs, run_name):
         ),
         className='h-100',
     )
+
+
+@callback(
+    Output('dv-export-list', 'children'),
+    Output('dv-notification-area', 'children', allow_duplicate=True),
+    Input('dv-run-dropdown', 'value'),
+    prevent_initial_call=True,
+)
+def _load_exports(run_id):
+    """Load exports for the selected run and render in the visualisation area."""
+    if not run_id:
+        return html.Div('Select a run to view exports', className='text-center text-muted'), no_update
+
+    try:
+        success, exports, err = api.get_all('export', params={'run': run_id})
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching exports for run %s: %s', run_id, exc)
+        alert = dbc.Alert('Unable to load exports right now.', color='danger', duration=3000)
+        return html.Div('Unable to load exports right now.', className='text-muted'), alert
+
+    if not success:
+        alert = dbc.Alert(f'Unable to load exports: {err}', color='danger', duration=3000)
+        return html.Div('Unable to load exports right now.', className='text-muted'), alert
+
+    exports = exports or []
+    return _render_exports(exports), no_update
