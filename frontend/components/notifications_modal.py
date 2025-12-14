@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash import html
 
 
-def create_notification_modal(message='', is_error=False, is_open=False):
+def create_notification_modal(_message='', is_error=False, is_open=False):
     """Create a notification modal component.
 
     Args:
