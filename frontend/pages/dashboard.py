@@ -1,90 +1,75 @@
-"""Dashboard Page for LocABS Application."""
-
-from datetime import datetime
+"""Dashboard page wired to backend runs."""
 
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
-from dash import Input, Output, callback, dcc, html, register_page
+from dash import Input, Output, callback, dcc, html, register_page, State
 
-register_page(__name__, path='/', name='Dashboard', title='LocABS · Dashboard')
+from utilities import api
 
-
-# Sample data for recent activity table
-# TODO: Replace with actual data fetching logic or database queries later
-recent_activity_data = pd.DataFrame(
-    [
-        {
-            'scenario': 'Baseline A',
-            'run_id': '#1842',
-            'status': 'Success',
-            'duration': '03:12',
-            'timestamp': '2025-10-28 09:14',
-        },
-        {
-            'scenario': 'Baseline B',
-            'run_id': '#1841',
-            'status': 'Failed',
-            'duration': '00:47',
-            'timestamp': '2025-10-28 08:50',
-        },
-        {
-            'scenario': 'What-if C',
-            'run_id': '#1840',
-            'status': 'Success',
-            'duration': '04:05',
-            'timestamp': '2025-10-28 08:20',
-        },
-    ]
-)
-
-ColumnDefs = [
-    {'field': 'scenario', 'headerName': 'Scenario'},
-    {'field': 'run_id', 'headerName': 'Run ID'},
-    {
-        'field': 'status',
-        'headerName': 'Status',
-        'cellStyle': {
-            'styleConditions': [
-                {'condition': "params.value == 'Success'", 'style': {'color': '#28a745', 'fontWeight': '600'}},
-                {'condition': "params.value == 'Failed'", 'style': {'color': '#dc3545', 'fontWeight': '600'}},
-                {'condition': "params.value == 'Running'", 'style': {'color': '#17a2b8', 'fontWeight': '600'}},
-            ]
-        },
-    },
-    {'field': 'duration', 'headerName': 'Duration'},
-    {'field': 'timestamp', 'headerName': 'Timestamp'},
-]
+register_page(__name__, path='/', name='Dashboard', title='LocABS Dashboard')
 
 
-def kpi_card(title, value, delta=None, subtitle=None, accent='primary'):
-    """Create a KPI card component.
+def _name_from_field(val, _resource: str) -> str:
+    """Best-effort readable label without extra API calls."""
+    if val is None:
+        return 'N/A'
+    if isinstance(val, dict):
+        return val.get('name') or str(val.get('id', 'N/A'))
+    return str(val)
 
-    Args:
-        title (str): The title of the KPI.
-        value (str): The main value to display.
-        delta (str, optional): The change indicator (e.g., "+5%"). Defaults to None.
-        subtitle (str, optional): Additional subtitle text. Defaults to None.
-        accent (str, optional): Color accent for the delta badge. Defaults to "primary".
 
-    Returns:
-        dbc.Card: A Dash Bootstrap Card component representing the KPI.
-    """
-    trend = (
-        html.Span(
-            delta,
-            className=f'delta badge-{accent}',
+def _build_runs_df() -> tuple[pd.DataFrame, str | None]:
+    """Fetch runs from API and normalize into a dataframe."""
+    try:
+        success, runs, err = api.get_all('run')
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        return pd.DataFrame(), str(exc)
+
+    if not success:
+        return pd.DataFrame(), err or 'Unable to load runs'
+
+    rows = []
+    for r in runs or []:
+        ts_raw = r.get('created_at') or r.get('timestamp') or r.get('started_at')
+        ts_dt = pd.to_datetime(ts_raw, errors='coerce')
+        timestamp = ts_dt.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(ts_dt) else ''
+
+        duration_val = r.get('duration') or r.get('runtime') or r.get('run_time')
+        try:
+            duration_min = round(float(duration_val), 2) if duration_val is not None else None
+        except (TypeError, ValueError):
+            duration_min = None
+
+        rows.append(
+            {
+                'run_name': r.get('name', 'run'),
+                'run_id': r.get('id'),
+                'status': str(r.get('status', '')).upper(),
+                'duration_min': duration_min,
+                'timestamp': timestamp,
+                'scenario': _name_from_field(r.get('scenario'), 'scenario'),
+                'agent': _name_from_field(r.get('agents'), 'agent_config'),
+                'runs': r.get('runs'),
+                'ts_dt': ts_dt,
+            }
         )
-        if delta
-        else None
-    )
 
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df['duration_display'] = df['duration_min'].apply(lambda m: f'{m} min' if m is not None else 'N/A')
+        df.sort_values(by='ts_dt', ascending=False, inplace=True, ignore_index=True)
+    return df, None
+
+
+def kpi_card(title, value, subtitle=None, value_id=None):
+    """Simple KPI card."""
     return dbc.Card(
         dbc.CardBody(
             [
                 html.Div(title, className='kpi-title'),
-                html.H2([value, trend] if trend else value, className='kpi-value'),
+                html.H2(value, className='kpi-value', id=value_id),
                 html.Div(subtitle or '', className='kpi-subtitle'),
             ]
         ),
@@ -92,166 +77,215 @@ def kpi_card(title, value, delta=None, subtitle=None, accent='primary'):
     )
 
 
-def status_row(label: str, color: str, value: str = '#####') -> html.Div:
-    """Create a status row with a colored dot, label, and value.
-
-    Args:
-        label (str): The status label.
-        color (str): The color for the status dot (e.g., "primary", "success").
-        value (str): The value to display next to the label. Defaults to "#####".
-
-    Returns:
-        html.Div: A Dash HTML Div component representing the status row.
-    """
-    dot = html.Span(className=f'status-dot bg-{color}')
-    left = html.Span([dot, html.Span(f'  {label}:', className='status-label')], className='status-left')
-    right = html.Span(value, className='status-value')
-    return html.Div([left, right], className='status-row')
-
-
-metric_cards = html.Div(
-    [
-        html.Div(
+def last_run_summary(run: dict) -> html.Div:
+    """Render last run summary details."""
+    items = [
+        ('Run Name', run.get('run_name', 'N/A')),
+        ('Run ID', f'#{run.get("run_id", "N/A")}'),
+        ('# Runs', run.get('runs', 'N/A')),
+        ('Scenario', run.get('scenario', 'N/A')),
+        ('Agent Config', run.get('agent', 'N/A')),
+    ]
+    rows = [html.Tr([html.Th(label), html.Td(val)]) for label, val in items]
+    return dbc.Card(
+        dbc.CardBody(
             [
-                kpi_card('Total Scenarios', '1,234', delta='+5%', subtitle='Since last month'),
-                kpi_card('Total Agents', '567', delta='-2%', subtitle='Since last week'),
-            ],
-            className='kpi-row',
-        ),
-        html.Div(
-            [
-                kpi_card('Last Simulation Duration', '3h 45m', subtitle='Completed 2 days ago'),
-                kpi_card('Floors Detected', '42', delta='+10%', subtitle='Since last scan'),
-            ],
-            className='kpi-row',
-        ),
-    ],
-    className='metric-cards-container',
-)
-
-runs_card = html.Div(
-    [
-        html.Div(
-            [
-                html.H3('Recent Simulation Runs', className='runs-card-title'),
-                html.Div(
-                    [
-                        html.Span('Total Runs', className='total-runs-label'),
-                        html.Span(id='total-runs-value', children='#####', className='total-runs-value'),
-                    ],
-                    className='total-runs-row',
-                ),
+                html.H4('Last Run Summary', className='card-title'),
+                dbc.Table(rows, bordered=False, striped=False, hover=False, size='sm', className='summary-table'),
             ]
         ),
-        html.Div(
-            [
-                status_row('CREATED', 'primary', '#####'),
-                status_row('RUNNING', 'info', '#####'),
-                status_row('SUCCESS', 'success', '#####'),
-                status_row('FAILURE', 'danger', '#####'),
-            ],
-            className='status-breakdown',
-        ),
-    ],
-    className='runs-card',
-)
+        className='summary-card',
+    )
 
-graph_card = dbc.Card(
-    dbc.CardBody(
-        [
-            html.H3('Simulation Duration Over Time', className='graph-card-title'),
-            dcc.Graph(
-                figure=px.line(
-                    x=['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01'],
-                    y=[2, 3, 2.5, 4],
-                    labels={'x': 'Date', 'y': 'Duration (hours)'},
-                    title='Simulation Duration Over Time',
-                ).update_layout(margin={'l': 20, 'r': 20, 't': 40, 'b': 20})
-            ),
-        ],
-    ),
-    className='graph-card',
-)
 
-recent_activity_card = dbc.Card(
-    dbc.CardBody(
-        [
-            dcc.Interval(id='interval-component', interval=5 * 1000, n_intervals=0),
-            html.H3('Recent Activity', className='activity-card-title'),
-            dag.AgGrid(
-                id='recent-activity-grid',
-                columnDefs=ColumnDefs,
-                rowData=recent_activity_data.to_dict('records'),
-                defaultColDef={
-                    'resizable': True,
-                    'sortable': True,
-                    'filter': True,
-                },
-                dashGridOptions={
-                    'pagination': True,
-                    'paginationPageSize': 10,
-                    'animateRows': True,
-                },
-                className='ag-theme-alpine activity-grid',
-                columnSize='sizeToFit',
-            ),
-        ]
-    ),
-    className='recent-activity-card',
-)
+def duration_line(df: pd.DataFrame):
+    """Render duration line chart."""
+    if df.empty:
+        fig = px.line(title='Run Duration Over Time')
+    else:
+        fig = px.line(
+            df.sort_values('ts_dt'),
+            x='timestamp',
+            y='duration_min',
+            markers=True,
+            labels={'timestamp': 'Timestamp', 'duration_min': 'Duration (min)'},
+        )
+    fig.update_layout(margin={'l': 10, 'r': 10, 't': 40, 'b': 10}, height=280)
+    return fig
+
+
+def status_bar(df: pd.DataFrame):
+    """Render status bar chart."""
+    if df.empty:
+        fig = px.bar(title='Runs by Status')
+    else:
+        agg = df.groupby('status')['run_id'].count().reset_index(name='count')
+        fig = px.bar(agg, x='status', y='count', title='Runs by Status', labels={'count': 'Count', 'status': 'Status'})
+    fig.update_layout(margin={'l': 10, 'r': 10, 't': 40, 'b': 10}, height=280)
+    return fig
+
+
+column_defs = [
+    {'field': 'run_name', 'headerName': 'Run Name', 'minWidth': 140},
+    {'field': 'run_id', 'headerName': 'Run ID', 'maxWidth': 90},
+    {
+        'field': 'status',
+        'headerName': 'Status',
+        'cellClassRules': {
+            'status-success': "value === 'SUCCESS'",
+            'status-failed': "value === 'FAILED'",
+            'status-running': "value === 'RUNNING'",
+        },
+    },
+    {'field': 'duration_min', 'headerName': 'Duration (min)', 'maxWidth': 140},
+    {'field': 'timestamp', 'headerName': 'Timestamp', 'minWidth': 160},
+]
 
 
 @callback(
     Output('recent-activity-grid', 'rowData'),
-    Input('interval-component', 'n_intervals'),
+    Output('duration-graph', 'figure'),
+    Output('status-graph', 'figure'),
+    Output('last-run-summary', 'children'),
+    Output('kpi-scenarios', 'children'),
+    Output('kpi-agents', 'children'),
+    Output('kpi-last-duration', 'children'),
+    Output('kpi-total-runs', 'children'),
+    Output('dashboard-metadata', 'data', allow_duplicate=True),
+    Input('runs-refresh', 'n_intervals'),
+    State('dashboard-metadata', 'data'),
+    prevent_initial_call='initial_duplicate',
 )
-def update_recent_activity(_n_intervals):
-    """Fetch data from API and return updated row data periodically."""
-    # TODO: Replace with actual API call
-    updated_data = recent_activity_data.copy()
-    updated_data.loc[0, 'timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    return updated_data.to_dict('records')
+def update_dashboard(_n, metadata):
+    """Update dashboard components periodically."""
+    df, err = _build_runs_df()
+    if err:
+        df = pd.DataFrame()
+
+    meta = metadata or {}
+    scenario_count = meta.get('scenarios', '...')
+    agent_cfg_count = meta.get('agent_configs', '...')
+    # fetch counts only if unknown
+    if scenario_count in {'...', None}:
+        try:
+            success_s, scenarios, _ = api.get_all('scenario')
+            if success_s and scenarios is not None:
+                scenario_count = str(len(scenarios))
+        except Exception:
+            scenario_count = 'N/A'
+    if agent_cfg_count in {'...', None}:
+        try:
+            success_a, agents, _ = api.get_all('agent_config')
+            if success_a and agents is not None:
+                agent_cfg_count = str(len(agents))
+        except Exception:
+            agent_cfg_count = 'N/A'
+
+    row_data = (
+        df[['run_name', 'run_id', 'status', 'duration_min', 'timestamp']].to_dict('records') if not df.empty else []
+    )
+
+    duration_fig = duration_line(df)
+    status_fig = status_bar(df)
+
+    if df.empty:
+        summary = last_run_summary({})
+        kpi_scenarios = scenario_count
+        kpi_agents = agent_cfg_count
+        kpi_last_duration = 'N/A'
+        kpi_total_runs = '0'
+    else:
+        latest = df.iloc[0].to_dict()
+        summary = last_run_summary(latest)
+        kpi_scenarios = scenario_count
+        kpi_agents = agent_cfg_count
+        kpi_last_duration = latest.get('duration_display', 'N/A')
+        kpi_total_runs = str(len(df))
+
+    meta.update({'scenarios': scenario_count, 'agent_configs': agent_cfg_count})
+    return (
+        row_data,
+        duration_fig,
+        status_fig,
+        summary,
+        kpi_scenarios,
+        kpi_agents,
+        kpi_last_duration,
+        kpi_total_runs,
+        meta,
+    )
 
 
 layout = html.Div(
     [
+        dcc.Interval(id='runs-refresh', interval=1000, n_intervals=0),
+        dcc.Store(id='dashboard-metadata'),
         html.Div(
             [
-                html.H2('Overview', className='overview-title'),
-                html.P(
-                    'The LocABS dashboard provides real-time insights into localization simulations, '
-                    'agent performance metrics, and mapping progress. Monitor active scenarios, '
-                    'track simulation runs, and quickly access system controls.',
-                    className='overview-description',
-                ),
+                html.H2('Simulation Dashboard', className='overview-title'),
+                html.P('Fast overview of runs, statuses, and timing.', className='overview-description'),
             ],
-            className='overview-section',
+            className='overview-section compact',
         ),
         html.Div(
             [
-                metric_cards,
-                runs_card,
+                kpi_card('Total Scenarios', '—', value_id='kpi-scenarios'),
+                kpi_card('Total Agents', '—', value_id='kpi-agents'),
+                kpi_card('Last Simulation Duration', '—', value_id='kpi-last-duration'),
+                kpi_card('Total Runs', '—', value_id='kpi-total-runs'),
             ],
-            className='metric-container',
+            className='cards-row',
         ),
         html.Div(
             [
-                html.Div(
-                    [
-                        html.Div(recent_activity_card, className='col-left'),
-                        html.Div(graph_card, className='col-right'),
-                    ],
-                    className='dashboard-row',
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            html.H4('Recent Activity', className='card-title'),
+                            dag.AgGrid(
+                                id='recent-activity-grid',
+                                columnDefs=column_defs,
+                                rowData=[],
+                                defaultColDef={'resizable': True, 'sortable': True, 'filter': True},
+                                dashGridOptions={
+                                    'pagination': True,
+                                    'paginationPageSize': 5,
+                                    'animateRows': True,
+                                },
+                                className='ag-theme-alpine activity-grid',
+                                columnSize='sizeToFit',
+                            ),
+                        ]
+                    ),
+                    className='panel-card',
                 ),
-                html.Div(
-                    [
-                        html.Div(graph_card, className='col-equal'),
-                        html.Div(graph_card, className='col-equal'),
-                    ],
-                    className='dashboard-row-equal',
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            html.H4('Run Duration Over Time', className='card-title'),
+                            dcc.Graph(id='duration-graph', config={'displayModeBar': False}, style={'height': '260px'}),
+                        ]
+                    ),
+                    className='panel-card',
                 ),
             ],
-            className='dashboard-rows-container',
+            className='split-row',
         ),
-    ]
+        html.Div(
+            [
+                html.Div(id='last-run-summary'),
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            html.H4('Run Status Overview', className='card-title'),
+                            dcc.Graph(id='status-graph', config={'displayModeBar': False}, style={'height': '260px'}),
+                        ]
+                    ),
+                    className='panel-card',
+                ),
+            ],
+            className='split-row',
+        ),
+    ],
+    className='dashboard-shell',
 )

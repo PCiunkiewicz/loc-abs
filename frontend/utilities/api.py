@@ -5,6 +5,13 @@ from pathlib import Path
 
 import requests
 
+DEFAULT_TIMEOUT = 10
+STREAM_TIMEOUT = 120
+
+def _join_url(*parts: object) -> str:
+    """Join URL parts without duplicate slashes."""
+    cleaned = [str(p).strip('/') for p in parts if p not in (None, '')]
+    return '/'.join(cleaned)
 
 class GenericAPI:
     """Generic API class to handle requests to the loc-abs backend.
@@ -15,65 +22,96 @@ class GenericAPI:
         session (requests.Session): The session object for making requests.
 
     """
+    base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1').rstrip('/')
 
-    base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1')
-    print(f'API Base URL: {base_url}')
-
-    def __init__(self, endpoint: str = '') -> None:
-        """Initialize the GenericAPI class with an optional endpoint.
+    def __init__(self, endpoint: str = '', *, base_url: str | None = None, session: requests.Session | None = None,
+    ) -> None:
+        """"Initialize the GenericAPI instance with endpoint and session.
 
         Args:
-            endpoint (str): The specific target endpoint. Defaults to ''.
+            endpoint (str): The specific endpoint for the API. Defaults to ''.
+            base_url (str | None): The base URL for the API. If None, uses the class default. Defaults to None.
+            session (requests.Session | None): The session object for making requests.
         """
-        self.url = f'{self.base_url}/{endpoint}' if endpoint else self.base_url
-        self.session = requests.Session()
+        self.base_url = (base_url or self.base_url).rstrip('/')
+        self.session = session or requests.Session()
+        self.url = _join_url(self.base_url, endpoint)
+
+    def request(
+        self,
+        method: str,
+        path: object = '',
+        *,
+        params: dict | None = None,
+        json: dict | None = None,
+        timeout: int = DEFAULT_TIMEOUT,
+        append_slash: bool = False,
+        **kwargs,
+    ) -> requests.Response:
+        """Make an HTTP request to the API.
+
+        Args:
+            method (str): The HTTP method (e.g., 'get', 'post', 'patch', 'delete').
+            path (object): The specific path or object ID to append to the endpoint. Defaults to ''.
+            params (dict | None): Query parameters for the request. Defaults to None.
+            json (dict | None): JSON payload for the request. Defaults to None.
+            timeout (int): Timeout for the request in seconds. Defaults to DEFAULT_TIMEOUT.
+            append_slash (bool): Whether to append a trailing slash to the URL. Defaults to False.
+            **kwargs: Additional arguments to pass to the request.
+
+        Returns:
+            requests.Response: The response object from the request.
+        """
+        target = _join_url(self.url, path)
+        if append_slash:
+            target = f'{target}/'
+        return self.session.request(
+            method=method,
+            url=target,
+            params=params,
+            json=json,
+            timeout=timeout,
+            **kwargs,
+        )
 
     def post(self, data: dict) -> requests.Response:
-        """Make a POST request to the API."""
-        return self.session.post(
-            f'{self.url}/',
-            timeout=10,
-            json=data,
-        )
+        """Create a new object in the API."""
+        return self.request('post', json=data, append_slash=True)
 
-    def get(self, obj_id: int | None = None, params: dict | None = None) -> requests.Response:
-        """Make a GET request to the API."""
-        return self.session.get(
-            self.url if obj_id is None else f'{self.url}/{obj_id}',
-            timeout=10,
-            params=params,
-        )
+    def get(self, obj_id: object | None = None, params: dict | None = None) -> requests.Response:
+        """Retrieve objects from the API."""
+        return self.request('get', obj_id, params=params)
 
-    def patch(self, obj_id: int, data: dict) -> requests.Response:
-        """Make a PATCH request to the API."""
-        return self.session.patch(
-            f'{self.url}/{obj_id}/',
-            timeout=10,
-            json=data,
-        )
+    def patch(self, obj_id: object, data: dict) -> requests.Response:
+        """Update an existing object in the API."""
+        return self.request('patch', obj_id, json=data, append_slash=True)
 
-    def delete(self, obj_id: int) -> requests.Response:
-        """Make a DELETE request to the API."""
-        return self.session.delete(
-            f'{self.url}/{obj_id}/',
-            timeout=10,
-        )
+    def delete(self, obj_id: object) -> requests.Response:
+        """Delete an existing object in the API."""
+        return self.request('delete', obj_id, append_slash=True)
 
-
-## API Instances for Specific Endpoints
-APIS = {
-    'terrain': GenericAPI('terrains'),
-    'virus': GenericAPI('viruses'),
-    'agent_config': GenericAPI('agent_configs'),
-    'prevention': GenericAPI('preventions'),
-    'simulation': GenericAPI('simulations'),
-    'scenario': GenericAPI('scenarios'),
-    'run': GenericAPI('runs'),
-    'export': GenericAPI('exports'),
+RESOURCE_ENDPOINTS = {
+    'terrain': 'terrains',
+    'virus': 'viruses',
+    'agent_config': 'agent_configs',
+    'prevention': 'preventions',
+    'simulation': 'simulations',
+    'scenario': 'scenarios',
+    'run': 'runs',
+    'export': 'exports',
 }
 
+SESSION = requests.Session()
+APIS: dict[str, GenericAPI] = {
+    name: GenericAPI(endpoint, session=SESSION) for name, endpoint in RESOURCE_ENDPOINTS.items()
+}
 
-# Response Handler
+def _get_api(resource: str) -> GenericAPI:
+    endpoint = RESOURCE_ENDPOINTS.get(resource, resource)
+    if resource not in APIS:
+        APIS[resource] = GenericAPI(endpoint, session=SESSION)
+    return APIS[resource]
+
 def handle_response(response: requests.Response) -> dict:
     """Handle API response and return formatted tuple for Dash callbacks."""
     try:
@@ -82,64 +120,92 @@ def handle_response(response: requests.Response) -> dict:
             return True, data, 'Success'
         error_msg = response.json().get('detail', response.reason) if response.content else response.reason
         return False, None, error_msg
-    except (ValueError, requests.exceptions.JSONDecodeError) as e:
-        return False, None, str(e)
+    except (ValueError, requests.exceptions.JSONDecodeError) as exc:
+        return False, None, str(exc)
 
+def _dispatch(resource: str, fn) -> dict:
+    return handle_response(fn(_get_api(resource)))
 
-# Operations for Specific Endpoints
 def get_all(resource: str, params: dict | None = None) -> dict:
     """Get all objects from a specific resource endpoint."""
-    api = APIS.get(resource)
-    if not api:
-        return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].get(params=params))
-
+    return _dispatch(resource, lambda api: api.get(params=params))
 
 def get_by_id(resource: str, obj_id: int) -> dict:
     """Get a specific object by ID from a resource endpoint."""
-    api = APIS.get(resource)
-    if not api:
-        return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].get(obj_id))
-
+    return _dispatch(resource, lambda api: api.get(obj_id))
 
 def create(resource: str, data: dict) -> dict:
     """Create a new object in a specific resource endpoint."""
-    api = APIS.get(resource)
-    if not api:
-        return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].post(data))
-
+    return _dispatch(resource, lambda api: api.post(data))
 
 def update(resource: str, obj_id: int, data: dict) -> dict:
     """Update an existing object in a specific resource endpoint."""
-    api = APIS.get(resource)
-    if not api:
-        return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].patch(obj_id, data))
-
+    return _dispatch(resource, lambda api: api.patch(obj_id, data))
 
 def delete(resource: str, obj_id: int) -> dict:
     """Delete an existing object in a specific resource endpoint."""
-    api = APIS.get(resource)
-    if not api:
-        return False, None, f"Resource '{resource}' not found."
-    return handle_response(APIS[resource].delete(obj_id))
+    return _dispatch(resource, lambda api: api.delete(obj_id))
 
+MAPFILES_DIR = Path(os.getenv('MAPFILES_DIR', '/data/mapfiles'))
 
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
     try:
-        mapfiles_dir = Path('/data/mapfiles')
+        if not MAPFILES_DIR.exists():
+            return False, [], f'Mapfiles directory not found at {MAPFILES_DIR}.'
 
-        if not mapfiles_dir.exists():
-            return False, [], 'Mapfiles directory not found in container at /data/mapfiles.'
-
-        file_paths = [f.name for f in mapfiles_dir.iterdir() if f.is_file() or f.is_dir()]
+        file_paths = [f.name for f in MAPFILES_DIR.iterdir() if f.is_file() or f.is_dir()]
 
         return True, file_paths, 'Success'
+    except (OSError, PermissionError) as exc:
+        return False, [], f'Error accessing map files: {exc}'
 
-    except (OSError, PermissionError) as e:
-        return False, [], f'Error accessing map files: {str(e)}'
+
+def start_run(run_id: int) -> dict:
+    """Request backend to start a run (enqueue worker)."""
+    api = _get_api('run')
+    try:
+        resp = api.request('post', f'{run_id}/start', append_slash=True)
+        return handle_response(resp)
+    except requests.RequestException as exc:
+        return False, None, str(exc)
 
 
+def get_run_status(run_id: int) -> dict:
+    """Get run details / status from runs endpoint."""
+    api = _get_api('run')
+    try:
+        return handle_response(api.get(run_id))
+    except requests.RequestException as exc:
+        return False, None, str(exc)
+
+
+def download_run_export(run_id: int, dest: str | Path) -> dict:
+    """Stream export file for a finished run to dest (file path or directory)."""
+    api = _get_api('run')
+    try:
+        resp = api.request('get', f'{run_id}/export', append_slash=True, stream=True, timeout=STREAM_TIMEOUT)
+    except requests.RequestException as exc:
+        return False, None, str(exc)
+
+    if not resp.ok:
+        return handle_response(resp)
+
+    dest_path = Path(dest)
+    if dest_path.is_dir() or str(dest).endswith(('/', '\\')):
+        cd = resp.headers.get('content-disposition', '')
+        filename = None
+        if 'filename=' in cd:
+            filename = cd.split('filename=')[-1].strip('"; ')
+        filename = filename or f'run_{run_id}_export.zip'
+        dest_path = dest_path.joinpath(filename)
+
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(dest_path, 'wb') as fh:
+            for chunk in resp.iter_content(chunk_size=8192):
+                if chunk:
+                    fh.write(chunk)
+        return True, str(dest_path), 'Success'
+    except OSError as exc:
+        return False, None, str(exc)
