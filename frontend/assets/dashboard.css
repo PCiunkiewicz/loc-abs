@@ -1,9 +1,10 @@
 /* Overview section */
 .dashboard-shell {
-  padding: 4px 8px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
+  background-color: #e3e4e6;
 }
 
 .overview-section.compact {
@@ -27,37 +28,70 @@
 .cards-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: 10px;
 }
 
 .metric-card {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  padding: 6px 8px;
-  min-height: 56px;
+  padding: 10px 14px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
 }
 
 .kpi-title {
   color: #6c757d;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .kpi-value {
-  margin: 2px 0;
-  font-size: 1.2rem;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.kpi-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ratio-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  text-align: right;
 }
 
 .kpi-subtitle {
   color: #6c757d;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   margin: 0;
 }
 
 .split-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+  grid-template-columns: 40fr 60fr;
+  gap: 15px;
 }
 
 .panel-card,
@@ -66,26 +100,34 @@
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   height: 100%;
+  padding: 8px;
 }
 
 .card-title {
-  margin-bottom: 6px;
-  font-size: 0.95rem;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 .activity-grid {
-  height: 160px;
+  height: 140px;
+  /* width: 100%; */
+}
+
+#recent-activity-grid{
+  height: 300px !important;
   /* width: 100%; */
 }
 
 .summary-table th {
   width: 40%;
   color: #6b7280;
+  font-size: 0.8rem;
 }
 
 .summary-table td {
   font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .status-success {
@@ -116,4 +158,149 @@
   .cards-row {
     grid-template-columns: 1fr;
   }
+}
+
+
+
+/* KPI Card Info Icon */
+.kpi-info-icon {
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+/* Chart Containers */
+.duration-graph-container,
+.status-graph-container {
+  height: 300px;
+}
+
+.status-graph-container {
+  height: 270px;
+}
+
+/* Dropdown Filters */
+.filter-dropdown {
+  min-width: 180px;
+}
+
+/* Glossary Modal */
+.glossary-title {
+  margin-bottom: 1rem;
+}
+
+.glossary-term-title {
+  color: #0d6efd;
+}
+
+.glossary-close-button {
+  margin-left: auto;
+}
+
+.dashboard-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.overview-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.overview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+
+/* Filter Section - Right side */
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.refresh-button {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.refresh-button:active {
+  transform: scale(0.95);
+}
+
+.refresh-button i {
+  font-size: 1rem;
+  color: #495057;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  margin: 0;
+}
+
+.last-updated-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.learn-more-button {
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin: 0;
+}
+
+/* Graph Placeholder */
+.graph-placeholder-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+.graph-placeholder {
+  color: #6c757d;
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+  padding: 1rem;
+}
+
+/* Card Content */
+.card-description {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
 }

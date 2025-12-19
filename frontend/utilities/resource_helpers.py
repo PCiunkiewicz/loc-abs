@@ -8,54 +8,11 @@ from dash import html
 from loguru import logger
 
 from utilities import api
+from utilities.messages import get_user_friendly_message as get_message, yes_no
 
 
-def get_user_friendly_message(resource, action, success, error_msg=''):
-    """Convert backend errors to user-friendly messages."""
-    resource_labels = {
-        'scenario': 'scenario',
-        'simulation': 'simulation configuration',
-        'virus': 'virus parameters',
-        'prevention': 'prevention measures',
-        'agent_config': 'agent configuration',
-    }
-    label = resource_labels.get(resource, resource)
-
-    if success:
-        if action == 'create':
-            return f'Successfully created {label}!'
-        elif action == 'update':
-            return f'Successfully updated {label}!'
-        elif action == 'delete':
-            return f'Successfully deleted {label}!'
-        elif action == 'select':
-            return f'Selected {label}'
-        return f'{action.capitalize()} successful!'
-
-    # Error messages
-    error_lower = error_msg.lower() if error_msg else ''
-
-    # Check for common error patterns
-    if 'unique' in error_lower or 'already exists' in error_lower:
-        return f'A {label} with this name already exists. Please choose a different name.'
-    elif 'required' in error_lower or 'cannot be null' in error_lower or 'cannot be blank' in error_lower:
-        return f'Please fill in all required fields for {label}.'
-    elif 'invalid' in error_lower:
-        return f'The information provided for {label} is invalid. Please check your input.'
-    elif 'not found' in error_lower or '404' in error_lower:
-        return f'The {label} you are looking for could not be found.'
-    elif 'permission' in error_lower or 'forbidden' in error_lower or '403' in error_lower:
-        return f'You do not have permission to {action} this {label}.'
-    elif 'connection' in error_lower or 'timeout' in error_lower:
-        return 'Unable to connect to the server. Please check your connection and try again.'
-    elif action == 'create':
-        return f'Failed to create {label}. Please check your input and try again.'
-    elif action == 'update':
-        return f'Failed to update {label}. Please check your input and try again.'
-    elif action == 'delete':
-        return f'Failed to delete {label}. It may be in use by other items.'
-    else:
-        return f'An error occurred while performing {action} on {label}. Please try again.'
+# Re-export the centralized message function
+get_user_friendly_message = get_message
 
 
 def friendly_name(resource: str, res_id: Any) -> str:
@@ -182,15 +139,151 @@ def render_summary(resource_type: str, item: dict[str, Any]):
         return html.Div()
 
     rows = build_rows(resource_type, item)
-    summary_rows = []
-    for label, val in rows:
-        if isinstance(val, dict):
-            summary_rows.append(html.Div([html.Strong(f'{label}: '), html.Pre(json.dumps(val, indent=2))]))
-        elif isinstance(val, list) and all(isinstance(x, str | int | float) for x in val):
-            summary_rows.append(html.Div([html.Strong(f'{label}: '), html.Pre(json.dumps(val, indent=2))]))
-        elif isinstance(val, str | int | float | bool):
-            summary_rows.append(html.P([html.Strong(f'{label}: '), str(val)]))
-        else:
-            summary_rows.append(html.Div([html.Strong(f'{label}: '), val]))
 
-    return summary_rows
+    icon_map = {
+        'Name': 'fa-tag',
+        'Virus': 'fa-virus',
+        'Prevention': 'fa-shield-halved',
+        'Simulation': 'fa-gears',
+        'Masks': 'fa-mask-face',
+        'Vaccines': 'fa-syringe',
+        'Random Agents': 'fa-users',
+        'Random Infected': 'fa-user-injured',
+        'Mask Type': 'fa-mask-face',
+        'Vax Type': 'fa-syringe',
+        'Vax Doses': 'fa-vial',
+        'Access Level': 'fa-key',
+        'Urgency': 'fa-circle-exclamation',
+        'Custom Profiles': 'fa-user-gear',
+        'Terrain': 'fa-map',
+        'Mapfile': 'fa-file-lines',
+        'XY Scale': 'fa-expand',
+        'Time Step (s)': 'fa-clock',
+        'Max Iterations': 'fa-infinity',
+        'Save Resolution': 'fa-floppy-disk',
+    }
+
+    description_map = {
+        'Name': 'Unique identifier for this configuration',
+        'Virus': 'Outbreak settings used in this environment',
+        'Prevention': 'Protective measures applied in this environment',
+        'Simulation': 'Technical settings for how the simulation runs',
+        'Masks': 'Types of face coverings and their effectiveness',
+        'Vaccines': 'Immunization types and dose schedules',
+        'Random Agents': 'Total number of people in the facility',
+        'Random Infected': 'People who start with the infection',
+        'Mask Type': 'Default face covering for participants',
+        'Vax Type': 'Default vaccine type for participants',
+        'Vax Doses': 'Number of vaccine doses received',
+        'Access Level': 'Clearance level for restricted areas',
+        'Urgency': 'Movement urgency factor (higher = faster)',
+        'Custom Profiles': 'Individually configured participant types',
+        'Terrain': 'Physical layouts used in the simulation',
+        'Mapfile': 'Floor plan or facility map reference',
+        'XY Scale': 'Real-world distance conversion factor',
+        'Time Step (s)': 'How often the simulation updates',
+        'Max Iterations': 'Total simulation steps to execute',
+        'Save Resolution': 'Frequency of saving simulation state',
+    }
+
+    name_field = None
+    grid_items = []
+
+    for label, val in rows:
+        icon_class = icon_map.get(label, 'fa-circle-info')
+        description = description_map.get(label, '')
+
+        if isinstance(val, dict):
+            val_display = html.Pre(
+                json.dumps(val, indent=2),
+                style={
+                    'fontSize': '0.875rem',
+                    'backgroundColor': '#f8fafc',
+                    'padding': '0.5rem',
+                    'borderRadius': '4px',
+                },
+            )
+        elif isinstance(val, list) and all(isinstance(x, str | int | float) for x in val):
+            val_display = html.Pre(
+                json.dumps(val, indent=2),
+                style={
+                    'fontSize': '0.875rem',
+                    'backgroundColor': '#f8fafc',
+                    'padding': '0.5rem',
+                    'borderRadius': '4px',
+                },
+            )
+        elif isinstance(val, str | int | float | bool):
+            val_display = html.Span(
+                str(val),
+                style={'fontSize': '0.95rem', 'color': '#1e293b', 'fontWeight': '500'},
+            )
+        else:
+            val_display = val
+
+        field_item = html.Div(
+            [
+                html.Div(
+                    [
+                        html.I(
+                            className=f'fa {icon_class}',
+                            style={'color': '#3b82f6', 'fontSize': '1.1rem', 'marginRight': '0.75rem'},
+                        ),
+                        html.Span(
+                            f'{label}',
+                            style={'fontSize': '0.875rem', 'color': '#64748b', 'fontWeight': '600'},
+                        ),
+                    ],
+                    style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '0.25rem'},
+                ),
+                html.Div(
+                    description,
+                    style={
+                        'paddingLeft': '2rem',
+                        'fontSize': '0.75rem',
+                        'color': '#94a3b8',
+                        'fontStyle': 'italic',
+                        'marginBottom': '0.5rem',
+                    },
+                )
+                if description
+                else None,
+                html.Div(
+                    val_display,
+                    style={'paddingLeft': '2rem'},
+                ),
+            ],
+            className='summary-row',
+            style={
+                'padding': '0.75rem',
+                'backgroundColor': '#ffffff',
+                'borderRadius': '6px',
+                'border': '1px solid #e2e8f0',
+            },
+        )
+
+        if label == 'Name':
+            name_field = html.Div(
+                field_item,
+                style={'marginBottom': '1rem'},
+            )
+        else:
+            grid_items.append(field_item)
+
+    result = []
+    if name_field:
+        result.append(name_field)
+
+    if grid_items:
+        result.append(
+            html.Div(
+                grid_items,
+                style={
+                    'display': 'grid',
+                    'gridTemplateColumns': 'repeat(3, 1fr)',
+                    'gap': '0.75rem',
+                },
+            )
+        )
+
+    return result

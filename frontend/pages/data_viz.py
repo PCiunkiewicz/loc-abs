@@ -6,6 +6,7 @@ import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
 from utilities import api
 from loguru import logger
+from components.tooltip import create_tooltip
 
 register_page(__name__, path='/data-viz', name='Data Visualisation', title='LocABS · Data Visualisation')
 
@@ -16,15 +17,73 @@ layout = html.Div(
                 # LEFT SIDEBAR
                 dbc.Col(
                     [
-                        html.H5('RUN', className='mb-3'),
+                        html.H5('SIMULATION', className='mb-3'),
+                        html.P(
+                            'Configure and launch a new simulation or view existing simulations and their results.',
+                            style={'fontSize': '0.9rem', 'color': '#64748b', 'marginBottom': '1.5rem'},
+                        ),
                         html.Div(
                             [
-                                dbc.Label('Name', html_for='dv-name-input', className='form-label'),
+                                html.Div(
+                                    [
+                                        dbc.Label('Name', html_for='dv-name-input', className='form-label'),
+                                        html.I(
+                                            className='fa fa-circle-question ms-2',
+                                            id='dv-name-tooltip',
+                                            style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
+                                        ),
+                                    ],
+                                    style={'display': 'flex', 'alignItems': 'center'},
+                                ),
+                                create_tooltip(
+                                    'Give your simulation a unique name for easy identification',
+                                    'dv-name-tooltip',
+                                    placement='top',
+                                ),
+                                html.P(
+                                    'Unique identifier for this simulation run',
+                                    style={
+                                        'fontSize': '0.75rem',
+                                        'color': '#94a3b8',
+                                        'fontStyle': 'italic',
+                                        'marginBottom': '0.5rem',
+                                    },
+                                ),
                                 dbc.Input(id='dv-name-input', placeholder='Enter run name'),
                                 html.Div(
                                     [
-                                        dbc.Label(
-                                            'Agent Configuration', html_for='dv-agent-dropdown', className='form-label'
+                                        html.Div(
+                                            [
+                                                dbc.Label(
+                                                    'Participant Configuration',
+                                                    html_for='dv-agent-dropdown',
+                                                    className='form-label',
+                                                ),
+                                                html.I(
+                                                    className='fa fa-circle-question ms-2',
+                                                    id='dv-agent-tooltip',
+                                                    style={
+                                                        'color': '#94a3b8',
+                                                        'cursor': 'pointer',
+                                                        'fontSize': '0.875rem',
+                                                    },
+                                                ),
+                                            ],
+                                            style={'display': 'flex', 'alignItems': 'center'},
+                                        ),
+                                        create_tooltip(
+                                            'Select how participants in the facility behave and move',
+                                            'dv-agent-tooltip',
+                                            placement='top',
+                                        ),
+                                        html.P(
+                                            'Defines participant behavior and population',
+                                            style={
+                                                'fontSize': '0.75rem',
+                                                'color': '#94a3b8',
+                                                'fontStyle': 'italic',
+                                                'marginBottom': '0.5rem',
+                                            },
                                         ),
                                         dcc.Dropdown(
                                             id='dv-agent-dropdown', options=[], placeholder='Choose an option here'
@@ -34,7 +93,35 @@ layout = html.Div(
                                 ),
                                 html.Div(
                                     [
-                                        dbc.Label('Scenarios', html_for='dv-scenario-dropdown'),
+                                        html.Div(
+                                            [
+                                                dbc.Label('Scenario', html_for='dv-scenario-dropdown'),
+                                                html.I(
+                                                    className='fa fa-circle-question ms-2',
+                                                    id='dv-scenario-tooltip',
+                                                    style={
+                                                        'color': '#94a3b8',
+                                                        'cursor': 'pointer',
+                                                        'fontSize': '0.875rem',
+                                                    },
+                                                ),
+                                            ],
+                                            style={'display': 'flex', 'alignItems': 'center'},
+                                        ),
+                                        create_tooltip(
+                                            'Choose scenario settings including outbreak and prevention measures',
+                                            'dv-scenario-tooltip',
+                                            placement='top',
+                                        ),
+                                        html.P(
+                                            'Scenario setup with outbreak and protective measures',
+                                            style={
+                                                'fontSize': '0.75rem',
+                                                'color': '#94a3b8',
+                                                'fontStyle': 'italic',
+                                                'marginBottom': '0.5rem',
+                                            },
+                                        ),
                                         dcc.Dropdown(
                                             id='dv-scenario-dropdown', options=[], placeholder='Choose an option here'
                                         ),
@@ -43,7 +130,35 @@ layout = html.Div(
                                 ),
                                 html.Div(
                                     [
-                                        dbc.Label('Runs', html_for='dv-runs-input'),
+                                        html.Div(
+                                            [
+                                                dbc.Label('Simulation Iterations', html_for='dv-runs-input'),
+                                                html.I(
+                                                    className='fa fa-circle-question ms-2',
+                                                    id='dv-runs-tooltip',
+                                                    style={
+                                                        'color': '#94a3b8',
+                                                        'cursor': 'pointer',
+                                                        'fontSize': '0.875rem',
+                                                    },
+                                                ),
+                                            ],
+                                            style={'display': 'flex', 'alignItems': 'center'},
+                                        ),
+                                        create_tooltip(
+                                            'Number of simulation iterations to run with the same settings',
+                                            'dv-runs-tooltip',
+                                            placement='top',
+                                        ),
+                                        html.P(
+                                            'How many times to execute the simulation',
+                                            style={
+                                                'fontSize': '0.75rem',
+                                                'color': '#94a3b8',
+                                                'fontStyle': 'italic',
+                                                'marginBottom': '0.5rem',
+                                            },
+                                        ),
                                         dbc.Input(
                                             id='dv-runs-input',
                                             type='number',
@@ -57,7 +172,35 @@ layout = html.Div(
                                 ),
                                 html.Div(
                                     [
-                                        dbc.Label('Run', html_for='dv-run-dropdown'),
+                                        html.Div(
+                                            [
+                                                dbc.Label('Simulation', html_for='dv-run-dropdown'),
+                                                html.I(
+                                                    className='fa fa-circle-question ms-2',
+                                                    id='dv-run-dropdown-tooltip',
+                                                    style={
+                                                        'color': '#94a3b8',
+                                                        'cursor': 'pointer',
+                                                        'fontSize': '0.875rem',
+                                                    },
+                                                ),
+                                            ],
+                                            style={'display': 'flex', 'alignItems': 'center'},
+                                        ),
+                                        create_tooltip(
+                                            'Select a previous run to view its results and exports',
+                                            'dv-run-dropdown-tooltip',
+                                            placement='top',
+                                        ),
+                                        html.P(
+                                            'View results from completed simulations',
+                                            style={
+                                                'fontSize': '0.75rem',
+                                                'color': '#94a3b8',
+                                                'fontStyle': 'italic',
+                                                'marginBottom': '0.5rem',
+                                            },
+                                        ),
                                         dcc.Dropdown(
                                             id='dv-run-dropdown',
                                             options=[],
@@ -68,7 +211,7 @@ layout = html.Div(
                                     className='mt-3',
                                 ),
                                 dbc.Button(
-                                    'Run Simulation', id='dv-run-btn', color='primary', className='btn w-100 mt-3'
+                                    'Start Simulation', id='dv-run-btn', color='primary', className='btn w-100 mt-3'
                                 ),
                             ],
                             id='dv-run-form',
@@ -78,10 +221,10 @@ layout = html.Div(
                             id='dv-run-details',
                             className='border p-3',
                             children=[
-                                html.H6('Run Details'),
-                                html.Div('No run yet.', id='dv-run-details-body'),
+                                html.H6('Simulation Details'),
+                                html.Div('No simulation yet.', id='dv-run-details-body'),
                                 dbc.Button(
-                                    'Cancel Run',
+                                    'Cancel Simulation',
                                     id='dv-cancel-btn',
                                     color='danger',
                                     outline=True,

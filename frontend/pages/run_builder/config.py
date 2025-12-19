@@ -12,27 +12,30 @@ RESOURCES = ['scenario', 'agent_config', 'virus', 'prevention', 'simulation']
 virus_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'virus', 'field': 'name'},
-        'label': 'Name',
+        'label': 'Configuration Name',
         'type': 'text',
         'className': 'form-input',
+        'tooltip': 'Unique identifier for this outbreak configuration',
     },
     {
         'id': {'type': 'form-input', 'resource': 'virus', 'field': 'attack_rate'},
-        'label': 'Attack Rate',
+        'label': 'Infection Likelihood (0.0 to 1.0)',
         'type': 'number',
         'min': 0,
         'max': 1,
         'step': 0.001,
         'className': 'form-input',
+        'tooltip': 'Probability of infection when exposed (0 = 0%, 1 = 100%)',
     },
     {
         'id': {'type': 'form-input', 'resource': 'virus', 'field': 'infection_rate'},
-        'label': 'Infection Rate',
+        'label': 'Transmission Speed (0.0 to 1.0)',
         'type': 'number',
         'min': 0,
         'max': 1,
         'step': 0.001,
         'className': 'form-input',
+        'tooltip': 'How quickly the infection spreads between people (higher = faster spread)',
     },
     {
         'id': {'type': 'form-input', 'resource': 'virus', 'field': 'fatality_rate'},
@@ -42,6 +45,7 @@ virus_fields = [
         'max': 1,
         'step': 0.001,
         'className': 'form-input',
+        'tooltip': 'Percentage of infected individuals who do not recover (0 = 0%, 1 = 100%)',
     },
 ]
 
@@ -49,62 +53,68 @@ virus_fields = [
 simulation_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'name'},
-        'label': 'Name',
+        'label': 'Configuration Name',
         'type': 'text',
         'className': 'form-input',
+        'tooltip': 'Unique identifier for this simulation configuration',
     },
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'xy_scale'},
-        'label': 'XY Scale',
+        'label': 'Distance Scale (meters to units)',
         'type': 'number',
         'min': 1.0,
         'max': 1000000.0,
         'step': 0.01,
         'className': 'form-input',
+        'tooltip': 'Conversion factor from real-world meters to simulation units',
     },
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 't_step'},
-        'label': 'Time Step (s)',
+        'label': 'Update Interval (seconds)',
         'type': 'dropdown',
         'options': [
             {'label': '1 second', 'value': 1},
             {'label': '5 seconds', 'value': 5},
             {'label': '10 seconds', 'value': 10},
             {'label': '30 seconds', 'value': 30},
-            {'label': '1 minute (60s)', 'value': 60},
-            {'label': '5 minutes (300s)', 'value': 300},
-            {'label': '10 minutes (600s)', 'value': 600},
-            {'label': '30 minutes (1800s)', 'value': 1800},
-            {'label': '1 hour (3600s)', 'value': 3600},
+            {'label': '1 minute (60 seconds)', 'value': 60},
+            {'label': '5 minutes (300 seconds)', 'value': 300},
+            {'label': '10 minutes (600 seconds)', 'value': 600},
+            {'label': '30 minutes (1800 seconds)', 'value': 1800},
+            {'label': '1 hour (3600 seconds)', 'value': 3600},
         ],
         'className': 'dropdown-standard',
+        'tooltip': 'How often the simulation updates (smaller = more detailed but slower)',
     },
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'save_resolution'},
-        'label': 'Save Resolution',
+        'label': 'Save Frequency (every N steps)',
         'type': 'number',
         'min': 1,
         'max': 2147483647,
         'step': 1,
         'className': 'form-input',
+        'tooltip': 'How often to save simulation state (every N iterations)',
     },
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'max_iter'},
-        'label': 'Max Iterations',
+        'label': 'Total Steps to Run',
         'type': 'number',
         'min': 1,
         'max': 2147483647,
         'step': 1,
         'className': 'form-input',
+        'tooltip': 'Total number of simulation steps to run',
     },
     {
         'id': {'type': 'form-input', 'resource': 'simulation', 'field': 'save_verbose'},
-        'label': 'Save Verbose',
+        'label': 'Save Detailed Information',
         'type': 'radio',
         'options': [
-            {'label': 'True', 'value': True},
-            {'label': 'False', 'value': False},
+            {'label': 'Yes', 'value': True},
+            {'label': 'No', 'value': False},
         ],
+        'tooltip': 'Save detailed information at each save point (requires more storage)',
     },
 ]
 
@@ -112,9 +122,10 @@ simulation_fields = [
 prevention_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'prevention', 'field': 'name'},
-        'label': 'Name',
+        'label': 'Configuration Name',
         'type': 'text',
         'className': 'form-input',
+        'tooltip': 'Unique identifier for this prevention configuration',
     },
     {'id': 'mask_group_label', 'section_label': 'Mask Information'},
     {
@@ -164,9 +175,10 @@ prevention_fields = [
 scenario_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'scenario', 'field': 'name'},
-        'label': 'Name',
+        'label': 'Scenario Name',
         'type': 'text',
         'className': 'form-input',
+        'tooltip': 'Unique name for this simulation scenario setup',
     },
 ]
 
@@ -174,26 +186,29 @@ scenario_fields = [
 agentconfig_fields = [
     {
         'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'name'},
-        'label': 'Name',
+        'label': 'Configuration Name',
         'type': 'text',
         'className': 'form-input',
+        'tooltip': 'Unique name for this participant configuration',
     },
-    {'id': 'agent_pop_label', 'section_label': 'Agent Population'},
+    {'id': 'agent_pop_label', 'section_label': 'Participant Population'},
     {
         'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'random_agents'},
-        'label': 'Random Agents',
+        'label': 'Total Number of People',
         'type': 'number',
         'min': 0,
         'max': 10000,
         'className': 'form-input-number',
+        'tooltip': 'Total number of people to simulate in the facility',
     },
     {
         'id': {'type': 'form-input', 'resource': 'agent_config', 'field': 'random_infected'},
-        'label': 'Random Infected',
+        'label': 'Initially Infected People',
         'type': 'number',
         'min': 0,
         'max': 10000,
         'className': 'form-input-number',
+        'tooltip': 'How many people start with the infection at the beginning',
     },
 ]
 

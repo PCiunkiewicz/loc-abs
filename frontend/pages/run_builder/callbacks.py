@@ -4,6 +4,7 @@ import copy
 from dash import ALL, Input, Output, State, callback, ctx, html, no_update
 from dash.exceptions import PreventUpdate
 from loguru import logger
+import dash_bootstrap_components as dbc
 
 from components.resource_form import render_resource_form
 from utilities import api
@@ -20,6 +21,7 @@ from pages.run_builder.config import (
     simulation_fields,
     virus_fields,
 )
+
 from pages.run_builder.layout import render_summary_view
 
 
@@ -160,27 +162,39 @@ def register_form_renderer(resource_type, fields):
                     html.Div(
                         [
                             html.Button(
-                                'Confirm',
+                                [
+                                    html.I(className='fa fa-check-circle me-2'),
+                                    'Confirm',
+                                ],
                                 id={'type': 'select-btn', 'resource': resource_type},
-                                className='btn btn-success',
+                                className='btn btn-success btn-action',
                             ),
                             html.Button(
-                                'Edit',
+                                [
+                                    html.I(className='fa fa-pen-to-square me-2'),
+                                    'Edit',
+                                ],
                                 id={'type': 'edit-btn', 'resource': resource_type},
-                                className='btn btn-primary',
+                                className='btn btn-primary btn-action',
                             ),
                             html.Button(
-                                'Clone',
+                                [
+                                    html.I(className='fa fa-copy me-2'),
+                                    'Duplicate',
+                                ],
                                 id={'type': 'clone-btn', 'resource': resource_type},
-                                className='btn btn-info',
+                                className='btn btn-info btn-action',
                             ),
                             html.Button(
-                                'Delete',
+                                [
+                                    html.I(className='fa fa-trash-can me-2'),
+                                    'Remove',
+                                ],
                                 id={'type': 'delete-btn', 'resource': resource_type},
-                                className='btn btn-danger',
+                                className='btn btn-danger btn-action',
                             ),
                         ],
-                        className='form-button-group',
+                        className='form-button-group-single-row',
                     ),
                 ]
             )
@@ -617,6 +631,30 @@ def toggle_notification_modal(message, notification_type, _close_clicks, _is_ope
         return True, title, message, modal_class
 
     return no_update, no_update, no_update, no_update
+
+
+@callback(
+    Output('scenario-learn-more-modal', 'is_open'),
+    Input('scenario-learn-more-btn', 'n_clicks'),
+    Input('close-scenario-learn-more', 'n_clicks'),
+    State('scenario-learn-more-modal', 'is_open'),
+    prevent_initial_call=True,
+)
+def toggle_scenario_learn_more(open_clicks, close_clicks, is_open):
+    """Toggle scenario learn more modal."""
+    return not is_open
+
+
+@callback(
+    Output('agent-config-learn-more-modal', 'is_open'),
+    Input('agent-config-learn-more-btn', 'n_clicks'),
+    Input('close-agent-config-learn-more', 'n_clicks'),
+    State('agent-config-learn-more-modal', 'is_open'),
+    prevent_initial_call=True,
+)
+def toggle_agent_config_learn_more(open_clicks, close_clicks, is_open):
+    """Toggle agent config learn more modal."""
+    return not is_open
 
 
 def register_all_callbacks():

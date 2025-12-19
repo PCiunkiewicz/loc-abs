@@ -41,12 +41,32 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
         label = field.get('label', '')
         field_type = field.get('type', 'text')
         class_name = field.get('className', 'form-input')
+        tooltip_text = field.get('tooltip', '')
 
         if field_type == 'dropdown':
             form_items.append(
                 html.Div(
                     [
-                        html.Label(label, className='form-label'),
+                        html.Div(
+                            [
+                                html.Label(label, className='form-label'),
+                                html.I(
+                                    className='fa fa-circle-question ms-2',
+                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
+                                )
+                                if tooltip_text
+                                else None,
+                            ],
+                            style={'display': 'flex', 'alignItems': 'center'},
+                        ),
+                        create_tooltip(
+                            tooltip_text,
+                            f'{resource_type}-{field_key}-tooltip',
+                            placement='top',
+                        )
+                        if tooltip_text
+                        else None,
                         dcc.Dropdown(
                             id=field_id,
                             options=field.get('options', []),
@@ -63,7 +83,26 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
             form_items.append(
                 html.Div(
                     [
-                        html.Label(label, className='form-label'),
+                        html.Div(
+                            [
+                                html.Label(label, className='form-label'),
+                                html.I(
+                                    className='fa fa-circle-question ms-2',
+                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
+                                )
+                                if tooltip_text
+                                else None,
+                            ],
+                            style={'display': 'flex', 'alignItems': 'center'},
+                        ),
+                        create_tooltip(
+                            tooltip_text,
+                            f'{resource_type}-{field_key}-tooltip',
+                            placement='top',
+                        )
+                        if tooltip_text
+                        else None,
                         dcc.RadioItems(
                             id=field_id,
                             options=field.get('options', []),
@@ -93,11 +132,23 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
                         html.Div(
                             [
                                 html.Label(label, className='form-label'),
-                                html.I(className='fa fa-circle-question', id=f'{resource_type}-input-tooltip'),
+                                html.I(
+                                    className='fa fa-circle-question ms-2',
+                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
+                                )
+                                if tooltip_text
+                                else None,
                             ],
-                            className='tooltip-container',
+                            style={'display': 'flex', 'alignItems': 'center'},
                         ),
-                        create_tooltip(f'{resource_type}-input-tooltip', 'Please enter a valid value for this field.'),
+                        create_tooltip(
+                            tooltip_text,
+                            f'{resource_type}-{field_key}-tooltip',
+                            placement='top',
+                        )
+                        if tooltip_text
+                        else None,
                         dcc.Input(**input_props),
                     ]
                 ),

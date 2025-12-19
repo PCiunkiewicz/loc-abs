@@ -44,7 +44,7 @@
 .drop-down-btn{
     padding: 0.3rem 0.8rem;
     font-size: 0.9rem;
-    
+
 }
 
 .dropdown-actions {
@@ -144,22 +144,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
 }
 
-.action-btn {
-    background-color: #eef1f7;
-    border: 1px solid #d9d9e0;
-    color: #1f232d;
-    padding: 0.35rem 0.9rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, border 0.2s;
-    font-size: 0.95rem;
-}
-
-.action-btn:hover {
-    background-color: #dde4f0;
-    border-color: #b8c3d6;
-    color: #0f1118;
-}
+/* Action button styles moved to app.css */
 
 .dash-tabs {
     margin-bottom: 2rem;
@@ -192,20 +177,7 @@
     font-size: 1rem;
 }
 
-.btn-primary {
-    background-color: #1976d2;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1.2rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    
-}
-
-.btn-primary:hover {
-    background-color: #1565c0;
-}
+/* Button styles consolidated in app.css */
 .summary-label {
     font-weight: bold;
     color: #555;
@@ -250,69 +222,7 @@
     justify-content: flex-start;
 }
 
-.dropdown-item-actions .btn-success {
-    background-color: #198754;
-    margin: 10px;
-    padding: 10px 20px;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.dropdown-item-actions .btn-success:hover {
-    background-color: #0b6510;
-}
-
-.dropdown-item-actions .btn-primary {
-    background-color: #1976d2;
-    margin: 10px;
-    padding: 10px 20px;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.dropdown-item-actions .btn-primary:hover {
-    background-color: #0a2f5a;
-}
-
-.dropdown-item-actions .btn-info {
-    background-color: #d32f2f;
-    margin: 10px;
-    padding: 10px 20px;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.dropdown-item-actions .btn-info:hover {
-    background-color: #a71111;
-}
-
-.dropdown-item-actions .btn-danger {
-    background-color: #d32f2f;
-    margin: 10px;
-    padding: 10px 20px;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.dropdown-item-actions .btn-danger:hover {
-    background-color: #a71111;
-}
+/* Dropdown item actions inherit from base button styles in app.css */
 
 .scenario-form-dropdowns-container{
     display: flex;
@@ -368,57 +278,134 @@ resource-form-container{
     /* margin-top: 2rem; */
 }
 
-.btn{
-    margin: 10px;
-    padding: 10px 20px;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
+/* All button styles consolidated in app.css */
+
+/* Tab Navigation Full Width Styling */
+#main-tabs {
+    width: 100%;
 }
 
-.btn.btn-primary{ background-color: #f5c400 !important; color: #0b0b0d; }
-.btn.btn-primary:hover { background-color: #ffd84d !important; }
-.btn.btn-secondary{ background-color: #2b2b31 !important; color: #f5f5f7; }
-.btn.btn-secondary:hover { background-color: #3a3a42 !important; }
-.btn.btn-success{ background-color: #00c38a !important; }
-.btn.btn-success:hover { background-color: #06d39a !important; }
-.btn.btn-danger{ background-color: #e63946 !important; }
-.btn.btn-danger:hover { background-color: #ff5f6b !important; }
-.btn.btn-info{ background-color: #5aa8ff !important; }
-.btn.btn-info:hover { background-color: #7cb8ff !important; }
+#main-tabs .nav-tabs {
+    display: flex;
+    width: 100%;
+    border-bottom: none;
+}
+
+#main-tabs .nav-item {
+    flex: 1;
+    text-align: center;
+}
+
+#main-tabs .nav-link {
+    width: 100%;
+    border-bottom: 3px solid #e2e8f0;
+}
+
+#main-tabs .nav-link.active {
+    border-bottom: 3px solid #3b82f6;
+}
+
+/* Single Row Button Layout */
+.form-button-group-single-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+}
+
+.btn-action {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    min-width: 110px;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action i {
+    font-size: 0.85rem;
+}
 
 /* Notification Modal Styling */
 .notification-success .modal-content {
-    border: 3px solid #00c38a;
+    border: none;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 195, 138, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .notification-success .modal-header {
-    background-color: #e6f9f4;
-    color: #00a372;
+    background: linear-gradient(135deg, #e6f9f4 0%, #f0fdf9 100%);
+    color: #059669;
+    border-radius: 12px 12px 0 0;
+}
+
+.notification-success #notification-modal-icon {
+    color: #10b981;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.notification-success #notification-modal-icon::before {
+    content: '\f058';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
 }
 
 .notification-success .modal-body {
     background-color: #ffffff;
-    color: #2b2b31;
+    color: #334155;
+}
+
+.notification-success .modal-footer {
+    background-color: #f8fafc;
+    border-radius: 0 0 12px 12px;
 }
 
 .notification-error .modal-content {
-    border: 3px solid #e63946;
+    border: none;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(230, 57, 70, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .notification-error .modal-header {
-    background-color: #fef0f1;
-    color: #c62828;
+    background: linear-gradient(135deg, #fef0f1 0%, #fef2f2 100%);
+    color: #dc2626;
+    border-radius: 12px 12px 0 0;
+}
+
+.notification-error #notification-modal-icon {
+    color: #ef4444;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.notification-error #notification-modal-icon::before {
+    content: '\f06a';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
 }
 
 .notification-error .modal-body {
     background-color: #ffffff;
-    color: #2b2b31;
+    color: #334155;
+}
+
+.notification-error .modal-footer {
+    background-color: #f8fafc;
+    border-radius: 0 0 12px 12px;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
