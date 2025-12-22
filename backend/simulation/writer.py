@@ -18,6 +18,8 @@ class AgentInfo(tb.IsDescription):
     sex = tb.StringCol(1)
     long_covid = tb.BoolCol()
     prevention_index = tb.Float16Col()
+    susceptibility = tb.Float16Col()
+    severity = tb.Float16Col()
     mask = tb.StringCol(10)
     vax = tb.StringCol(10)
     infected = tb.BoolCol()

@@ -52,6 +52,8 @@ class SIRModel(BaseModel):
                     'sex': np.random.choice(['M', 'F']),
                     'long_covid': p.long_covid,
                     'prevention_index': p.prevention_index,
+                    'susceptibility': p.susceptibility,
+                    'severity': p.severity,
                     'mask': mask,
                     'vax': vax,
                     'infected': p.infected,

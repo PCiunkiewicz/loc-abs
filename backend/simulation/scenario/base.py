@@ -39,7 +39,7 @@ class BaseScenario(ABC):
         self.check_schedule = True
 
         if load_optimized_graph:
-            self.graph = OptimizedPathfinder.load('bsf')
+            self.graph = OptimizedPathfinder.load('bsf')  # TODO: Add this to config
         else:
             self.construct_graph()
 

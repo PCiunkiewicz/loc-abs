@@ -30,9 +30,9 @@ class Script(ORMScript):
                 continue  # Skip duplicate 0-dose runs
 
             agents = copy.deepcopy(agent_config)
-            agents.default['mask_type'] = mask
-            agents.default['vax_type'] = vax
-            agents.default['vax_doses'] = dose
+            agents.default['info']['mask_type'] = mask
+            agents.default['info']['vax_type'] = vax
+            agents.default['info']['vax_doses'] = dose
 
             run = models.Run(
                 name=f'{scenario.name}_mask={mask}_vax={vax}_dose={dose}',
