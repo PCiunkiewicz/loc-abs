@@ -3,14 +3,17 @@
 from dash import html, register_page
 import dash_bootstrap_components as dbc
 
-register_page(__name__, path="/developers", name="Developers", title="LocABS · Developers")
+register_page(__name__, path='/developers', name='Developers', title='LocABS · Developers')
 
 layout = html.Div(
     [
         html.Div(
             [
                 html.I(className='fa fa-code', style={'fontSize': '4rem', 'color': '#000000', 'marginBottom': '1rem'}),
-                html.H1('Developers', style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'}),
+                html.H1(
+                    'Developers',
+                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'},
+                ),
                 html.P(
                     'API documentation, integration guides, and developer resources.',
                     style={'fontSize': '1.1rem', 'color': '#555555', 'marginBottom': '2rem'},

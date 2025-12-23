@@ -3,14 +3,19 @@
 from dash import html, register_page
 import dash_bootstrap_components as dbc
 
-register_page(__name__, path="/reports", name="Reports", title="LocABS · Reports")
+register_page(__name__, path='/reports', name='Reports', title='LocABS · Reports')
 
 layout = html.Div(
     [
         html.Div(
             [
-                html.I(className='fa fa-file-alt', style={'fontSize': '4rem', 'color': '#000000', 'marginBottom': '1rem'}),
-                html.H1('Reports', style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'}),
+                html.I(
+                    className='fa fa-file-alt', style={'fontSize': '4rem', 'color': '#000000', 'marginBottom': '1rem'}
+                ),
+                html.H1(
+                    'Reports',
+                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'},
+                ),
                 html.P(
                     'Generate comprehensive reports and analytics from your simulation data.',
                     style={'fontSize': '1.1rem', 'color': '#555555', 'marginBottom': '2rem'},
