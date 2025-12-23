@@ -204,7 +204,8 @@
 .virus-rate-input:not(:placeholder-shown):invalid {
     border-color: #dc3545;
     background-color: #fff5f5;
-}========== Side Panel Styles ========== */
+}
+/*========== Side Panel Styles ========== */
 .side-panel {
     margin-bottom: 16px;
     width: 50vw;
