@@ -312,11 +312,11 @@ def update_kpi_cards(metadata, scenarios, agents, duration, total_runs):
             current_value=scenarios_val,
         ),
         kpi_card(
-            'Number of People In Facility',
+            'Number of Participant Profiles',
             agents,
             value_id='kpi-agents-display',
-            tooltip_text='Number of different people available in the facility. '
-            'Each configuration defines how individuals behave and make decisions in the facility.',
+            tooltip_text='Number of different participant profiles configured. '
+            'Each profile defines how individuals behave and make decisions in the facility.',
             max_value=20,
             current_value=agents_val,
         ),
@@ -460,9 +460,9 @@ layout = html.Div(
                                     'This includes the facility layout, starting positions, and any special circumstances.'
                                 ),
                                 html.Hr(),
-                                html.H6('Number of People In Facility', className='glossary-term-title'),
+                                html.H6('Number of Participant Profiles', className='glossary-term-title'),
                                 html.P(
-                                    'The different behavior profiles available for people in your simulation. '
+                                    'The different behavior profiles configured for participants in your simulation. '
                                     'Each profile determines how individuals move, react, and make decisions.'
                                 ),
                                 html.Hr(),

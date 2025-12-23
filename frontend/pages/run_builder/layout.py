@@ -111,6 +111,8 @@ def create_resource_tab(resource_type, label=None):
     return dbc.Tab(
         label=label,
         tab_id=f'{resource_type}-tab',
+        className='dash-tab',
+        active_tab_class_name='dash-tab--selected',
         children=[
             html.Div(
                 [

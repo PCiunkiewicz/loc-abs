@@ -68,13 +68,18 @@ change color picker settings
     background-color: #e0e0e0;
 }
 
-/* Tab Content */
-/* .tab-content {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 0 0 8px 8px;
-    min-height: 500px;
-} */
+
+
+/* Dash Tab Styling for Scenario Child Tabs */
+.dash-tab {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.dash-tab--selected {
+    color: #1976d2;
+    border-bottom: 2px solid #1976d2;
+}
 
 /* Side Panel */
 .side-panel {
@@ -439,7 +444,7 @@ change color picker settings
     .side-panels-container {
         width: 70vw;
     }
-    
+
     .config-panel {
         width: 30vw;
     }
@@ -449,17 +454,17 @@ change color picker settings
     .main-container {
         flex-direction: column;
     }
-    
+
     .side-panels-container,
     .config-panel,
     .side-panel {
         width: 100%;
     }
-    
+
     .side-panels-container {
         flex-direction: row;
     }
-    
+
     .agent-config-container {
         padding: 20px;
     }

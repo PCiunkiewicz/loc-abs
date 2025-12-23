@@ -8,10 +8,12 @@ import requests
 DEFAULT_TIMEOUT = 10
 STREAM_TIMEOUT = 120
 
+
 def _join_url(*parts: object) -> str:
     """Join URL parts without duplicate slashes."""
     cleaned = [str(p).strip('/') for p in parts if p not in (None, '')]
     return '/'.join(cleaned)
+
 
 class GenericAPI:
     """Generic API class to handle requests to the loc-abs backend.
@@ -22,11 +24,17 @@ class GenericAPI:
         session (requests.Session): The session object for making requests.
 
     """
+
     base_url: str = os.getenv('API_BASE_URL', 'http://abs-api:8000/api/v1').rstrip('/')
 
-    def __init__(self, endpoint: str = '', *, base_url: str | None = None, session: requests.Session | None = None,
+    def __init__(
+        self,
+        endpoint: str = '',
+        *,
+        base_url: str | None = None,
+        session: requests.Session | None = None,
     ) -> None:
-        """"Initialize the GenericAPI instance with endpoint and session.
+        """Initialize the GenericAPI instance with endpoint and session.
 
         Args:
             endpoint (str): The specific endpoint for the API. Defaults to ''.
@@ -90,6 +98,7 @@ class GenericAPI:
         """Delete an existing object in the API."""
         return self.request('delete', obj_id, append_slash=True)
 
+
 RESOURCE_ENDPOINTS = {
     'terrain': 'terrains',
     'virus': 'viruses',
@@ -106,11 +115,13 @@ APIS: dict[str, GenericAPI] = {
     name: GenericAPI(endpoint, session=SESSION) for name, endpoint in RESOURCE_ENDPOINTS.items()
 }
 
+
 def _get_api(resource: str) -> GenericAPI:
     endpoint = RESOURCE_ENDPOINTS.get(resource, resource)
     if resource not in APIS:
         APIS[resource] = GenericAPI(endpoint, session=SESSION)
     return APIS[resource]
+
 
 def handle_response(response: requests.Response) -> dict:
     """Handle API response and return formatted tuple for Dash callbacks."""
@@ -123,30 +134,39 @@ def handle_response(response: requests.Response) -> dict:
     except (ValueError, requests.exceptions.JSONDecodeError) as exc:
         return False, None, str(exc)
 
+
 def _dispatch(resource: str, fn) -> dict:
     return handle_response(fn(_get_api(resource)))
+
 
 def get_all(resource: str, params: dict | None = None) -> dict:
     """Get all objects from a specific resource endpoint."""
     return _dispatch(resource, lambda api: api.get(params=params))
 
+
 def get_by_id(resource: str, obj_id: int) -> dict:
     """Get a specific object by ID from a resource endpoint."""
     return _dispatch(resource, lambda api: api.get(obj_id))
+
 
 def create(resource: str, data: dict) -> dict:
     """Create a new object in a specific resource endpoint."""
     return _dispatch(resource, lambda api: api.post(data))
 
+
 def update(resource: str, obj_id: int, data: dict) -> dict:
     """Update an existing object in a specific resource endpoint."""
     return _dispatch(resource, lambda api: api.patch(obj_id, data))
+
 
 def delete(resource: str, obj_id: int) -> dict:
     """Delete an existing object in a specific resource endpoint."""
     return _dispatch(resource, lambda api: api.delete(obj_id))
 
+
 MAPFILES_DIR = Path(os.getenv('MAPFILES_DIR', '/data/mapfiles'))
+OUTPUTS_DIR = Path(os.getenv('OUTPUTS_DIR', '/data/outputs'))
+
 
 def get_map_files() -> dict:
     """Fetch available map files from admin endpoint."""
@@ -159,6 +179,34 @@ def get_map_files() -> dict:
         return True, file_paths, 'Success'
     except (OSError, PermissionError) as exc:
         return False, [], f'Error accessing map files: {exc}'
+
+
+def get_run_output_files(run_id: int, run_name: str) -> dict:
+    """Get HDF5 output files for a specific run.
+
+    Args:
+        run_id: ID of the run
+        run_name: Name of the run
+
+    Returns:
+        Dict with success status, list of file names, and message
+    """
+    try:
+        # Match the backend pattern: {run_id:03}-{run_name}
+        run_dir = OUTPUTS_DIR / f'{run_id:03}-{run_name}'
+
+        if not run_dir.exists():
+            return False, [], f'Output directory not found for run {run_id}'
+
+        # Get all HDF5 files
+        hdf5_files = [f.name for f in run_dir.glob('*.hdf5')]
+
+        if not hdf5_files:
+            return False, [], f'No HDF5 output files found for run {run_id}'
+
+        return True, hdf5_files, 'Success'
+    except (OSError, PermissionError) as exc:
+        return False, [], f'Error accessing output files: {exc}'
 
 
 def start_run(run_id: int) -> dict:
@@ -209,3 +257,64 @@ def download_run_export(run_id: int, dest: str | Path) -> dict:
         return True, str(dest_path), 'Success'
     except OSError as exc:
         return False, None, str(exc)
+
+
+def list_output_files() -> dict:
+    """Get list of all available HDF5 output files from backend."""
+    api = _get_api('export')
+    try:
+        resp = api.request('get', 'list_outputs', append_slash=True)
+        return handle_response(resp)
+    except requests.RequestException as exc:
+        return False, None, str(exc)
+
+
+def create_export(run_id: int, name: str, export_type: str, params: dict | None = None) -> dict:
+    """Create a new export for a specific run.
+
+    Args:
+        run_id: ID of the run to export
+        name: Name for the export
+        export_type: Type of export (ANIMATION, SNAPSHOT, EXCESS_RISK, etc.)
+        params: Additional parameters for the export
+
+    Returns:
+        Dict with success status, export data, and message
+    """
+    # Get run details to find the output files
+    success, run_data, err = get_by_id('run', run_id)
+
+    if not success or not run_data:
+        return False, None, f'Failed to get run details: {err}'
+
+    run_name = run_data.get('name', 'unknown')
+
+    # Get HDF5 output files for this run
+    success, hdf5_files, err = get_run_output_files(run_id, run_name)
+
+    if not success or not hdf5_files:
+        return False, None, f'No output files found for this run: {err}'
+
+    # Use the first HDF5 file or the one specified in params
+    if params is None:
+        params = {}
+
+    if 'run_file' not in params:
+        params['run_file'] = hdf5_files[0]
+
+    payload = {'run': run_id, 'name': name, 'export_type': export_type, 'params': params}
+
+    return create('export', payload)
+
+
+def get_exports_for_run(run_id: int) -> dict:
+    """Get all exports for a specific run."""
+    try:
+        success, all_exports, msg = get_all('export')
+        if not success:
+            return False, [], msg
+
+        run_exports = [exp for exp in (all_exports or []) if exp.get('run') == run_id]
+        return True, run_exports, 'Success'
+    except Exception as exc:
+        return False, [], str(exc)
