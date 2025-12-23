@@ -1,7 +1,6 @@
 """Decision Support Page for LocABS Application."""
 
 from dash import html, register_page, dcc, callback, Input, Output, State
-import dash_bootstrap_components as dbc
 from utilities import api
 import plotly.graph_objects as go
 
