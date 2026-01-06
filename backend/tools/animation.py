@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +14,9 @@ from tqdm import tqdm
 from simulation.scenario import VIRUS_SCALE
 from utilities.tools import STATUS_COLOR, add_playback_controls, reshape, str_date
 from utilities.types.agent import AgentStatus
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 plt.rcParams['animation.frame_format'] = 'svg'
 
@@ -158,21 +161,20 @@ class SimAnimation:
         self.im[floor].set_data(self.virus[i, :, :, floor] != 0)
         self.im[floor].set_alpha((self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35)
         info = [f'{str_date(self.timesteps[i])}\n']
-        for status, ref in zip(AgentStatus, self.plot_ref[floor]):
+        for status, ref in zip(AgentStatus, self.plot_ref[floor], strict=True):
             agents = reshape(self.agents[i], status.value, floor)
             info.append(f'{status.name.capitalize()}: {agents.shape[1]}')
             if agents.size > 0:
-                exit = self.exits[floor][agents[1], agents[0]]
-                ref.set_data(*agents[:, ~exit])
+                exits = self.exits[floor][agents[1], agents[0]]
+                ref.set_data(*agents[:, ~exits])
             else:
                 ref.set_data([], [])
 
-        for (x, y, z, *_), label in zip(self.agents[i], self.labels[floor]):
-            if z == floor:
-                if not self.exits[z][x, y]:
-                    label.set_visible(True)
-                    label.set_position((y, x))
-                    continue
+        for (x, y, z, *_), label in zip(self.agents[i], self.labels[floor], strict=True):
+            if z == floor and not self.exits[z][x, y]:
+                label.set_visible(True)
+                label.set_position((y, x))
+                continue
             label.set_visible(False)
 
         self.tx[floor].set_text('\n'.join(info))
@@ -206,13 +208,12 @@ class SimAnimation:
 
         if html:
             outfile = outfile.with_suffix('.html')
-            writer = animation.HTMLWriter(fps=5, metadata=dict(artist='Me'), bitrate=1800)
+            writer = animation.HTMLWriter(fps=5, metadata={'artist': 'Me'}, bitrate=1800)
             anim.save(outfile, writer=writer)
             add_playback_controls(outfile)
         else:
             outfile = outfile.with_suffix('.gif')  # TODO: Explore ffmpeg for better quality / speed
-            writer = animation.PillowWriter(fps=5, metadata=dict(artist='Me'), bitrate=1800)
+            writer = animation.PillowWriter(fps=5, metadata={'artist': 'Me'}, bitrate=1800)
             anim.save(outfile, writer=writer)
 
         self.pbar.close()
-        print(f'Animation saved to {outfile}')

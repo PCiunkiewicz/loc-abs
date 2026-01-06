@@ -12,6 +12,8 @@ from utilities.paths import BACKEND
 from utilities.types.agent import AgentSpec
 from utilities.types.scenario import ScenarioSpec
 
+rng = np.random.default_rng()
+
 
 class BaseModel(ABC):
     """Base Model class for simulation.
@@ -52,7 +54,7 @@ class BaseModel(ABC):
         self.population: list[BaseAgent] = []
         for _ in range(config['random_agents']):
             spec = config['default'].copy()
-            spec['info']['urgency'] = np.random.uniform(0.75, 0.99)
+            spec['info']['urgency'] = rng.uniform(0.75, 0.99)
             agent = agent_cls(self.scenario, AgentSpec.from_dict(spec))
             self.population.append(agent)
 
@@ -76,14 +78,11 @@ class BaseModel(ABC):
     @abstractmethod
     def model_step(self) -> None:
         """Logic for single model timestep."""
-        pass
 
     @abstractmethod
     def simulate(self) -> None:
         """Run the simulation for a configured number of timesteps."""
-        pass
 
     @abstractmethod
     def simulate_fast(self) -> None:
         """Run a lightweight optimized variant of the simulation."""
-        pass

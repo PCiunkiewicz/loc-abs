@@ -1,6 +1,6 @@
 """Viruses page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -13,7 +13,7 @@ class Viruses(GenericORM):
 
     model = 'viruses'
     api = GenericAPI(model)
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'attack_rate': 0.07,
         'infection_rate': 0.021,

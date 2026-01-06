@@ -15,5 +15,4 @@ def mask_color(img: np.typing.NDArray, hex_value: str) -> np.typing.NDArray:
         pixel_mask: Boolean mask array where `img ~= color`.
     """
     rgb = colors.to_rgb(hex_value)
-    pixel_mask = np.all(np.isclose(img, rgb), axis=-1)
-    return pixel_mask
+    return np.all(np.isclose(img, rgb), axis=-1)

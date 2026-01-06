@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 class ResetDB(APIView):
     """API View to list all simulation config files."""
 
-    def get(self, request: Request) -> Response:
+    def get(self, _: Request) -> Response:
         """Handle GET request to list all simulation config files."""
         try:
             with StringIO() as buffer:

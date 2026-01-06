@@ -8,7 +8,7 @@ from typing import override
 import numpy as np
 import zmq
 
-from utilities.socket import SocketHandler
+from utilities.sockets import SocketHandler
 
 
 class Publisher(SocketHandler):

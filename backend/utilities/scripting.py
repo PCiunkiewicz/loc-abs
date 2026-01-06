@@ -1,17 +1,18 @@
 """Scripting and automation utilities."""
 
 import os
-from abc import ABCMeta
+from abc import ABC, abstractmethod
 
 import django
 from django.db import connections
 
 
-class BaseScript(metaclass=ABCMeta):
+class BaseScript(ABC):
     """Base class for all scripts."""
 
     name: str = __qualname__
 
+    @abstractmethod
     def run(self) -> None:
         """Run the script."""
         raise NotImplementedError('Subclasses must implement the run method.')

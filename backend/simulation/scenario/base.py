@@ -1,7 +1,7 @@
 """Tools for managing simulation scenario data and configuration."""
 
 import datetime as dt
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -9,6 +9,8 @@ from simulation.pathing import GraphGrid, OptimizedPathfinder
 from utilities.types.scenario import ScenarioSpec
 
 VIRUS_SCALE = 2**14
+
+rng = np.random.default_rng()
 
 
 class BaseScenario(ABC):
@@ -55,7 +57,7 @@ class BaseScenario(ABC):
     def get_idx(self, zone: str) -> tuple[int, int, int]:
         """Get random `(x,y,z)` coordinate from terrain mask."""
         idx = self.sim.mask_idxs[zone]
-        rand = np.random.randint(0, idx.shape[0])
+        rand = rng.integers(0, idx.shape[0])
         return tuple(idx[rand])
 
     def virus_level(self, x: int, y: int, z: int) -> float:
@@ -65,3 +67,11 @@ class BaseScenario(ABC):
     def contaminate(self, x: int, y: int, z: int, concentration: float = VIRUS_SCALE) -> None:
         """Set viral concentration at coordinate `(x,y,z)`."""
         self.virus.matrix[x, y, z] += concentration
+
+    @abstractmethod
+    def ventilate(self) -> None:
+        """Abstract ventilation method."""
+
+    @abstractmethod
+    def sanitize(self) -> None:
+        """Abstract sanitation method."""

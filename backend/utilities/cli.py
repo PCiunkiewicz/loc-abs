@@ -31,9 +31,8 @@ class BaseCLI(ABC):
     @abstractmethod
     def prompt(self) -> None:
         """Main loop to prompt the user."""
-        pass
 
-    def _prompt_kws(self, options: Sequence[str] = [], dtype: type = None) -> dict[str, Any]:
+    def _prompt_kws(self, options: Sequence[str] = [], dtype: type | None = None) -> dict[str, Any]:
         """Generate prompt keyword arguments."""
         kwargs = {}
         if options := [str(x) for x in options]:
@@ -108,9 +107,9 @@ class ScriptCLI(BaseCLI):
     def load_script(self, name: str) -> BaseScript:
         """Load script module by name using `importlib.import_module`."""
         module = import_module(f'scripts.{name}')
-        if not hasattr(module, 'Script') or not issubclass(getattr(module, 'Script'), BaseScript):
+        if not hasattr(module, 'Script') or not issubclass(module.Script, BaseScript):
             raise ImportError(f'Module {name} does not have a valid Script class.')
-        return getattr(module, 'Script')()
+        return module.Script()
 
 
 class ExporterCLI(BaseCLI):
@@ -158,16 +157,16 @@ class ExporterCLI(BaseCLI):
                     'html': self.session.prompt(HTML('<b>Export as HTML? (y/n): </b>'), **self._prompt_kws(['y', 'n']))
                     == 'y',
                 }
-            elif exporter == 'SNAPSHOT':
+            if exporter == 'SNAPSHOT':
                 return {
                     'run': run,
                     'run_file': run_file,
                     'name': name,
                     'i': self.session.prompt(HTML('<b>Frame number: </b>'), **self._prompt_kws(dtype=int)),
                 }
-            else:
-                return {
-                    'run': run,
-                    'run_file': run_file,
-                    'name': name,
-                }
+            return {
+                'run': run,
+                'run_file': run_file,
+                'name': name,
+            }
+        return {}

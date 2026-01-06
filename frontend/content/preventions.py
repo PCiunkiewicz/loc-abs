@@ -1,6 +1,6 @@
 """Preventions page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -24,7 +24,7 @@ class Preventions(GenericORM):
 
     model = 'preventions'
     api = GenericAPI(model)
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'vax': VAX_DEFAULT,
         'mask': MASK_DEFAULT,

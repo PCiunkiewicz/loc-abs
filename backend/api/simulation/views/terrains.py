@@ -1,5 +1,7 @@
 """Localized Epidemiological ABS API Terrain Views."""
 
+from typing import ClassVar
+
 from rest_framework import viewsets
 
 from api.simulation.models import Terrain
@@ -11,6 +13,6 @@ class TerrainViewSet(viewsets.ModelViewSet):
 
     queryset = Terrain.objects.all()
     serializer_class = TerrainSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    authentication_classes: list = []  # disables authentication
-    permission_classes: list = []  # disables permission
+    http_method_names: ClassVar[list] = ['get', 'post', 'patch', 'delete']
+    authentication_classes: ClassVar[list] = []  # disables authentication
+    permission_classes: ClassVar[list] = []  # disables permission

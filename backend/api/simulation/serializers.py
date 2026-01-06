@@ -28,7 +28,7 @@ class Nested(serializers.PrimaryKeyRelatedField):
         return not bool(self.serializer)
 
     @override
-    def to_representation(self, value) -> Any:
+    def to_representation(self, value: Any) -> Any:
         if self.serializer:
             return self.serializer(value, context=self.context).data
         return super().to_representation(value)
@@ -44,7 +44,7 @@ class TerrainSerializer(serializers.ModelSerializer):
     @override
     def validate(self, attrs: Any) -> Any:
         """Validate `Terrain` hex colors."""
-        for field in {'value', 'color'}:
+        for field in ('value', 'color'):
             if not re.search(r'^#(?:[0-9a-fA-F]{6})$', attrs[field]):
                 raise ValidationError({field: f'invalid hex color: {attrs[field]}'})
         return super().validate(attrs)
@@ -64,12 +64,10 @@ class SimulationSerializer(serializers.ModelSerializer):
         filetypes = ('.png', '.gif')
         if not (path := MAPFILES.rel / data).exists():
             raise ValidationError({'mapfile': f'path `{data}` does not exist'})
-        elif path.is_dir():
-            if not any(file.suffix in filetypes for file in path.iterdir()):
-                raise ValidationError({'mapfile': f'no valid files of type {filetypes} found in `{path}`'})
-        elif path.is_file():
-            if path.suffix not in filetypes:
-                raise ValidationError({'mapfile': f'must have filetype in {filetypes}'})
+        if path.is_dir() and not any(file.suffix in filetypes for file in path.iterdir()):
+            raise ValidationError({'mapfile': f'no valid files of type {filetypes} found in `{path}`'})
+        if path.is_file() and path.suffix not in filetypes:
+            raise ValidationError({'mapfile': f'must have filetype in {filetypes}'})
 
         return path
 
@@ -95,7 +93,7 @@ class PreventionSerializer(serializers.ModelSerializer):
         try:
             PreventionIndex(**attrs)
         except Exception as e:
-            raise ValidationError({'prevention': f'Invalid prevention index: {e}'})
+            raise ValidationError({'prevention': f'Invalid prevention index: {e}'}) from e
 
         return super().validate(attrs)
 
@@ -132,14 +130,14 @@ class AgentConfigSerializer(serializers.ModelSerializer):
         try:
             SimplifiedAgentSpec.from_dict(attrs['default'])
         except Exception as e:
-            raise ValidationError({'default': f'invalid default agent spec: {e}'})
+            raise ValidationError({'default': f'invalid default agent spec: {e}'}) from e
 
         custom = ScenarioConfig._process_agents({'agents': attrs})
         for i, spec in enumerate(custom):
             try:
                 SimplifiedAgentSpec.from_dict({**attrs['default'], **spec})
             except Exception as e:
-                raise ValidationError({'custom': f'invalid custom agent spec at index {i}: {e}'})
+                raise ValidationError({'custom': f'invalid custom agent spec at index {i}: {e}'}) from e
 
         if attrs['random_agents'] + len(attrs['custom']) == 0:
             raise ValidationError(
@@ -180,5 +178,4 @@ class ExportSerializer(serializers.ModelSerializer):
         if not data.endswith(filetypes):
             raise ValidationError({'name': f'must end with one of {filetypes}'})
 
-        data = data.replace(' ', '_')
-        return data
+        return data.replace(' ', '_')

@@ -14,13 +14,13 @@ from api.simulation.views.viruses import VirusViewSet
 __all__ = [
     'AgentConfigViewSet',
     'ExportViewSet',
+    'ImportConfig',
+    'ListConfigs',
     'PreventionViewSet',
+    'ResetDB',
     'RunViewSet',
     'ScenarioViewSet',
     'SimulationViewSet',
     'TerrainViewSet',
     'VirusViewSet',
-    'ListConfigs',
-    'ImportConfig',
-    'ResetDB',
 ]

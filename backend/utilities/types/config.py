@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Self, override
+from typing import TYPE_CHECKING, Self, override
 
 import dacite
 
 from utilities.types.agent import AgentSpec, AgentStatus
 from utilities.types.scenario import ScenarioSpec, SimSetup
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @dataclass
@@ -49,10 +51,10 @@ class SimplifiedAgentSpec(AgentSpec):
             if isinstance(self.status, str):
                 try:
                     self.status = AgentStatus[self.status]
-                except KeyError:
+                except KeyError as exc:
                     raise ValueError(
-                        f'Invalid agent status value: {self.status}. Choose from {AgentStatus._member_names_}.'
-                    )
+                        f'Invalid agent status value: {self.status}. Choose from {AgentStatus.get_members()}.'
+                    ) from exc
 
     state: SimplifiedAgentState
 

@@ -5,15 +5,18 @@ from __future__ import annotations
 import gzip
 import pickle
 from collections import deque
+from itertools import pairwise
 from pathlib import Path
-from typing import Self, overload
+from typing import TYPE_CHECKING, Self, overload
 
 import igraph as ig
-import numpy as np
 from scipy.spatial import KDTree
 
 from utilities.paths import PATHS
 from utilities.types.pathing import ComputedPaths, Coordinate, Edge, PathSegment
+
+if TYPE_CHECKING:
+    import numpy as np
 
 DATA_PATH = Path(__file__).resolve().parent.parent / 'data'
 
@@ -36,7 +39,7 @@ class GraphGrid:
         self,
         nodes: np.typing.NDArray,
         r: float = 1,
-        spacing: dict = dict(),
+        spacing: dict | None = None,
         weights: np.typing.NDArray | None = None,
     ) -> None:
         """Initialize the graph with nodes and parameters.
@@ -47,6 +50,9 @@ class GraphGrid:
             spacing: Spacing factors for each axis (adjacency distance).
             weights: Weights for the edges.
         """
+        if spacing is None:
+            spacing = {}
+
         self.n = len(nodes)
         self.nodes = nodes
         self.vertex: dict[tuple, int] = {tuple(x): i for i, x in enumerate(nodes.tolist())}
@@ -104,7 +110,7 @@ class GraphGrid:
         start, end = edge
         if isinstance(edge, Coordinate) and isinstance(end, Coordinate):
             return (self.vertex[start], self.vertex[end])
-        elif isinstance(start, int) and isinstance(end, int):
+        if isinstance(start, int) and isinstance(end, int):
             return (self.coord[start], self.coord[end])
         raise ValueError(f'Invalid edge type: {type(edge)}')
 
@@ -168,7 +174,7 @@ class OptimizedPathfinder:
             path += self.get_segment(start, first_transit)
         if first_transit != last_transit:
             transit_path = self.get_segment(first_transit, last_transit, transit=True)
-            for a, b in zip(transit_path, transit_path[1:]):
+            for a, b in pairwise(transit_path):
                 segment = self.get_segment(a, b)
                 path += segment[:-1]
             path += segment[-1:]

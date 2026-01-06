@@ -1,7 +1,7 @@
 """Localized Epidemiological ABS API Export Views."""
 
 import shutil
-from typing import override
+from typing import ClassVar, override
 
 from rest_framework import status, viewsets
 from rest_framework.request import Request
@@ -17,9 +17,9 @@ class ExportViewSet(viewsets.ModelViewSet):
 
     queryset = Export.objects.all()
     serializer_class = ExportSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    authentication_classes: list = []  # disables authentication
-    permission_classes: list = []  # disables permission
+    http_method_names: ClassVar[list] = ['get', 'post', 'patch', 'delete']
+    authentication_classes: ClassVar[list] = []  # disables authentication
+    permission_classes: ClassVar[list] = []  # disables permission
 
     @override
     def create(self, request: Request) -> Response:

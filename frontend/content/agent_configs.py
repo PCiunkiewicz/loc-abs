@@ -1,6 +1,6 @@
 """Agent Configuration Page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -29,7 +29,7 @@ class AgentConfigs(GenericORM):
 
     model = 'agent_configs'
     api = GenericAPI(model)
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'default': AGENT_DEFAULT,
         'random_agents': 0,

@@ -1,5 +1,6 @@
 """Generic ORM operation interface."""
 
+import contextlib
 import json
 from abc import ABC, abstractmethod
 
@@ -27,7 +28,6 @@ class GenericORM(ABC):
     @abstractmethod
     def form(cls, obj_id: int | None = None) -> dict:
         """Generate the streamlit form elements for the model."""
-        pass
 
     @classmethod
     def run(cls) -> None:
@@ -61,7 +61,7 @@ class GenericORM(ABC):
     def retrieve(cls) -> None:
         """Generic ORM retrieve operation."""
         with st.form(f'{cls.model}_retrieve'):
-            obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls._format)
+            obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls.format)
             obj_id = obj.get('id') if isinstance(obj, dict) else obj
             if st.form_submit_button('Retrieve', disabled=not obj_id):
                 response = cls.api.get(obj_id)
@@ -70,7 +70,7 @@ class GenericORM(ABC):
     @classmethod
     def update(cls) -> None:
         """Generic ORM update operation."""
-        obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls._format)
+        obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls.format)
         obj_id = obj.get('id') if isinstance(obj, dict) else obj
         with st.form(f'{cls.model}_update'):
             data = cls.form(obj_id)
@@ -87,7 +87,7 @@ class GenericORM(ABC):
     def delete(cls) -> None:
         """Generic ORM delete operation."""
         with st.form(f'{cls.model}_delete'):
-            obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls._format)
+            obj = st.selectbox(cls.model.capitalize(), cls.api.get().json(), format_func=cls.format)
             obj_id = obj.get('id') if isinstance(obj, dict) else obj
             if st.form_submit_button('Delete', disabled=not obj_id):
                 response = cls.api.delete(obj_id)
@@ -110,13 +110,11 @@ class GenericORM(ABC):
         result = ':green[Success]' if response.ok else ':red[Failed]'
         st.write(f'{msg} - **{result}**')
         st.write(f'`{response.request.method} {response.url} -> [{response.status_code}] {response.reason}`')
-        try:
+        with contextlib.suppress(requests.JSONDecodeError):
             st.json(response.json(), expanded=1 if response.ok else 2)
-        except requests.JSONDecodeError:
-            pass
 
     @staticmethod
-    def _format(obj: dict) -> str:
+    def format(obj: dict) -> str:
         """Format the object for display in the selectbox."""
         return f'{obj["id"]} - {obj["name"]}'
 
@@ -143,7 +141,7 @@ def obj_select(model: str, obj_id: int | None = None, label: str = '') -> int | 
     """
     objs = GenericAPI(model).get().json()
     idx = next((i for i, obj in enumerate(objs) if obj['id'] == obj_id), None)
-    obj = st.selectbox(label or model.capitalize(), objs, format_func=GenericORM._format, index=idx)
+    obj = st.selectbox(label or model.capitalize(), objs, format_func=GenericORM.format, index=idx)
     return obj.get('id') if isinstance(obj, dict) else obj
 
 

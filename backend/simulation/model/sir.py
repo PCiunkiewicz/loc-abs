@@ -1,6 +1,5 @@
 """SIR model simulation class."""
 
-import os
 from datetime import timedelta
 from pathlib import Path
 from queue import Queue
@@ -15,9 +14,12 @@ from simulation.agent import SIRAgent
 from simulation.model.base import BaseModel
 from simulation.scenario import SIRScenario
 from simulation.writer import AgentInfo
+from utilities.logs import NullWriter
 from utilities.types.agent import AgentStatus
 
 SUSCEPTIBLE, *_ = AgentStatus
+
+rng = np.random.default_rng()
 
 
 class SIRModel(BaseModel):
@@ -38,18 +40,15 @@ class SIRModel(BaseModel):
                 vax = 'novax'
             elif p.info.vax_doses == 1:
                 vax = '1dose'
-            elif p.info.vax_doses == 2:
+            elif p.info.vax_doses > 1:
                 vax = p.info.vax_type.lower()
 
-            if p.info.mask_type == 'NONE':
-                mask = 'nomask'
-            else:
-                mask = p.info.mask_type.lower()
+            mask = 'nomask' if p.info.mask_type == 'NONE' else p.info.mask_type.lower()
 
             ret.append(
                 {
                     'age': p.age,
-                    'sex': np.random.choice(['M', 'F']),
+                    'sex': rng.choice(['M', 'F']),
                     'long_covid': p.long_covid,
                     'prevention_index': p.prevention_index,
                     'mask': mask,
@@ -81,7 +80,7 @@ class SIRModel(BaseModel):
     @override
     def simulate(self, queue: Queue) -> None:
         step = self.sim.save_resolution
-        pbar = tqdm.tqdm(desc='Timesteps', total=self.sim.max_iter * step, file=open(os.devnull, 'w'))
+        pbar = tqdm.tqdm(desc='Timesteps', total=self.sim.max_iter * step, file=NullWriter())
         logger.info(str(pbar), flush=True)
 
         n_iter = 0
@@ -104,7 +103,7 @@ class SIRModel(BaseModel):
         data = {'timesteps': [], 'agents': []}
 
         step = self.sim.save_resolution
-        pbar = tqdm.tqdm(desc=f'Run {int(outfile.stem):03}', total=self.sim.max_iter * step, file=open(os.devnull, 'w'))
+        pbar = tqdm.tqdm(desc=f'Run {int(outfile.stem):03}', total=self.sim.max_iter * step, file=NullWriter())
 
         for i in range(self.sim.max_iter):
             pbar.update(step)

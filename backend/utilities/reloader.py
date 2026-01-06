@@ -6,23 +6,23 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from loguru import logger
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
-from utilities.logging import configure_logger
+from utilities.logs import configure_logger
+
+IGNORE_PATTERNS = [
+    '__pycache__/',
+    'data/',
+]
 
 
 class EventHandler(FileSystemEventHandler):
     """Custom event handler for file system events."""
-
-    ignore_patterns = [
-        '__pycache__/',
-        'data/',
-    ]
 
     def __init__(self, reloader: Reloader, path: Path) -> None:
         """Initialize the event handler."""
@@ -35,11 +35,13 @@ class EventHandler(FileSystemEventHandler):
         src = Path(event.src_path).relative_to(self.root)
         dst = Path(event.dest_path).relative_to(self.root) if event.dest_path else None
 
-        if event.is_directory or any(x in str(src) for x in self.ignore_patterns):
-            return None
-        elif event.event_type in ['opened', 'closed', 'closed_no_write']:
-            return None
-        elif event.event_type == 'created':
+        if (
+            event.is_directory
+            or any(x in str(src) for x in IGNORE_PATTERNS)
+            or event.event_type in ['opened', 'closed', 'closed_no_write']
+        ):
+            return
+        if event.event_type == 'created':
             logger.reloader(json.dumps({'message': 'File created', 'path': str(src)}))
         elif event.event_type == 'modified':
             logger.reloader(json.dumps({'message': 'File modified', 'path': str(src)}))
@@ -57,7 +59,7 @@ class Reloader(Observer, BaseObserver):
     """Custom observer that reloads the script on file changes."""
 
     @override
-    def __init__(self, root: Path, *args, **kwargs) -> None:
+    def __init__[**P](self, root: Path, *args: P.args, **kwargs: P.kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.root = root
         self.handler = EventHandler(self, root)
@@ -69,7 +71,7 @@ class Reloader(Observer, BaseObserver):
         logger.reloader(json.dumps({'message': f'Watching for file changes @ {self.root}', 'path': ''}))
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """Context manager exit to stop the reloader."""
         self.join()
         if exc_type is None:

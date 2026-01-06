@@ -4,4 +4,4 @@ from tools.animation import SimAnimation
 from tools.handler import ExportHandler
 from tools.snapshot import SimSnapshot
 
-__all__ = ['SimAnimation', 'SimSnapshot', 'ExportHandler']
+__all__ = ['ExportHandler', 'SimAnimation', 'SimSnapshot']

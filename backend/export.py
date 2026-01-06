@@ -4,7 +4,7 @@ import argparse
 
 from tools.handler import ExportHandler
 from utilities.cli import ExporterCLI
-from utilities.logging import configure_logger
+from utilities.logs import configure_logger
 
 if __name__ == '__main__':
     configure_logger('TRACE')

@@ -1,6 +1,6 @@
 """Simluations page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -14,7 +14,7 @@ class Simulations(GenericORM):
     model = 'simulations'
     api = GenericAPI(model)
     mapfiles = None
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'mapfile': 'bow_view_manor',
         'xy_scale': 2.77,
@@ -72,8 +72,8 @@ class Simulations(GenericORM):
             'Terrains',
             GenericAPI('terrains').get().json(),
             default=obj['terrain'],
-            format_func=cls._format,
-            help='Represents the different surfaces and rooms (e.g. Walls, Doors, Open Spaces, etc.) in the simulation.',
+            format_func=cls.format,
+            help='Represents different surfaces and rooms (e.g. Walls, Doors, Open Spaces, etc.) in the simulation.',
         )
         data['terrain'] = [terrain['id'] for terrain in terrains]
 

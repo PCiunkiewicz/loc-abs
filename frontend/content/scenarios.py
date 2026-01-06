@@ -1,6 +1,6 @@
 """Scenarios page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -15,7 +15,7 @@ class Scenarios(GenericORM):
 
     model = 'scenarios'
     api = GenericAPI(model)
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'sim': None,
         'virus': None,

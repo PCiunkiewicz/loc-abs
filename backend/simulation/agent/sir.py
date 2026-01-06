@@ -3,7 +3,7 @@
 import datetime as dt
 from bisect import bisect_left
 from random import random
-from typing import override
+from typing import ClassVar, override
 
 from simulation.agent.base import BaseAgent
 from simulation.scenario import VIRUS_SCALE, BaseScenario
@@ -13,6 +13,11 @@ SUSCEPTIBLE, INFECTED, RECOVERED, QUARANTINED, DECEASED, HOSPITALIZED, UNKNOWN =
 
 EXCLUDE = (QUARANTINED, HOSPITALIZED, DECEASED)
 CONTAGIOUS = (INFECTED, QUARANTINED, HOSPITALIZED)
+
+P_ASYMPTOMATIC = 0.17
+P_FATALITY = 0.02
+P_LONG_COVID = 0.16
+P_BASE_SEVERITY = 0.30
 
 
 class SIRAgent(BaseAgent):
@@ -30,7 +35,7 @@ class SIRAgent(BaseAgent):
         deceased: Whether the agent is deceased.
     """
 
-    dist = {
+    dist: ClassVar[dict[str, tuple[int, int]]] = {
         'severe': (2.624, 0.170),
         'mild': (2.049, 0.246),
         'presymptomatic': (1.63, 0.50),
@@ -84,22 +89,21 @@ class SIRAgent(BaseAgent):
         if not self.dt.recovery:
             now = self.scenario.dt
             # days before showing symptoms
-            if random() < 0.17:  # TODO: Move this to scenario config
-                n_days_q = 100  # shows asymptomatic Agents not quarantining
-            else:
-                n_days_q = self.random.lognormal(*self.dist['presymptomatic'])
+            # TODO: Move this to scenario config
+            n_days_q = 100 if random() < P_ASYMPTOMATIC else self.random.lognormal(*self.dist['presymptomatic'])
+            # shows asymptomatic Agents not quarantining
             # days before recovery
-            if random() < 0.02:  # TODO: Move this to scenario config
+            if random() < P_FATALITY:  # TODO: Move this to scenario config
                 n_days_r = -1  # shows Agent dying - find a better way to do this
                 n_days_q = self.random.lognormal(*self.dist['presymptomatic'])
                 self.deceased = True
-            elif random() < 0.30 * self.severity:  # TODO: Move this to scenario config
+            elif random() < P_BASE_SEVERITY * self.severity:  # TODO: Move this to scenario config
                 n_days_r = self.random.lognormal(*self.dist['severe'])  # severe infection
                 n_days_q = self.random.lognormal(*self.dist['presymptomatic'])
                 self.hospitalized = True
             else:
                 n_days_r = self.random.lognormal(*self.dist['mild'])  # mild/moderate infection
-            if random() < 0.16:  # TODO: Move this to scenario config
+            if random() < P_LONG_COVID:  # TODO: Move this to scenario config
                 n_days_r *= 3  # long-covid
                 self.long_covid = True
             self.dt.recovery = now + dt.timedelta(days=n_days_r)
@@ -115,17 +119,15 @@ class SIRAgent(BaseAgent):
                 elif not self.is_(QUARANTINED):
                     self.state.status = QUARANTINED
                     self.set_task('HOME')
-            if self.scenario.dt >= self.dt.recovery:
-                if not self.deceased:
-                    self.state.status = RECOVERED
+            if self.scenario.dt >= self.dt.recovery and not self.deceased:
+                self.state.status = RECOVERED
 
     def _prevention_index(self) -> float:
         """Calculates Agent's protection from infection - vaccines and masks."""
         vax_index = self.scenario.prevention.vax[self.info.vax_type][self.info.vax_doses]
         mask_index = self.scenario.prevention.mask[self.info.mask_type]
 
-        prevention_index = vax_index + ((1 - vax_index) * mask_index)
-        return prevention_index
+        return vax_index + ((1 - vax_index) * mask_index)
 
     def infect(self) -> None:
         """Set agent status to infected."""
@@ -162,7 +164,7 @@ class SIRAgent(BaseAgent):
             return
         elif self.in_('HOME'):
             self.set_task(wait=300 // self.scenario.sim.t_step)
-        elif random() < 0.5:
+        elif random() < (1 / 2):
             self.set_task('OPEN')
         else:
             self.set_task(wait=300 // self.scenario.sim.t_step)

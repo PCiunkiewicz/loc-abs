@@ -1,6 +1,6 @@
 """Runs page."""
 
-from typing import override
+from typing import ClassVar, override
 
 import streamlit as st
 
@@ -13,7 +13,7 @@ class Runs(GenericORM):
 
     model = 'runs'
     api = GenericAPI(model)
-    defaults = {
+    defaults: ClassVar[dict] = {
         'name': '',
         'scenario': None,
         'agents': None,

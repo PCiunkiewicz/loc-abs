@@ -20,21 +20,21 @@ class SocketHandler(ABC):
         self.context = zmq.Context()
         self.socket = None
 
-    def send_string(self, data: str, *args, **kwargs) -> None:
+    def send_string[**P](self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Send a string over the socket."""
-        self.socket.send_string(data, *args, **kwargs)
+        self.socket.send_string(*args, **kwargs)
 
-    def recv_string(self, *args, **kwargs) -> str:
+    def recv_string(self, flags: int = 0, encoding: str = 'utf-8') -> str:
         """Receive a string from the socket."""
-        return self.socket.recv_string(*args, **kwargs)
+        return self.socket.recv_string(flags, encoding)
 
-    def send_pyobj(self, data: Any, *args, **kwargs) -> None:
+    def send_pyobj[**P](self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Send a Python object over the socket."""
-        self.socket.send_pyobj(data, *args, **kwargs)
+        self.socket.send_pyobj(*args, **kwargs)
 
-    def recv_pyobj(self, *args, **kwargs) -> Any:
+    def recv_pyobj(self, flags: int = 0) -> Any:
         """Receive a Python object from the socket."""
-        return self.socket.recv_pyobj(*args, **kwargs)
+        return self.socket.recv_pyobj(flags)
 
     def send_array(self, data: np.typing.NDArray) -> None:
         """Send a numpy array with metadata."""
@@ -63,4 +63,3 @@ class SocketHandler(ABC):
     @abstractmethod
     def configure_socket(self, port: int) -> None:
         """Configure socket options."""
-        pass

@@ -1,6 +1,6 @@
 """Localized Epidemiological ABS API Scenario Views."""
 
-from typing import override
+from typing import ClassVar, override
 
 from rest_framework import viewsets
 from rest_framework.request import Request
@@ -15,9 +15,9 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     queryset = Scenario.objects.all()
     serializer_class = NestedScenarioSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    authentication_classes: list = []  # disables authentication
-    permission_classes: list = []  # disables permission
+    http_method_names: ClassVar[list] = ['get', 'post', 'patch', 'delete']
+    authentication_classes: ClassVar[list] = []  # disables authentication
+    permission_classes: ClassVar[list] = []  # disables permission
 
     @override
     def list(self, request: Request) -> Response:
