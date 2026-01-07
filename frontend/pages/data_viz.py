@@ -259,8 +259,8 @@ layout = html.Div(
         # hidden store and init interval
         dcc.Store(id='dv-current-run'),
         dcc.Store(id='dv-run-metadata', storage_type='local'),
-        dcc.Interval(id='dv-init', interval=500, n_intervals=0, max_intervals=0),
-        dcc.Interval(id='dv-run-poll', interval=500, n_intervals=0, disabled=True),
+        dcc.Interval(id='dv-init', interval=500, n_intervals=0, max_intervals=1),
+        dcc.Interval(id='dv-run-poll', interval=3000, n_intervals=0, disabled=True),
         html.Div(id='dv-notification-area'),
     ],
     className='data-viz-page-container',
@@ -519,18 +519,36 @@ def _render_exports(exports):
 
 
 @callback(
-    Output('dv-summary-table', 'children'),
+    Output('dv-summary-table', 'children', allow_duplicate=True),
     Output('dv-run-metadata', 'data', allow_duplicate=True),
     [
         Input('dv-init', 'n_intervals'),
-        Input('dv-run-poll', 'n_intervals'),
         Input('dv-run-btn', 'n_clicks'),
         Input('dv-cancel-btn', 'n_clicks'),
     ],
     State('dv-run-metadata', 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def _render_runs_table(_init, _tick, _run_clicks, _cancel_clicks, metadata):
+def _load_runs_table(_init, _run_clicks, _cancel_clicks, metadata):
+    """Load runs table initially and after run creation/cancellation."""
+    return _fetch_and_render_runs_table(metadata)
+
+
+@callback(
+    Output('dv-summary-table', 'children'),
+    Output('dv-run-metadata', 'data', allow_duplicate=True),
+    [
+        Input('dv-run-poll', 'n_intervals'),
+    ],
+    State('dv-run-metadata', 'data'),
+    prevent_initial_call='initial_duplicate',
+)
+def _render_runs_table(_tick, metadata):
+    """Render a table of runs covering the bottom space."""
+    return _fetch_and_render_runs_table(metadata)
+
+
+def _fetch_and_render_runs_table(metadata):
     """Render a table of runs covering the bottom space."""
     metadata = metadata or {}
     try:
@@ -545,6 +563,17 @@ def _render_runs_table(_init, _tick, _run_clicks, _cancel_clicks, metadata):
     runs = runs or []
     if not runs:
         return html.Div('No runs yet.', className='text-center text-muted mt-3'), metadata
+
+    # Fetch all scenarios and agents once for efficient lookup
+    scenarios_map = {}
+    agents_map = {}
+    try:
+        _, scenarios, _ = api.get_all('scenario')
+        _, agents, _ = api.get_all('agent_config')
+        scenarios_map = {s['id']: s['name'] for s in (scenarios or []) if 'id' in s and 'name' in s}
+        agents_map = {a['id']: a['name'] for a in (agents or []) if 'id' in a and 'name' in a}
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching scenarios/agents for runs table: %s', exc)
 
     updated_meta = dict(metadata)
     row_data = []
@@ -564,16 +593,24 @@ def _render_runs_table(_init, _tick, _run_clicks, _cancel_clicks, metadata):
             if status in terminal:
                 duration = _format_duration(timestamp)
 
-        scenario_name = (
-            r.get('scenario', {}).get('name')
-            if isinstance(r.get('scenario'), dict)
-            else _safe_resource_name('scenario', r.get('scenario'))
-        )
-        agent_name = (
-            r.get('agents', {}).get('name')
-            if isinstance(r.get('agents'), dict)
-            else _safe_resource_name('agent_config', r.get('agents'))
-        )
+        # Get scenario name - check if embedded, otherwise lookup from map
+        scenario_obj = r.get('scenario')
+        if isinstance(scenario_obj, dict):
+            scenario_name = scenario_obj.get('name', 'Unknown')
+        elif scenario_obj:
+            scenario_name = scenarios_map.get(scenario_obj, f'ID {scenario_obj}')
+        else:
+            scenario_name = 'Not selected'
+
+        # Get agent name - check if embedded, otherwise lookup from map
+        agent_obj = r.get('agents')
+        if isinstance(agent_obj, dict):
+            agent_name = agent_obj.get('name', 'Unknown')
+        elif agent_obj:
+            agent_name = agents_map.get(agent_obj, f'ID {agent_obj}')
+        else:
+            agent_name = 'Not selected'
+
         row_data.append(
             {
                 'timestamp': timestamp,
@@ -594,7 +631,6 @@ def _render_runs_table(_init, _tick, _run_clicks, _cancel_clicks, metadata):
         {'headerName': 'Status', 'field': 'status', 'minWidth': 120},
         {'headerName': 'ID', 'field': 'id', 'maxWidth': 90},
         {'headerName': '# Runs', 'field': 'runs', 'maxWidth': 110},
-        {'headerName': 'Duration', 'field': 'duration', 'minWidth': 120},
         {'headerName': 'Scenario', 'field': 'scenario', 'minWidth': 160},
         {'headerName': 'Agent Config', 'field': 'agent', 'minWidth': 160},
     ]
