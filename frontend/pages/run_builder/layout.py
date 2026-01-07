@@ -501,6 +501,259 @@ def create_agent_config_learn_more_modal():
 # Main page layout
 layout = html.Div(
     [
+        # Page Title and Help Button
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6('Scenario & Participant Builder', className='page-title'),
+                        html.P(
+                            'Create and configure simulation scenarios and participant behaviors for your facility simulations.',
+                            className='page-subtitle',
+                        ),
+                    ],
+                    style={'flex': '1'},
+                ),
+                html.Button(
+                    [html.I(className='fa fa-question-circle me-2'), 'How to Use'],
+                    id='scenario-builder-how-to-btn',
+                    className='btn btn-outline-primary',
+                ),
+            ],
+            style={
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'space-between',
+                'marginBottom': '.5rem',
+            },
+        ),
+        # How-to Modal
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle('How to Use the Scenario & Participant Builder')),
+                dbc.ModalBody(
+                    [
+                        html.H5('Managing Resources', className='mt-3 mb-3'),
+                        html.P(
+                            'This builder helps you create, edit, and manage scenarios and participant configurations. Follow these steps to work with your resources:',
+                            className='mb-4',
+                        ),
+                        # Create Resource
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            '1',
+                                            className='how-to-step-number',
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.H6('Creating a New Resource', className='mb-2'),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-plus-circle me-2 text-success'),
+                                                        'Click the ',
+                                                        html.Strong('"Create New"'),
+                                                        ' button next to the dropdown menu.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-edit me-2 text-success'),
+                                                        'Fill in all required fields (marked with ',
+                                                        html.Span(
+                                                            '*', style={'color': '#dc3545', 'fontWeight': 'bold'}
+                                                        ),
+                                                        ').',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-save me-2 text-success'),
+                                                        'Click ',
+                                                        html.Strong('"Save"'),
+                                                        ' to create your resource, or ',
+                                                        html.Strong('"Cancel"'),
+                                                        ' to discard changes.',
+                                                    ],
+                                                    className='mb-0',
+                                                ),
+                                            ],
+                                            style={'flex': '1'},
+                                        ),
+                                    ],
+                                    className='how-to-step',
+                                ),
+                                # Edit Resource
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            '2',
+                                            className='how-to-step-number',
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.H6('Editing an Existing Resource', className='mb-2'),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-list me-2 text-primary'),
+                                                        'Select a resource from the dropdown menu.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-pencil me-2 text-primary'),
+                                                        'Click the ',
+                                                        html.Strong('"Edit"'),
+                                                        ' button to modify the resource details.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-check me-2 text-primary'),
+                                                        'Make your changes and click ',
+                                                        html.Strong('"Save"'),
+                                                        ' to update, or ',
+                                                        html.Strong('"Cancel"'),
+                                                        ' to revert.',
+                                                    ],
+                                                    className='mb-0',
+                                                ),
+                                            ],
+                                            style={'flex': '1'},
+                                        ),
+                                    ],
+                                    className='how-to-step',
+                                ),
+                                # Delete Resource
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            '3',
+                                            className='how-to-step-number',
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.H6('Deleting a Resource', className='mb-2'),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-mouse-pointer me-2 text-danger'),
+                                                        'Select the resource you want to delete from the dropdown.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-trash me-2 text-danger'),
+                                                        'Click the ',
+                                                        html.Strong('"Delete"'),
+                                                        ' button.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-exclamation-triangle me-2 text-danger'),
+                                                        'Confirm your action in the popup dialog. ',
+                                                        html.Span(
+                                                            'This cannot be undone!',
+                                                            style={'fontWeight': 'bold', 'color': '#dc3545'},
+                                                        ),
+                                                    ],
+                                                    className='mb-0',
+                                                ),
+                                            ],
+                                            style={'flex': '1'},
+                                        ),
+                                    ],
+                                    className='how-to-step',
+                                ),
+                                # Clone Resource
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            '4',
+                                            className='how-to-step-number',
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.H6('Cloning a Resource', className='mb-2'),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-list me-2 text-info'),
+                                                        'Select the resource you want to duplicate from the dropdown.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-copy me-2 text-info'),
+                                                        'Click the ',
+                                                        html.Strong('"Clone"'),
+                                                        ' button to create a copy.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-edit me-2 text-info'),
+                                                        'The cloned resource will open in edit mode with all the same settings. Give it a new name and modify as needed.',
+                                                    ],
+                                                    className='mb-2',
+                                                ),
+                                                html.P(
+                                                    [
+                                                        html.I(className='fa fa-save me-2 text-info'),
+                                                        'Click ',
+                                                        html.Strong('"Save"'),
+                                                        ' to create the new resource based on the clone.',
+                                                    ],
+                                                    className='mb-0',
+                                                ),
+                                            ],
+                                            style={'flex': '1'},
+                                        ),
+                                    ],
+                                    className='how-to-step',
+                                ),
+                            ],
+                            className='mb-3',
+                        ),
+                        html.Hr(),
+                        html.Div(
+                            [
+                                html.I(className='fa fa-lightbulb text-warning me-2'),
+                                html.Strong('Tips: '),
+                                html.Ul(
+                                    [
+                                        html.Li(
+                                            'Fields with green borders are valid, red borders indicate errors or missing information.'
+                                        ),
+                                        html.Li(
+                                            'You can expand the "View Full Details" section to see the complete configuration in JSON format.'
+                                        ),
+                                        html.Li(
+                                            'Start with STEP 1 to define your scenario, then move to STEP 2 to configure participants.'
+                                        ),
+                                    ],
+                                    style={'marginTop': '0.5rem', 'marginBottom': '0'},
+                                ),
+                            ],
+                            className='alert alert-info',
+                        ),
+                    ]
+                ),
+                dbc.ModalFooter(dbc.Button('Got it!', id='scenario-builder-how-to-close', className='btn-primary')),
+            ],
+            id='scenario-builder-how-to-modal',
+            size='lg',
+            is_open=False,
+        ),
         dbc.Tabs(
             [
                 dbc.Tab(
@@ -703,6 +956,76 @@ layout = html.Div(
         dcc.Store(id='delete-pending-id'),
         create_scenario_learn_more_modal(),
         create_agent_config_learn_more_modal(),
+        # Completion tracking
+        dcc.Store(id='scenario-agent-completion-store', data={'scenario_ready': False, 'agent_ready': False}),
+        # Completion Modal
+        dbc.Modal(
+            [
+                dbc.ModalHeader(
+                    html.Div(
+                        [
+                            html.I(
+                                className='fa fa-check-circle me-2', style={'color': '#28a745', 'fontSize': '1.5rem'}
+                            ),
+                            'Setup Complete!',
+                        ],
+                        style={'display': 'flex', 'alignItems': 'center'},
+                    ),
+                    close_button=True,
+                ),
+                dbc.ModalBody(
+                    [
+                        html.Div(
+                            [
+                                html.P(
+                                    'You have successfully configured both your scenario and participant settings. '
+                                    'Your simulation is ready to run!',
+                                    style={
+                                        'color': '#6c757d',
+                                        'fontSize': '1rem',
+                                        'lineHeight': '1.6',
+                                        'marginBottom': '0.75rem',
+                                    },
+                                ),
+                                html.H6(
+                                    'What would you like to do next?',
+                                    style={'color': '#495057', 'marginBottom': '0.5rem'},
+                                ),
+                            ],
+                            style={'textAlign': 'center'},
+                        ),
+                    ]
+                ),
+                dbc.ModalFooter(
+                    [
+                        dbc.Button(
+                            [
+                                html.I(className='fa fa-edit me-2'),
+                                'Keep Editing',
+                            ],
+                            id='completion-keep-editing-btn',
+                            className='btn-secondary',
+                            style={'minWidth': '150px'},
+                        ),
+                        dbc.Button(
+                            [
+                                html.I(className='fa fa-chart-line me-2'),
+                                'Visualise Results',
+                            ],
+                            id='completion-go-to-viz-btn',
+                            href='/data-viz',
+                            className='btn-primary',
+                            style={'minWidth': '150px'},
+                        ),
+                    ],
+                    style={'justifyContent': 'center', 'gap': '1rem'},
+                ),
+            ],
+            id='scenario-agent-completion-modal',
+            is_open=False,
+            centered=True,
+            size='md',
+        ),
     ],
     className='page-container',
 )

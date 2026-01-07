@@ -824,3 +824,43 @@ resource-form-container{
         opacity: 1;
     }
 }
+
+/* ========== Page Title Styles ========== */
+.page-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0.5rem 0 0 0;
+}
+
+/* ========== How-to Modal Styles ========== */
+.how-to-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d6efd;
+}
+
+.how-to-step-number {
+    background-color: #0d6efd;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}

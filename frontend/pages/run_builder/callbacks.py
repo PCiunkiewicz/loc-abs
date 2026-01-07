@@ -1,7 +1,7 @@
 """Callbacks for Run Builder page."""
 
 import copy
-from dash import ALL, Input, Output, State, callback, ctx, html, no_update
+from dash import ALL, callback, ctx, html, Input, no_update, Output, State
 from dash.exceptions import PreventUpdate
 from loguru import logger
 import dash_bootstrap_components as dbc
@@ -23,6 +23,60 @@ from pages.run_builder.config import (
 )
 
 from pages.run_builder.layout import render_summary_view
+
+
+@callback(
+    Output('scenario-builder-how-to-modal', 'is_open'),
+    [Input('scenario-builder-how-to-btn', 'n_clicks'), Input('scenario-builder-how-to-close', 'n_clicks')],
+    [State('scenario-builder-how-to-modal', 'is_open')],
+    prevent_initial_call=True,
+)
+def toggle_how_to_modal(n1, n2, is_open):
+    """Toggle how-to modal."""
+    return not is_open
+
+
+@callback(
+    Output('scenario-agent-completion-store', 'data'),
+    [
+        Input({'type': 'dropdown', 'resource': 'scenario'}, 'value'),
+        Input({'type': 'dropdown', 'resource': 'agent_config'}, 'value'),
+    ],
+    State('scenario-agent-completion-store', 'data'),
+)
+def track_scenario_agent_completion(scenario_value, agent_value, completion_data):
+    """Track when both scenario and agent config are selected or created."""
+    completion_data = completion_data or {'scenario_ready': False, 'agent_ready': False}
+
+    completion_data['scenario_ready'] = scenario_value is not None
+    completion_data['agent_ready'] = agent_value is not None
+
+    return completion_data
+
+
+@callback(
+    Output('scenario-agent-completion-modal', 'is_open'),
+    [
+        Input('scenario-agent-completion-store', 'data'),
+        Input('completion-keep-editing-btn', 'n_clicks'),
+    ],
+    State('scenario-agent-completion-modal', 'is_open'),
+    prevent_initial_call=True,
+)
+def show_completion_modal(completion_data, keep_editing_clicks, is_open):
+    """Show modal when both scenario and agent are ready."""
+    triggered_id = ctx.triggered_id
+
+    # Close modal if keep editing is clicked
+    if triggered_id == 'completion-keep-editing-btn':
+        return False
+
+    # Open modal if both are ready and modal is not already open
+    if completion_data and completion_data.get('scenario_ready') and completion_data.get('agent_ready'):
+        if not is_open:
+            return True
+
+    return is_open
 
 
 def extract_resource_id(value):
