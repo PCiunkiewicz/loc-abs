@@ -42,16 +42,16 @@ def _build_runs_df(dv_metadata: dict = None) -> tuple[pd.DataFrame, str | None]:
     for r in runs or []:
         run_id = str(r.get('id'))
         meta_entry = dv_metadata.get(run_id, {})
-        
+
         # Get timestamp - check API first, then metadata from data_viz
         timestamp = r.get('created_at') or r.get('timestamp') or r.get('started_at') or meta_entry.get('timestamp')
         # Don't use current time as fallback - show when timestamp is actually missing
         if not timestamp:
             timestamp = 'No timestamp'
-        
+
         # Also store as datetime for sorting
         ts_dt = pd.to_datetime(timestamp, errors='coerce')
-        
+
         duration_val = r.get('duration') or r.get('runtime') or r.get('run_time')
         try:
             duration_min = round(float(duration_val), 2) if duration_val is not None else None
