@@ -36,15 +36,15 @@
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   padding: 10px 14px;
-  min-height: 100px;
+  height: 140px;
   display: flex;
   flex-direction: column;
 }
 
 .kpi-title {
   color: #6c757d;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -90,8 +90,9 @@
 
 .split-row {
   display: grid;
-  grid-template-columns: 40fr 60fr;
+  grid-template-columns: 30fr 70fr;
   gap: 15px;
+  max-height: 380px;
 }
 
 .panel-card,
@@ -100,7 +101,141 @@
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   height: 100%;
+  max-height: 380px;
   padding: 8px;
+}
+
+/* Enhanced Summary Card Styles */
+.enhanced-summary-card .card-body {
+  padding: 1rem;
+}
+
+.summary-content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.summary-item {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.75rem;
+  border-left: 3px solid #0d6efd;
+}
+
+.summary-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.summary-item-row:hover {
+  background-color: #e9ecef;
+}
+
+/* Side by side container for scenario and participants */
+.summary-side-by-side {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.summary-side-by-side .summary-item-row {
+  flex: 1;
+}
+
+/* Action button container */
+.summary-action-container {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: center;
+}
+
+.summary-action-btn {
+  width: 100%;
+  max-width: 300px;
+  font-weight: 500;
+}
+
+.summary-item-icon {
+  font-size: 1.25rem;
+  color: #0d6efd;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.summary-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.summary-item-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-item-value {
+  font-size: 0.95rem;
+  color: #212529;
+  font-weight: 600;
+}
+
+.summary-item-highlight {
+  /* color: #0d6efd; */
+  font-size: 1.1rem;
+}
+
+.summary-id-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  padding-left: 2rem;
+}
+
+.summary-id-label {
+  font-size: 0.7rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.summary-id-value {
+  font-size: 0.75rem;
+  color: #495057;
+  font-weight: 600;
+  background-color: #e9ecef;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+}
+
+.status-badge-success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge-default {
+  background-color: #e2e3e5;
+  color: #383d41;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .card-title {
@@ -115,7 +250,7 @@
 }
 
 #recent-activity-grid{
-  height: 300px !important;
+  height: 250px !important;
   /* width: 100%; */
 }
 
@@ -164,8 +299,9 @@
 
 /* KPI Card Info Icon */
 .kpi-info-icon {
-  font-size: 0.8em;
-  opacity: 0.6;
+  font-size: 1.2em;
+  opacity: 0.7;
+  cursor: pointer;
 }
 
 /* Chart Containers */
@@ -303,4 +439,65 @@
   color: #6c757d;
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
+}
+
+/* Hidden KPI Divs */
+.hidden-kpi {
+  display: none;
+}
+
+/* Overview Header */
+.overview-header-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.section-subtitle-inline {
+  display: inline;
+}
+
+.overview-info-icon-inline {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Quick Actions Card - Specific centering */
+.quick-actions-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.quick-actions-title {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.quick-actions-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+}
+
+.quick-action-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* Average Duration Graph */
+#avg-duration-graph-container {
+  height: 280px;
+  min-height: 280px;
+  width: 100%;
+  overflow: hidden;
 }

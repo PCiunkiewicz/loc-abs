@@ -12,26 +12,20 @@ from utilities import api
 register_page(__name__, path='/dashboard', name='Dashboard', title='LocABS Dashboard')
 
 
-def _name_from_field(val, resource: str) -> str:
-    """Best-effort readable label with API call fallback for IDs."""
-    if val is None:
-        return 'N/A'
-    if isinstance(val, dict):
-        return val.get('name') or str(val.get('id', 'N/A'))
-
-    # If it's just an ID (number or string), fetch the name from API
+def _get_resource_lookup(resource: str) -> dict:
+    """Fetch all resources and create ID->name lookup map."""
     try:
-        success, data, _ = api.get(resource, val)
-        if success and data and isinstance(data, dict):
-            return data.get('name', str(val))
+        success, items, _ = api.get_all(resource)
+        if success and items:
+            return {item.get('id'): item.get('name', f'{resource}_{item.get("id")}') for item in items}
     except Exception:  # pylint: disable=broad-exception-caught
         pass
+    return {}
 
-    return str(val)
 
-
-def _build_runs_df() -> tuple[pd.DataFrame, str | None]:
+def _build_runs_df(dv_metadata: dict = None) -> tuple[pd.DataFrame, str | None]:
     """Fetch runs from API and normalize into a dataframe."""
+    dv_metadata = dv_metadata or {}
     try:
         success, runs, err = api.get_all('run')
     except Exception as exc:  # pylint: disable=broad-exception-caught
@@ -40,16 +34,53 @@ def _build_runs_df() -> tuple[pd.DataFrame, str | None]:
     if not success:
         return pd.DataFrame(), err or 'Unable to load runs'
 
+    # Create lookup maps for efficient name resolution
+    scenario_lookup = _get_resource_lookup('scenario')
+    agent_lookup = _get_resource_lookup('agent_config')
+
     rows = []
     for r in runs or []:
-        ts_raw = r.get('created_at') or r.get('timestamp') or r.get('started_at')
-        ts_dt = pd.to_datetime(ts_raw, errors='coerce')
-        timestamp = ts_dt.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(ts_dt) else ''
+        run_id = str(r.get('id'))
+        meta_entry = dv_metadata.get(run_id, {})
+        
+        # Get timestamp - check API first, then metadata from data_viz
+        timestamp = r.get('created_at') or r.get('timestamp') or r.get('started_at') or meta_entry.get('timestamp')
+        # Don't use current time as fallback - show when timestamp is actually missing
+        if not timestamp:
+            timestamp = 'No timestamp'
+        
+        # Also store as datetime for sorting
+        ts_dt = pd.to_datetime(timestamp, errors='coerce')
+        
         duration_val = r.get('duration') or r.get('runtime') or r.get('run_time')
         try:
             duration_min = round(float(duration_val), 2) if duration_val is not None else None
         except (TypeError, ValueError):
             duration_min = None
+
+        # Resolve scenario name
+        scenario_val = r.get('scenario')
+        if isinstance(scenario_val, dict):
+            scenario_name = scenario_val.get('name') or scenario_lookup.get(scenario_val.get('id'), 'N/A')
+        elif scenario_val is not None:
+            scenario_name = scenario_lookup.get(scenario_val, str(scenario_val))
+        else:
+            scenario_name = 'N/A'
+
+        # Resolve agent name
+        agent_val = r.get('agents')
+        if isinstance(agent_val, dict):
+            agent_name = agent_val.get('name') or agent_lookup.get(agent_val.get('id'), 'N/A')
+        elif isinstance(agent_val, list) and len(agent_val) > 0:
+            first_agent = agent_val[0]
+            if isinstance(first_agent, dict):
+                agent_name = first_agent.get('name') or agent_lookup.get(first_agent.get('id'), 'N/A')
+            else:
+                agent_name = agent_lookup.get(first_agent, str(first_agent))
+        elif agent_val is not None:
+            agent_name = agent_lookup.get(agent_val, str(agent_val))
+        else:
+            agent_name = 'N/A'
 
         rows.append(
             {
@@ -58,8 +89,8 @@ def _build_runs_df() -> tuple[pd.DataFrame, str | None]:
                 'status': str(r.get('status', '')).upper(),
                 'duration_min': duration_min,
                 'timestamp': timestamp,
-                'scenario': _name_from_field(r.get('scenario'), 'scenario'),
-                'agent': _name_from_field(r.get('agents'), 'agent_config'),
+                'scenario': scenario_name,
+                'agent': agent_name,
                 'runs': r.get('runs'),
                 'ts_dt': ts_dt,
             }
@@ -68,6 +99,8 @@ def _build_runs_df() -> tuple[pd.DataFrame, str | None]:
     df = pd.DataFrame(rows)
     if not df.empty:
         df['duration_display'] = df['duration_min'].apply(lambda m: f'{m} min' if m is not None else 'N/A')
+        # Fill None values in runs column
+        df['runs'] = df['runs'].fillna('N/A')
         df.sort_values(by='ts_dt', ascending=False, inplace=True, ignore_index=True)
     return df, None
 
@@ -140,31 +173,129 @@ def kpi_card(title, value, subtitle=None, value_id=None, tooltip_text=None, max_
 
 
 def last_run_summary(run: dict) -> html.Div:
-    """Render last run summary details."""
-    items = [
-        ('Simulation Name', run.get('run_name', 'N/A')),
-        ('Simulation ID', f'#{run.get("run_id", "N/A")}'),
-        ('Number of Tests', run.get('runs', 'N/A')),
-        ('Scenario Used', run.get('scenario', 'N/A')),
-        ('People Configuration', run.get('agent', 'N/A')),
-    ]
-    rows = [html.Tr([html.Th(label), html.Td(val)]) for label, val in items]
+    """Render last run summary details with enhanced visual design."""
+    run_name = run.get('run_name', 'No simulation data')
+    run_id = run.get('run_id', 'N/A')
+    runs_count = run.get('runs', 'N/A')
+    scenario = run.get('scenario', 'N/A')
+    agent = run.get('agent', 'N/A')
+
     return dbc.Card(
         dbc.CardBody(
             [
                 html.Div(
                     [
                         create_info_icon_with_tooltip(
-                            'Latest Simulation Summary',
+                            'Latest Simulation',
                             'Detailed information about the most recently completed simulation, including the scenario used and people behavior configuration.',
                             'latest-simulation-summary',
                         ),
                     ]
                 ),
-                dbc.Table(rows, bordered=False, striped=False, hover=False, size='sm', className='summary-table'),
+                html.Div(
+                    [
+                        # Simulation Name and Tests Run side by side
+                        html.Div(
+                            [
+                                # Simulation Name with icon
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            [
+                                                html.I(className='fa fa-rocket summary-item-icon'),
+                                                html.Div(
+                                                    [
+                                                        html.Div('Simulation', className='summary-item-label'),
+                                                        html.Div(run_name, className='summary-item-value'),
+                                                    ],
+                                                    className='summary-item-content',
+                                                ),
+                                            ],
+                                            className='summary-item-row',
+                                        ),
+                                        html.Div(
+                                            [
+                                                html.Span('ID: ', className='summary-id-label'),
+                                                html.Span(f'#{run_id}', className='summary-id-value'),
+                                            ],
+                                            className='summary-id-container',
+                                        ),
+                                    ],
+                                    className='summary-item',
+                                ),
+                                # Tests Count
+                                html.Div(
+                                    [
+                                        html.I(className='fa fa-flask summary-item-icon'),
+                                        html.Div(
+                                            [
+                                                html.Div('Tests Run', className='summary-item-label'),
+                                                html.Div(
+                                                    str(runs_count),
+                                                    className='summary-item-value summary-item-highlight',
+                                                ),
+                                            ],
+                                            className='summary-item-content',
+                                        ),
+                                    ],
+                                    className='summary-item-row',
+                                ),
+                            ],
+                            className='summary-side-by-side',
+                        ),
+                        # Scenario and Participants side by side
+                        html.Div(
+                            [
+                                # Scenario
+                                html.Div(
+                                    [
+                                        html.I(className='fa fa-map summary-item-icon'),
+                                        html.Div(
+                                            [
+                                                html.Div('Scenario', className='summary-item-label'),
+                                                html.Div(scenario, className='summary-item-value'),
+                                            ],
+                                            className='summary-item-content',
+                                        ),
+                                    ],
+                                    className='summary-item-row',
+                                ),
+                                # People Configuration
+                                html.Div(
+                                    [
+                                        html.I(className='fa fa-users summary-item-icon'),
+                                        html.Div(
+                                            [
+                                                html.Div('Participants', className='summary-item-label'),
+                                                html.Div(agent, className='summary-item-value'),
+                                            ],
+                                            className='summary-item-content',
+                                        ),
+                                    ],
+                                    className='summary-item-row',
+                                ),
+                            ],
+                            className='summary-side-by-side',
+                        ),
+                        # Visualise Results button
+                        html.Div(
+                            dbc.Button(
+                                [
+                                    html.I(className='fa fa-chart-line me-2'),
+                                    'Visualise Results',
+                                ],
+                                color='primary',
+                                href='/data-viz',
+                                className='summary-action-btn',
+                            ),
+                            className='summary-action-container',
+                        ),
+                    ],
+                    className='summary-content-container',
+                ),
             ]
         ),
-        className='summary-card',
+        className='summary-card enhanced-summary-card',
     )
 
 
@@ -262,7 +393,7 @@ column_defs = [
     {'field': 'run_id', 'headerName': 'ID #', 'maxWidth': 80, 'hide': True},
     {
         'field': 'status',
-        'headerName': 'Result',
+        'headerName': 'Status',
         'maxWidth': 120,
         'cellClassRules': {
             'status-success': "value === 'SUCCESS'",
@@ -270,8 +401,10 @@ column_defs = [
             'status-running': "value === 'RUNNING'",
         },
     },
-    {'field': 'timestamp', 'headerName': 'When', 'minWidth': 150},
-    {'field': 'duration_display', 'headerName': 'Duration', 'maxWidth': 100},
+    {'field': 'timestamp', 'headerName': 'Time Created', 'minWidth': 160},
+    {'field': 'runs', 'headerName': '# Runs', 'maxWidth': 100},
+    {'field': 'scenario', 'headerName': 'Scenario', 'minWidth': 150},
+    {'field': 'agent', 'headerName': 'Agent Config', 'minWidth': 150},
 ]
 
 
@@ -351,7 +484,6 @@ def toggle_glossary(n_open, n_close, is_open):
 
 @callback(
     Output('recent-activity-grid', 'rowData'),
-    Output('duration-graph-container', 'children'),
     Output('status-graph-container', 'children'),
     Output('last-run-summary', 'children'),
     Output('kpi-scenarios', 'children'),
@@ -364,11 +496,12 @@ def toggle_glossary(n_open, n_close, is_open):
     Input('time-filter', 'value'),
     Input('manual-refresh-btn', 'n_clicks'),
     State('dashboard-metadata', 'data'),
+    State('dv-run-metadata', 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def update_dashboard(_n, time_filter, _refresh_clicks, metadata):
+def update_dashboard(_n, time_filter, _refresh_clicks, metadata, dv_metadata):
     """Update dashboard components periodically."""
-    df, err = _build_runs_df()
+    df, err = _build_runs_df(dv_metadata or {})
     if err:
         df = pd.DataFrame()
 
@@ -400,10 +533,11 @@ def update_dashboard(_n, time_filter, _refresh_clicks, metadata):
             agent_cfg_count = 'N/A'
 
     row_data = (
-        df[['run_name', 'run_id', 'status', 'timestamp', 'duration_display']].to_dict('records') if not df.empty else []
+        df[['run_name', 'run_id', 'status', 'timestamp', 'runs', 'scenario', 'agent']].to_dict('records')
+        if not df.empty
+        else []
     )
 
-    duration_graph = duration_line(df)
     status_graph = status_bar(df)
 
     if df.empty:
@@ -424,7 +558,6 @@ def update_dashboard(_n, time_filter, _refresh_clicks, metadata):
     last_updated = pd.Timestamp.now().strftime('%I:%M:%S %p')
     return (
         row_data,
-        duration_graph,
         status_graph,
         summary,
         kpi_scenarios,
@@ -440,6 +573,7 @@ layout = html.Div(
     [
         dcc.Interval(id='runs-refresh', interval=5000, n_intervals=0),
         dcc.Store(id='dashboard-metadata'),
+        dcc.Store(id='dv-run-metadata', storage_type='local'),
         dbc.Modal(
             [
                 dbc.ModalHeader(dbc.ModalTitle('Understanding Your Dashboard')),
@@ -503,16 +637,13 @@ layout = html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.H4(
-                                            'Quick Overview', className='section-subtitle', style={'display': 'inline'}
-                                        ),
+                                        html.H4('Quick Overview', className='section-subtitle section-subtitle-inline'),
                                         html.I(
-                                            className='fa fa-info-circle ms-1',
+                                            className='fa fa-info-circle ms-1 overview-info-icon-inline',
                                             id='overview-info-icon',
-                                            style={'fontSize': '0.875rem', 'color': '#6c757d'},
                                         ),
                                     ],
-                                    style={'display': 'flex', 'alignItems': 'center', 'gap': '0.25rem'},
+                                    className='overview-header-container',
                                 ),
                                 html.Small(
                                     id='last-updated-text',
@@ -568,12 +699,61 @@ layout = html.Div(
             id='kpi-cards-container',
             className='cards-row',
         ),
-        html.Div(id='kpi-scenarios', style={'display': 'none'}),
-        html.Div(id='kpi-agents', style={'display': 'none'}),
-        html.Div(id='kpi-last-duration', style={'display': 'none'}),
-        html.Div(id='kpi-total-runs', style={'display': 'none'}),
+        html.Div(id='kpi-scenarios', className='hidden-kpi'),
+        html.Div(id='kpi-agents', className='hidden-kpi'),
+        html.Div(id='kpi-last-duration', className='hidden-kpi'),
+        html.Div(id='kpi-total-runs', className='hidden-kpi'),
         html.Div(
             [
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            html.H5('Quick Actions', className='quick-actions-title'),
+                            html.Div(
+                                [
+                                    dbc.Button(
+                                        [
+                                            html.I(className='fa fa-play-circle me-2'),
+                                            'Start New Simulation',
+                                        ],
+                                        href='/scenario-builder',
+                                        color='primary',
+                                        className='quick-action-btn mb-2',
+                                    ),
+                                    dbc.Button(
+                                        [
+                                            html.I(className='fa fa-chart-line me-2'),
+                                            'View Results',
+                                        ],
+                                        href='/data-viz',
+                                        color='info',
+                                        className='quick-action-btn mb-2',
+                                    ),
+                                    dbc.Button(
+                                        [
+                                            html.I(className='fa fa-lightbulb me-2'),
+                                            'Get Recommendations',
+                                        ],
+                                        href='/decision-support',
+                                        color='success',
+                                        className='quick-action-btn mb-2',
+                                    ),
+                                    dbc.Button(
+                                        [
+                                            html.I(className='fa fa-file-download me-2'),
+                                            'Create Report',
+                                        ],
+                                        href='/reports',
+                                        color='secondary',
+                                        className='quick-action-btn',
+                                    ),
+                                ],
+                                className='quick-actions-buttons-container',
+                            ),
+                        ]
+                    ),
+                    className='panel-card quick-actions-card',
+                ),
                 dbc.Card(
                     dbc.CardBody(
                         [
@@ -600,25 +780,6 @@ layout = html.Div(
                                 className='ag-theme-alpine activity-grid',
                                 columnSize='sizeToFit',
                             ),
-                        ]
-                    ),
-                    className='panel-card',
-                ),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            create_info_icon_with_tooltip(
-                                'How Long Simulations Take',
-                                'Timeline showing how many minutes each simulation took to complete. '
-                                'Use the toolbar buttons to zoom in/out, move around the chart, or download the image. '
-                                'Hover your mouse over any point to see exact details.',
-                                'duration-chart-title',
-                            ),
-                            html.P(
-                                'See how simulation duration changes over time with interactive chart controls.',
-                                className='card-description',
-                            ),
-                            html.Div(id='duration-graph-container'),
                         ]
                     ),
                     className='panel-card',
