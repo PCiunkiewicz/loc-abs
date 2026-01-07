@@ -61,31 +61,31 @@ def create_workflow_visual():
                         ),
                         create_workflow_step(
                             2,
+                            'Build Your Scenario',
+                            'Configure scenarios and participant profiles for your simulations.',
+                            'Build Scenario',
+                            '/scenario-builder',
+                        ),
+                        create_workflow_step(
+                            3,
                             'Explore Data Visualization',
                             'Create interactive charts and analyze your simulation data.',
                             'View Data',
                             '/data-viz',
                         ),
                         create_workflow_step(
-                            3,
+                            4,
                             'Use Decision Support',
                             'Interact with Bayesian networks and evaluate intervention strategies.',
                             'Explore Tools',
                             '/decision-support',
                         ),
                         create_workflow_step(
-                            4,
+                            5,
                             'Generate Info Reports',
                             'Document your findings and share insights with stakeholders.',
                             'Create Report',
                             '/reports',
-                        ),
-                        create_workflow_step(
-                            5,
-                            'Check Help/FAQs',
-                            'Access detailed guidance, terminology, and troubleshooting assistance. Get access to workflow demo video.',
-                            'Visit Help',
-                            '/help',
                         ),
                     ],
                     className='workflow-steps-row',
@@ -155,7 +155,6 @@ layout = html.Div(
                                                         'Simulate infectious disease spread patterns, test intervention strategies, and predict outbreak trajectories in various population densities.',
                                                         className='platform-card-text',
                                                     ),
-
                                                 ]
                                             ),
                                             className='platform-card',
@@ -176,7 +175,6 @@ layout = html.Div(
                                                         'Model crowd movement during emergencies, optimize exit routes, and evaluate facility layouts for safety compliance.',
                                                         className='platform-card-text',
                                                     ),
-
                                                 ]
                                             ),
                                             className='platform-card',
