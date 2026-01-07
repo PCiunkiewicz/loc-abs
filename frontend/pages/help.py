@@ -1,6 +1,6 @@
 """Help Page for LocABS Application."""
 
-from dash import html, dcc, register_page, callback, Input, Output, State
+from dash import html, register_page, callback, Input, Output, State
 import dash_bootstrap_components as dbc
 
 register_page(__name__, path='/help', name='Help', title='LocABS · Help')

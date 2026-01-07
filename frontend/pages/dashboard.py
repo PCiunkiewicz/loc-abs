@@ -416,7 +416,7 @@ column_defs = [
     Input('kpi-last-duration', 'children'),
     Input('kpi-total-runs', 'children'),
 )
-def update_kpi_cards(metadata, scenarios, agents, duration, total_runs):
+def update_kpi_cards(_metadata, scenarios, agents, duration, total_runs):
     """Update KPI cards with progress bars showing current/max values."""
     # Parse current values
     try:
@@ -477,7 +477,7 @@ def update_kpi_cards(metadata, scenarios, agents, duration, total_runs):
     State('glossary-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_glossary(n_open, n_close, is_open):
+def toggle_glossary(_n_open, _n_close, is_open):
     """Toggle glossary modal."""
     return not is_open
 

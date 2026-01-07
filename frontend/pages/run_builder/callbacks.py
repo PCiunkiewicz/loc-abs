@@ -4,7 +4,6 @@ import copy
 from dash import ALL, callback, ctx, html, Input, no_update, Output, State
 from dash.exceptions import PreventUpdate
 from loguru import logger
-import dash_bootstrap_components as dbc
 
 from components.resource_form import render_resource_form
 from utilities import api
@@ -31,7 +30,7 @@ from pages.run_builder.layout import render_summary_view
     [State('scenario-builder-how-to-modal', 'is_open')],
     prevent_initial_call=True,
 )
-def toggle_how_to_modal(n1, n2, is_open):
+def toggle_how_to_modal(_n1, _n2, is_open):
     """Toggle how-to modal."""
     return not is_open
 
@@ -63,7 +62,7 @@ def track_scenario_agent_completion(scenario_value, agent_value, completion_data
     State('scenario-agent-completion-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def show_completion_modal(completion_data, keep_editing_clicks, is_open):
+def show_completion_modal(completion_data, _keep_editing_clicks, is_open):
     """Show modal when both scenario and agent are ready."""
     triggered_id = ctx.triggered_id
 
@@ -694,7 +693,7 @@ def toggle_notification_modal(message, notification_type, _close_clicks, _is_ope
     State('scenario-learn-more-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_scenario_learn_more(open_clicks, close_clicks, is_open):
+def toggle_scenario_learn_more(_open_clicks, _close_clicks, is_open):
     """Toggle scenario learn more modal."""
     return not is_open
 
@@ -706,7 +705,7 @@ def toggle_scenario_learn_more(open_clicks, close_clicks, is_open):
     State('agent-config-learn-more-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_agent_config_learn_more(open_clicks, close_clicks, is_open):
+def toggle_agent_config_learn_more(_open_clicks, _close_clicks, is_open):
     """Toggle agent config learn more modal."""
     return not is_open
 

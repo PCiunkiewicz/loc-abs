@@ -1,13 +1,15 @@
 """Data Visualisation Page for LocABS Application."""
 
-import dash
-from dash import html, dcc, register_page, callback, Output, Input, State, ctx, no_update
 from datetime import datetime
+
+import dash
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
-from utilities import api
+from dash import Input, Output, State, callback, ctx, dcc, html, no_update, register_page
 from loguru import logger
+
 from components.tooltip import create_tooltip
+from utilities import api
 
 register_page(__name__, path='/data-viz', name='Data Visualisation', title='LocABS · Data Visualisation')
 
@@ -669,7 +671,7 @@ def _fetch_and_render_runs_table(metadata):
     ],
     prevent_initial_call=True,
 )
-def _load_content(run_id, active_tab, current_content):
+def _load_content(run_id, active_tab, _current_content):
     """Load content based on selected run and active tab."""
     if not run_id:
         return (
@@ -707,7 +709,7 @@ def _load_content(run_id, active_tab, current_content):
         )
 
     run_details = _render_run_details(run_data)
-    status = str(run_data.get('status', '')).lower()
+    # status = str(run_data.get('status', '')).lower()
 
     # Map tab to export type
     export_type_map = {
@@ -1034,7 +1036,7 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
     ],
     prevent_initial_call=True,
 )
-def _view_selected_export(export_ids, run_id, active_tab):
+def _view_selected_export(export_ids, _run_id, _active_tab):
     """Display details of the selected export."""
     if not ctx.triggered_id or not export_ids or not export_ids[0]:
         return no_update
