@@ -2,7 +2,7 @@
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import Dash, html
+from dash import Dash, html, dcc, Input, Output
 from loguru import logger
 
 from components import bottom_nav, footer, header
@@ -17,17 +17,27 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
-header = header.create_header()
-
 footer = footer.create_footer()
 
 bottom_nav = bottom_nav.create_bottom_nav()
 
 app.layout = html.Div(
-    [header, dash.page_container, footer, bottom_nav],
+    [
+        dcc.Location(id='url', refresh=False),
+        html.Div(id='header-container'),
+        dash.page_container,
+        footer,
+        bottom_nav,
+    ],
     className='app-container',
     style={'minHeight': '100vh', 'backgroundColor': '#f5f5f5'},
 )
+
+
+@app.callback(Output('header-container', 'children'), Input('url', 'pathname'))
+def update_header(pathname):
+    """Update header based on current pathname."""
+    return header.create_header(pathname=pathname or '/')
 
 
 if __name__ == '__main__':

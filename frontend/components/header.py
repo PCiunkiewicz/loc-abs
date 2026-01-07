@@ -4,8 +4,12 @@ import dash_bootstrap_components as dbc
 from dash import html
 
 
-def create_header() -> html.Header:
-    """Create the accessible header component with skip link and semantic HTML."""
+def create_header(pathname: str = '/') -> html.Header:
+    """Create the accessible header component with skip link and semantic HTML.
+
+    Args:
+        pathname: Current page path to highlight the active navigation item
+    """
     search_bar = dbc.InputGroup(
         [
             dbc.Input(
@@ -30,19 +34,64 @@ def create_header() -> html.Header:
         dbc.Navbar(
             [
                 brand,
-                dbc.NavItem(dbc.NavLink('Dashboard', href='/dashboard', active=True)),
-                dbc.NavItem(dbc.NavLink('Scenario Builder', href='/scenario-builder')),
-                dbc.NavItem(dbc.NavLink('Data Visualisation', href='/data-viz')),
-                dbc.NavItem(dbc.NavLink('Decision Support', href='/decision-support')),
-
+                dbc.NavItem(
+                    dbc.NavLink(
+                        'Dashboard',
+                        href='/dashboard',
+                        active=pathname == '/dashboard',
+                        className='nav-link-active' if pathname == '/dashboard' else 'nav-link-inactive',
+                    )
+                ),
+                dbc.NavItem(
+                    dbc.NavLink(
+                        'Scenario Builder',
+                        href='/scenario-builder',
+                        active=pathname == '/scenario-builder',
+                        className='nav-link-active' if pathname == '/scenario-builder' else 'nav-link-inactive',
+                    )
+                ),
+                dbc.NavItem(
+                    dbc.NavLink(
+                        'Data Visualisation',
+                        href='/data-viz',
+                        active=pathname == '/data-viz',
+                        className='nav-link-active' if pathname == '/data-viz' else 'nav-link-inactive',
+                    )
+                ),
+                dbc.NavItem(
+                    dbc.NavLink(
+                        'Decision Support',
+                        href='/decision-support',
+                        active=pathname == '/decision-support',
+                        className='nav-link-active' if pathname == '/decision-support' else 'nav-link-inactive',
+                    )
+                ),
                 dbc.DropdownMenu(
                     [
-                        dbc.DropdownMenuItem('Report', href='/reports'),
-                        dbc.DropdownMenuItem('Developers', href='/developers'),
-                        dbc.DropdownMenuItem('Help/FAQs', href='/help'),
+                        dbc.DropdownMenuItem(
+                            'Report',
+                            href='/reports',
+                            active=pathname == '/reports',
+                            className='dropdown-item-active' if pathname == '/reports' else '',
+                        ),
+                        dbc.DropdownMenuItem(
+                            'Developers',
+                            href='/developers',
+                            active=pathname == '/developers',
+                            className='dropdown-item-active' if pathname == '/developers' else '',
+                        ),
+                        dbc.DropdownMenuItem(
+                            'Help/FAQs',
+                            href='/help',
+                            active=pathname == '/help',
+                            className='dropdown-item-active' if pathname == '/help' else '',
+                        ),
                     ],
                     label='More',
                     nav=True,
+                    className='nav-link-active'
+                    if pathname in ['/reports', '/developers', '/help']
+                    else 'nav-link-inactive',
                 ),
                 search_bar,
             ],

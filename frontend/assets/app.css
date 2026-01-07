@@ -506,3 +506,37 @@ html {
 .btn:hover {
     transform: scale(1.02);
 }
+
+/* Navigation Link Styles */
+.nav-link-active {
+    /* background-color: #ffffff !important; */
+    border-radius: 7px !important;
+    border-bottom: #ffffff 4px solid !important;
+    color: rgb(255, 255, 255) !important;
+    padding: 8px 16px !important;
+    font-weight: bold !important;
+}
+
+.nav-link-inactive {
+    color: rgba(255, 255, 255, 0.8) !important;
+    /* padding: 8px 16px !important; */
+}
+
+.nav-link-inactive:hover {
+    color: white !important;
+    background-color: rgba(255, 252, 252, 0.1) !important;
+    border-radius: 5px !important;
+    padding: 8px 16px !important;
+}
+
+/* Dropdown Menu Item Styles */
+.dropdown-item-active {
+    background-color: #007bff !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.dropdown-item-active:hover {
+    background-color: #0056b3 !important;
+    color: white !important;
+}
