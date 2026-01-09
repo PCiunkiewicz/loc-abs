@@ -3,7 +3,7 @@
 import multiprocessing
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Literal, override
+from typing import ClassVar, Literal, override
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,15 +47,20 @@ class BaseStatistic(ABC):
 
         self.cfg = ScenarioConfig.load(config)
 
-        files = list(results.glob('*.hdf5'))
-        with multiprocessing.Pool(6) as p:  # TODO: replace with ProcessPoolExecutor
-            self.data = list(tqdm(p.imap_unordered(self._load, files), total=len(files)))
+        if results.is_dir():
+            files = list(results.glob('*.hdf5'))
+            with multiprocessing.Pool(6) as p:  # TODO: replace with ProcessPoolExecutor
+                self.data = list(tqdm(p.imap_unordered(self._load, files), total=len(files)))
+        elif results.is_file():
+            self.data = [self._load(results)]
+        else:
+            self.data = []
 
     @abstractmethod
-    def _load(self, file: Path, topic: Topic = 'agents') -> np.typing.NDArray:
+    def _load(self, file: Path, topic: Topic = 'agents') -> np.typing.NDArray:  # TODO: Fix array max-length
         """Load simulation data from .h5 file."""
         with tb.open_file(file, mode='r') as f:
-            return f.root[topic].read()
+            return f.root[topic].read()[: self.cfg.scenario.sim.max_iter]
 
     @abstractmethod
     def export(self, outfile: Path) -> None:
@@ -90,11 +95,14 @@ class ExcessRiskVsTime(BaseStatistic):
         return super()._load(file)[:, :, 2]
 
     @override
-    def export(self, outfile: Path) -> None:
+    def export(self, outfile: Path, max_agents: int = 8) -> None:
         _, ax = plt.subplots(figsize=[5, 3.5])
 
-        for i in range(self.prob.shape[-1]):
-            ax.plot(self.hours, self.prob[:, i], label=f'Agent {i + 1}')
+        if (n := self.prob.shape[-1]) <= max_agents:
+            for i in range(n):
+                ax.plot(self.hours, self.prob[:, i], label=f'Agent {i + 1}')
+        else:
+            ax.plot(self.hours, self.prob.mean(axis=1), label='Population Average')
 
         ax.set(
             xlabel='Time elapsed (hours)',
@@ -121,7 +129,7 @@ class EpidemiologicalStatusVsTime(BaseStatistic):
     stats: np.typing.NDArray
     labels: list[str]
     hours: np.typing.NDArray
-    order = (1, 3, 2, 0)
+    order: ClassVar[list[int]] = [1, 3, 2, 0]
 
     @override
     def __init__(self, config: Path, results: Path) -> None:
@@ -129,7 +137,7 @@ class EpidemiologicalStatusVsTime(BaseStatistic):
 
         param = self.cfg.scenario.sim
 
-        self.stats = np.array(self.data).mean(axis=0)[self.order]
+        self.stats = np.array(self.data).mean(axis=0)[self.order, :]
         self.labels = np.array([status.name for status in AgentStatus])[self.order]
         self.hours = np.arange(param.max_iter) / 3600 * param.t_step * param.save_resolution
 

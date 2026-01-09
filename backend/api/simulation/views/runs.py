@@ -3,6 +3,7 @@
 import json
 import shutil
 from multiprocessing import Process
+from pathlib import Path
 from typing import ClassVar, override
 
 from rest_framework import status, viewsets
@@ -69,7 +70,8 @@ class RunViewSet(viewsets.ModelViewSet):
 
             for key, new_path in new_paths.items():
                 request.data[key] = new_path
-                shutil.move(getattr(run, key), new_path)
+                if Path(old_path := getattr(run, key)).exists():
+                    shutil.move(old_path, new_path)
             response = super().partial_update(request, pk=pk)
 
         return response

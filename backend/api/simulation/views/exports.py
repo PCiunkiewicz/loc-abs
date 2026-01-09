@@ -1,6 +1,8 @@
 """Localized Epidemiological ABS API Export Views."""
 
 import shutil
+from multiprocessing import Process
+from pathlib import Path
 from typing import ClassVar, override
 
 from rest_framework import status, viewsets
@@ -9,6 +11,7 @@ from rest_framework.response import Response
 
 from api.simulation.models import Export, Run
 from api.simulation.serializers import ExportSerializer
+from tools.handler import ExportHandler
 from utilities.paths import EXPORTS
 
 
@@ -33,6 +36,9 @@ class ExportViewSet(viewsets.ModelViewSet):
             )
             export.save()
 
+            handler = ExportHandler(run, export.params.pop('run_file'))
+            Process(target=handler.export, kwargs={'export': export, **export.params}, daemon=True).start()
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -50,7 +56,8 @@ class ExportViewSet(viewsets.ModelViewSet):
         if name != export.name:
             path = EXPORTS.rel / f'{run.id:03}-{run.name}' / f'{export.export_type}-{export.id:03}-{name}'
             request.data['outfile'] = str(path)
-            shutil.move(export.outfile, path)
+            if Path(export.outfile).exists():
+                shutil.move(export.outfile, path)
             response = super().partial_update(request, pk=pk)
 
         return response

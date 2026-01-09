@@ -120,7 +120,7 @@ class ExporterCLI(BaseCLI):
         """Prompt user to select export tool and kwargs."""
         exporter = self.select_exporter()
         kwargs = self.exporter_kwargs(exporter)
-        kwargs = {k: v for k, v in kwargs.items() if v}
+        kwargs = {k: v for k, v in kwargs.items() if v != ''}
         kwargs['export_type'] = exporter
 
         return kwargs
@@ -162,7 +162,7 @@ class ExporterCLI(BaseCLI):
                     'run': run,
                     'run_file': run_file,
                     'name': name,
-                    'i': self.session.prompt(HTML('<b>Frame number: </b>'), **self._prompt_kws(dtype=int)),
+                    'frame_idx': int(self.session.prompt(HTML('<b>Frame index: </b>'), **self._prompt_kws(dtype=int))),
                 }
             return {
                 'run': run,
