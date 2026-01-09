@@ -24,7 +24,7 @@ class ExportHandler:
         self.mapfile = BACKEND / self.run.scenario.sim.mapfile
         self.config = BACKEND / self.run.config
 
-    def export(self, export_type: str, name: str, run_file: str, **kwargs) -> None:
+    def export[**P](self, export_type: str, name: str, run_file: str, **kwargs: P.kwargs) -> None:
         """Export simulation data based on the export type."""
         try:
             export = Export(run=self.run, name=name, export_type=export_type)
@@ -36,7 +36,7 @@ class ExportHandler:
             outfile = BACKEND / export.outfile
             outfile.parent.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise ValueError(f'Failed to create export: {e}')
+            raise ValueError(f'Failed to create export: {e}') from e
 
         if export_type == 'ANIMATION':
             SimAnimation(self.save_dir / run_file, self.mapfile).export(outfile, **kwargs)

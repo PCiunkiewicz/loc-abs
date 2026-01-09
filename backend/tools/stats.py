@@ -54,8 +54,8 @@ class BaseStatistic(ABC):
     @abstractmethod
     def _load(self, file: Path, topic: Topic = 'agents') -> np.typing.NDArray:
         """Load simulation data from .h5 file."""
-        with tb.open_file(file, mode='r') as file:
-            return file.root[topic].read()
+        with tb.open_file(file, mode='r') as f:
+            return f.root[topic].read()
 
     @abstractmethod
     def export(self, outfile: Path) -> None:
@@ -121,7 +121,7 @@ class EpidemiologicalStatusVsTime(BaseStatistic):
     stats: np.typing.NDArray
     labels: list[str]
     hours: np.typing.NDArray
-    order = [1, 3, 2, 0]
+    order = (1, 3, 2, 0)
 
     @override
     def __init__(self, config: Path, results: Path) -> None:
@@ -139,7 +139,7 @@ class EpidemiologicalStatusVsTime(BaseStatistic):
         return [(status == s.value).mean(axis=1) for s in AgentStatus]
 
     @override
-    def export(self, outfile: Path, fill: bool = True, ylim: float = None) -> None:
+    def export(self, outfile: Path, fill: bool = True, ylim: float | None = None) -> None:
         """Export agent status progression to file.
 
         Args:

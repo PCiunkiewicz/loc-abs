@@ -89,11 +89,8 @@ class BaseAgent(ABC):
             idx = self.scenario.get_idx(zone)
             self.pathfind(idx)
 
-            if zone == 'OPEN':
-                wait_time = 300 // self.scenario.sim.t_step  # seconds
-            else:
-                wait_time = 3600 // self.scenario.sim.t_step  # seconds
-
+            # seconds
+            wait_time = 300 // self.scenario.sim.t_step if zone == 'OPEN' else 3600 // self.scenario.sim.t_step
             wait_time = int(wait_time * (1 + random()) * 0.5)
             self.state.path += [self.state.path[-1]] * wait_time
 
@@ -108,9 +105,7 @@ class BaseAgent(ABC):
     @abstractmethod
     def move(self) -> None:
         """Agent timestep logic."""
-        pass
 
     @abstractmethod
     def infect(self) -> None:
         """Infect the agent."""
-        pass

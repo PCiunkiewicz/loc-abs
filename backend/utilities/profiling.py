@@ -8,7 +8,7 @@ from typing import Any, get_args
 import yappi
 from loguru import logger
 
-from utilities.logging import Redirector
+from utilities.logs import Redirector
 from utilities.types.system import Filter, SortOrder, Stat
 
 
@@ -103,15 +103,14 @@ class Profiler:
                     stat = getattr(x, key)
                     if key == 'ctx_id':
                         return value == stat
-                    elif isinstance(stat, str):
+                    if isinstance(stat, str):
                         if isinstance(value, list):
                             if any(x in stat for x in value):
                                 return True
                         elif value in stat:
                             return True
-                    elif isinstance(stat, int | float):
-                        if value <= stat:
-                            return True
+                    elif isinstance(stat, int | float) and value <= stat:
+                        return True
             return False
 
         return callback

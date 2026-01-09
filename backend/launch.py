@@ -4,7 +4,7 @@ import argparse
 
 from simulation.launcher import SimLauncher
 from utilities.cli import LauncherCLI, ScriptCLI
-from utilities.logging import configure_logger
+from utilities.logs import configure_logger
 from utilities.paths import CFG
 from utilities.profiling import Profiler
 

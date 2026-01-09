@@ -26,7 +26,7 @@ class PublisherThread(PropagatingThread):
     """Thread for publishing simulation data. Subclassed for profiling clarity."""
 
     @override
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__[**P](self, *args: P.args, **kwargs: P.kwargs) -> None:
         super().__init__(*args, **kwargs, name='PublisherThread')
 
 
@@ -34,7 +34,7 @@ class SimulationThread(PropagatingThread):
     """Thread for running the simulation. Subclassed for profiling clarity."""
 
     @override
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__[**P](self, *args: P.args, **kwargs: P.kwargs) -> None:
         super().__init__(*args, **kwargs, name='SimulationThread')
 
 
@@ -42,5 +42,5 @@ class WriterThread(PropagatingThread):
     """Thread for writing simulation data to disk. Subclassed for profiling clarity."""
 
     @override
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__[**P](self, *args: P.args, **kwargs: P.kwargs) -> None:
         super().__init__(*args, **kwargs, name='WriterThread')

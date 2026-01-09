@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import traceback
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.db import IntegrityError
 
 from api.simulation import models
 from utilities import paths
 from utilities.types.config import ScenarioConfig
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class ConfigImporter:
@@ -52,8 +55,8 @@ class ConfigImporter:
         """Save terrain data to the database."""
         terrains = []
         for terrain in self.config.scenario.sim.terrain:
-            terrain = self._prepare(terrain, models.Terrain)
-            terrains.append(self._generic_create(terrain, models.Terrain))
+            clean = self._prepare(terrain, models.Terrain)
+            terrains.append(self._generic_create(clean, models.Terrain))
 
         self.config.scenario.sim.terrain = terrains
 

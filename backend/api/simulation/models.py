@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 from pathlib import Path
+from typing import Any
 
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import MinValueValidator, validate_slug
@@ -38,7 +38,7 @@ class Terrain(BaseModel):
     name = models.CharField(max_length=250, unique=True, validators=[validate_slug])
     value = models.CharField(max_length=7)
     color = models.CharField(max_length=7)
-    material = models.CharField(max_length=250, null=True)
+    material = models.CharField(max_length=250, default='')
     walkable = models.BooleanField(default=True)
     interactive = models.BooleanField(default=False)
     restricted = models.BooleanField(default=False)
@@ -107,24 +107,24 @@ class Run(BaseModel):
 
     name = models.CharField(max_length=250, validators=[validate_slug])
     status = models.CharField(max_length=7, choices=Status.choices, default=Status.CREATED)
-    save_dir: str | Path = models.CharField(max_length=250, null=True)
-    config: str | Path = models.CharField(max_length=250, null=True)
-    logfile: str | Path = models.CharField(max_length=250, null=True)
+    save_dir: str | Path = models.CharField(max_length=250, default='')
+    config: str | Path = models.CharField(max_length=250, default='')
+    logfile: str | Path = models.CharField(max_length=250, default='')
     scenario = models.ForeignKey(Scenario, on_delete=models.RESTRICT)
     agents = models.ForeignKey(AgentConfig, on_delete=models.RESTRICT)
     runs = models.IntegerField(default=1, validators=[MinValueValidator(1)])
 
 
 @receiver(post_delete)
-def delete_run(sender, instance, **kwargs) -> None:
+def delete_run(sender: Any, instance: Any, **_: Any) -> None:
     """Post-delete hook for Run model."""
-    if sender == Run:
-        if instance.save_dir is not None and os.path.isdir(instance.save_dir):
+    if sender == Run and isinstance(instance, Run):
+        if instance.save_dir is not None and Path(instance.save_dir).isdir():
             shutil.rmtree(instance.save_dir)
-        if instance.logfile is not None and os.path.isfile(instance.logfile):
-            os.remove(instance.logfile)
-        if instance.config is not None and os.path.isfile(instance.config):
-            os.remove(instance.config)
+        if instance.logfile is not None and Path(instance.logfile).isfile():
+            Path(instance.logfile).unlink()
+        if instance.config is not None and Path(instance.config).isfile():
+            Path(instance.config).unlink()
 
 
 class Export(BaseModel):
@@ -141,7 +141,7 @@ class Export(BaseModel):
 
     run = models.ForeignKey(Run, on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
-    outfile = models.CharField(max_length=250, null=True)
+    outfile = models.CharField(max_length=250, default='')
     export_type = models.CharField(max_length=32, choices=ExportType.choices)
     params = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)

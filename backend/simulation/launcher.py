@@ -19,11 +19,11 @@ from simulation.model.sir import SIRModel
 from simulation.publisher import Publisher
 from simulation.writer import Writer
 from utilities.importer import ConfigImporter
-from utilities.logging import Redirector
+from utilities.logs import Redirector
 from utilities.paths import BACKEND, TMP
 from utilities.thread import PublisherThread, SimulationThread, WriterThread
 
-HOST = 'dask' if os.environ.get('DOCKERIZED', False) else 'localhost'
+HOST = 'dask' if os.environ.get('DOCKERIZED') else 'localhost'
 
 
 class SimLauncher:
@@ -55,7 +55,7 @@ class SimLauncher:
 
         return cls(run)
 
-    def start(self, await_results=True) -> None:
+    def start(self, await_results: bool = True) -> None:
         """Start the simulation run."""
         self.set_status(Run.Status.RUNNING)
         with Redirector(self.run.logfile):
@@ -70,7 +70,7 @@ class SimLauncher:
                 self.set_status(Run.Status.FAILURE)
                 raise
 
-    def resume(self, await_results=True) -> None:
+    def resume(self, await_results: bool = True) -> None:
         """Resume a failed or crashed simulation run."""
         if self.run.runs == 1:
             raise ValueError('Cannot resume a single run simulation. Use `run_sim` instead.')
@@ -120,7 +120,7 @@ class SimLauncher:
                 if thread.is_alive():
                     logger.warning(f'Thread {thread.name} is still alive after 1 second.')
 
-    def run_parallel(self, resume=False, await_results=True) -> None:
+    def run_parallel(self, resume: bool = False, await_results: bool = True) -> None:
         """Parallelize multiple simulation runs using Dask."""
         logger.debug(f'Configuring {self.run.runs} runs for {self.run.name} (id={self.run.id})...')
 

@@ -3,4 +3,4 @@
 from simulation.scenario.base import VIRUS_SCALE, BaseScenario
 from simulation.scenario.sir import SIRScenario
 
-__all__ = ['BaseScenario', 'SIRScenario', 'VIRUS_SCALE']
+__all__ = ['VIRUS_SCALE', 'BaseScenario', 'SIRScenario']

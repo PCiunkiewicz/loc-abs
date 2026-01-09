@@ -5,21 +5,24 @@ from __future__ import annotations
 import traceback
 from dataclasses import asdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.db import IntegrityError
 from rest_framework import status
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utilities import paths
 from utilities.importer import ConfigImporter
 
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+
 
 class ListConfigs(APIView):
     """API View to list all simulation config files."""
 
-    def get(self, request: Request) -> Response:
+    def get(self, _: Request) -> Response:
         """Handle GET request to list all simulation config files."""
         config_paths = [str(path) for path in paths.CFG.rglob('*.json')]
         return Response(config_paths, status=status.HTTP_200_OK)

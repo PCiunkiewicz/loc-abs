@@ -1,5 +1,7 @@
 """Run cleanup script."""
 
+from loguru import logger
+
 from api.simulation import models
 from utilities.scripting import ORMScript
 
@@ -15,4 +17,4 @@ class Script(ORMScript):
                 run = models.Run.objects.get(id=run_id)
                 run.delete()
             except Exception as e:
-                print(f'Failed to delete run {run_id}: {e}')
+                logger.error(f'Failed to delete run {run_id}: {e}')

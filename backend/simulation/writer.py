@@ -8,7 +8,7 @@ import numpy as np
 import tables as tb
 import zmq
 
-from utilities.socket import SocketHandler
+from utilities.sockets import SocketHandler
 
 
 class AgentInfo(tb.IsDescription):

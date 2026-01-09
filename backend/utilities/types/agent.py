@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-import datetime as dt
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import override
+from typing import TYPE_CHECKING, override
 
 import dacite
+
+if TYPE_CHECKING:
+    import datetime as dt
 
 
 class AgentStatus(Enum):
@@ -31,6 +33,11 @@ class AgentStatus(Enum):
     DECEASED = 5
     HOSPITALIZED = 6
     UNKNOWN = 7
+
+    @classmethod
+    def get_members(cls) -> list[str]:
+        """Return enum member names."""
+        return cls._member_names_
 
 
 @dataclass

@@ -13,7 +13,6 @@ class Writable(Protocol):
 
     def write(self, message: str) -> None:
         """Write a message to the writable object."""
-        ...
 
 
 class ClosableAndWritable(Writable, Protocol):
@@ -21,11 +20,9 @@ class ClosableAndWritable(Writable, Protocol):
 
     def flush(self) -> None:
         """Flush the writable object."""
-        ...
 
     def close(self) -> None:
         """Close the writable object."""
-        ...
 
 
 Stat = Literal['source', 'name', 'ncall', 'tsub', 'ttot', 'tavg']

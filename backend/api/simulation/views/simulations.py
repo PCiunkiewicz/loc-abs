@@ -1,6 +1,6 @@
 """Localized Epidemiological ABS API Simulation Views."""
 
-from typing import override
+from typing import ClassVar, override
 
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
@@ -16,9 +16,9 @@ class SimulationViewSet(viewsets.ModelViewSet):
 
     queryset = Simulation.objects.all()
     serializer_class = SimulationSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    authentication_classes: list = []  # disables authentication
-    permission_classes: list = []  # disables permission
+    http_method_names: ClassVar[list] = ['get', 'post', 'patch', 'delete']
+    authentication_classes: ClassVar[list] = []  # disables authentication
+    permission_classes: ClassVar[list] = []  # disables permission
 
     @override
     def create(self, request: Request) -> Response:
@@ -57,18 +57,18 @@ class SimulationViewSet(viewsets.ModelViewSet):
             if isinstance(t, str | int):
                 try:
                     Terrain.objects.get(id=t)
-                except Terrain.DoesNotExist:
-                    raise ValidationError({'terrain': f'id `{t}` does not exist'})
+                except Terrain.DoesNotExist as e:
+                    raise ValidationError({'terrain': f'id `{t}` does not exist'}) from e
             elif isinstance(t, dict):
                 try:
                     terrain[i] = Terrain.objects.get(name=t['name']).id
-                except (Terrain.DoesNotExist, KeyError):
+                except (Terrain.DoesNotExist, KeyError) as e:
                     serializer = TerrainSerializer(data=t)
                     if serializer.is_valid():
-                        t = serializer.save()
-                        terrain[i] = t.id
+                        saved = serializer.save()
+                        terrain[i] = saved.id
                     else:
-                        raise ValidationError({'terrain': serializer.errors})
+                        raise ValidationError({'terrain': serializer.errors}) from e
             else:
                 raise ValidationError({'terrain': 'must provide valid terrain id or data', 'invalid': t})
 

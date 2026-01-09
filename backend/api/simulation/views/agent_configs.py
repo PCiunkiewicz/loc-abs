@@ -1,5 +1,7 @@
 """Localized Epidemiological ABS API Agent Config Views."""
 
+from typing import ClassVar
+
 from rest_framework import viewsets
 
 from api.simulation.models import AgentConfig
@@ -11,6 +13,6 @@ class AgentConfigViewSet(viewsets.ModelViewSet):
 
     queryset = AgentConfig.objects.all()
     serializer_class = AgentConfigSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    authentication_classes: list = []  # disables authentication
-    permission_classes: list = []  # disables permission
+    http_method_names: ClassVar[list] = ['get', 'post', 'patch', 'delete']
+    authentication_classes: ClassVar[list] = []  # disables authentication
+    permission_classes: ClassVar[list] = []  # disables permission

@@ -6,10 +6,7 @@ from pathlib import Path
 _ROOT = Path(__file__).parents[2]
 
 # For mounted docker volumes, ./backend is mapped to /code
-if os.environ.get('DOCKERIZED', False):
-    BACKEND = Path('/code')
-else:
-    BACKEND = _ROOT / 'backend'
+BACKEND = Path('/code') if os.environ.get('DOCKERIZED', None) else _ROOT / 'backend'
 
 
 class RPath(Path):
