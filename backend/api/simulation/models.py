@@ -107,9 +107,9 @@ class Run(BaseModel):
 
     name = models.CharField(max_length=250, validators=[validate_slug])
     status = models.CharField(max_length=7, choices=Status.choices, default=Status.CREATED)
-    save_dir: str | Path = models.CharField(max_length=250, null=True)
-    config: str | Path = models.CharField(max_length=250, null=True)
-    logfile: str | Path = models.CharField(max_length=250, null=True)
+    save_dir: str | Path = models.CharField(max_length=250, default='')
+    config: str | Path = models.CharField(max_length=250, default='')
+    logfile: str | Path = models.CharField(max_length=250, default='')
     scenario = models.ForeignKey(Scenario, on_delete=models.RESTRICT)
     agents = models.ForeignKey(AgentConfig, on_delete=models.RESTRICT)
     runs = models.IntegerField(default=1, validators=[MinValueValidator(1)])

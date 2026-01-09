@@ -27,6 +27,7 @@ exclude = [
   "site-packages",
   "venv",
   "migrations",
+  "manage.py",
 ]
 
 # Same as Black.
