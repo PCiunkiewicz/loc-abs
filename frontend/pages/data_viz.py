@@ -479,21 +479,23 @@ def _render_exports(exports):
 
     rows = []
     for exp in exports:
-        link = (
-            html.A('Download', href=exp.get('outfile'), target='_blank')
-            if exp.get('outfile')
-            else html.Span('Pending', className='text-muted')
-        )
-        rows.append(
-            html.Tr(
-                [
-                    html.Td(exp.get('name', 'unnamed'), className='fw-semibold'),
-                    html.Td(exp.get('export_type', '')),
-                    html.Td(exp.get('created_at', '')),
-                    html.Td(link),
-                ]
+        if outfile := exp.get('outfile', ''):  # TODO: Properly show images
+            link = (
+                html.A('Download', href=outfile, target='_blank')
+                if exp.get('outfile')
+                else html.Span('Pending', className='text-muted')
             )
-        )
+            rows.append(
+                html.Tr(
+                    [
+                        html.Td(exp.get('name', 'unnamed'), className='fw-semibold'),
+                        html.Td(exp.get('export_type', '')),
+                        html.Td(exp.get('created_at', '')),
+                        html.Td(link),
+                        html.Td(html.Img(src=f'/{outfile}')),
+                    ]
+                )
+            )
 
     return dbc.Card(
         dbc.CardBody(

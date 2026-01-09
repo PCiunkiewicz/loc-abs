@@ -1,16 +1,12 @@
 """Callbacks for Run Builder page."""
 
 import copy
-from dash import ALL, callback, ctx, html, Input, no_update, Output, State
+
+from dash import ALL, Input, Output, State, callback, ctx, html, no_update
 from dash.exceptions import PreventUpdate
 from loguru import logger
 
 from components.resource_form import render_resource_form
-from utilities import api
-from utilities.normalizers import normalize_values
-from utilities.payload_builder import build_payload
-from utilities.resource_helpers import get_user_friendly_message
-
 from pages.run_builder.config import (
     RESOURCES,
     SCENARIO_CHILD_RESOURCES,
@@ -20,8 +16,11 @@ from pages.run_builder.config import (
     simulation_fields,
     virus_fields,
 )
-
 from pages.run_builder.layout import render_summary_view
+from utilities import api
+from utilities.normalizers import normalize_values
+from utilities.payload_builder import build_payload
+from utilities.resource_helpers import get_user_friendly_message
 
 
 @callback(

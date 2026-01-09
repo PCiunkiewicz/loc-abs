@@ -301,6 +301,8 @@ def create_export(run_id: int, name: str, export_type: str, params: dict | None 
 
     if 'run_file' not in params:
         params['run_file'] = hdf5_files[0]
+    if 'frame_idx' not in params and export_type == 'SNAPSHOT':
+        params['frame_idx'] = 0
 
     payload = {'run': run_id, 'name': name, 'export_type': export_type, 'params': params}
 

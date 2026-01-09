@@ -1,15 +1,14 @@
 """Shared helpers for rendering resource summaries and friendly names."""
 
 import json
-from typing import Any
 from collections.abc import Iterable
+from typing import Any
 
 from dash import html
 from loguru import logger
 
 from utilities import api
-from utilities.messages import get_user_friendly_message as get_message, yes_no
-
+from utilities.messages import get_user_friendly_message as get_message
 
 # Re-export the centralized message function
 get_user_friendly_message = get_message
@@ -97,16 +96,8 @@ def _agent_rows(item: dict[str, Any]) -> Iterable[tuple[str, Any]]:
 
 def _simulation_rows(item: dict[str, Any]) -> Iterable[tuple[str, Any]]:
     """Format simulation details with terrain names."""
-    terrain_ids = item.get('terrain', [])
-    terrain_items = []
-    if terrain_ids:
-        for tid in terrain_ids:
-            terrain_items.append(html.Li(friendly_name('terrain', tid)))
-    terrain_list = html.Ul(terrain_items or [html.Li('None selected')])
-
     return [
         ('Name', item.get('name')),
-        ('Terrain', terrain_list),
         ('Mapfile', item.get('mapfile') or 'Not set'),
         ('XY Scale', item.get('xy_scale')),
         ('Time Step (s)', item.get('t_step')),
@@ -155,7 +146,6 @@ def render_summary(resource_type: str, item: dict[str, Any]):
         'Access Level': 'fa-key',
         'Urgency': 'fa-circle-exclamation',
         'Custom Profiles': 'fa-user-gear',
-        'Terrain': 'fa-map',
         'Mapfile': 'fa-file-lines',
         'XY Scale': 'fa-expand',
         'Time Step (s)': 'fa-clock',
@@ -178,7 +168,6 @@ def render_summary(resource_type: str, item: dict[str, Any]):
         'Access Level': 'Clearance level for restricted areas',
         'Urgency': 'Movement urgency factor (higher = faster)',
         'Custom Profiles': 'Individually configured participant types',
-        'Terrain': 'Physical layouts used in the simulation',
         'Mapfile': 'Floor plan or facility map reference',
         'XY Scale': 'Real-world distance conversion factor',
         'Time Step (s)': 'How often the simulation updates',
