@@ -48,7 +48,7 @@ class Terrain:
     name: str
     value: str
     color: str
-    material: str | None = None
+    material: str = ''
     walkable: bool = True
     interactive: bool = False
     restricted: bool = False

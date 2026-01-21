@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tables as tb
 from matplotlib import animation, image
-from matplotlib.colors import ListedColormap
 from tqdm import tqdm
 
 from simulation.scenario import VIRUS_SCALE
@@ -106,14 +105,18 @@ class SimAnimation:
         ax.set_title(f'Floor {floor}\n', fontweight='bold', fontsize=14)
         ax.axis('off')
 
-        ax.imshow(self.imgs[floor])
-        im: plt.AxesImage = ax.imshow(
-            self.virus[i, :, :, floor] != 0,
-            alpha=(self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35,
-            cmap=ListedColormap(['white', 'red'], N=2),
-            vmin=0,
-            vmax=1,
+        self.bg = ax.imshow(self.imgs[floor])
+        ones = np.ones(self.imgs[floor].shape[:2])
+        clear = self.virus[i, :, :, floor] == 0
+        virus = np.dstack(
+            [
+                ones,
+                clear,
+                clear,
+                (self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35,
+            ]
         )
+        im: plt.AxesImage = ax.imshow(virus)
 
         tx: plt.Text = ax.text(
             x=0.03,
@@ -158,8 +161,18 @@ class SimAnimation:
 
     def update_floor(self, floor: int, i: int) -> None:
         """Update data for a floor of the simulation."""
-        self.im[floor].set_data(self.virus[i, :, :, floor] != 0)
-        self.im[floor].set_alpha((self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35)
+        ones = np.ones(self.imgs[floor].shape[:2])
+        clear = self.virus[i, :, :, floor] == 0
+        virus = np.dstack(
+            [
+                ones,
+                clear,
+                clear,
+                (self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35,
+            ]
+        )
+        self.im[floor].set_data(virus)
+
         info = [f'{str_date(self.timesteps[i])}\n']
         for status, ref in zip(AgentStatus, self.plot_ref[floor], strict=True):
             agents = reshape(self.agents[i], status.value, floor)
@@ -206,7 +219,7 @@ class SimAnimation:
             cache_frame_data=False,
         )
 
-        if html:
+        if html or outfile.suffix == '.html':
             outfile = outfile.with_suffix('.html')
             writer = animation.HTMLWriter(fps=5, metadata={'artist': 'Me'}, bitrate=1800)
             anim.save(outfile, writer=writer)

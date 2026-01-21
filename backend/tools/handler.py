@@ -52,7 +52,7 @@ class ExportHandler:
                 export.outfile = (
                     EXPORTS.rel
                     / f'{self.run.id:03}-{self.run.name}'
-                    / f'{export.export_type}-{export.id:03}-{export.name}'
+                    / f'{export.id:03}-{export.export_type}-{export.name}'  # TODO: Check why this isn't persisting for GIFs
                 )
                 export.save()
 

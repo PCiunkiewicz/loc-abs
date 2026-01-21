@@ -145,3 +145,4 @@ class Export(BaseModel):
     export_type = models.CharField(max_length=32, choices=ExportType.choices)
     params = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
+    # TODO: Progress indicator
