@@ -1,8 +1,9 @@
 """Decision Support Page for LocABS Application."""
 
-from dash import html, register_page, dcc, callback, Input, Output, State
-from utilities import api
 import plotly.graph_objects as go
+from dash import Input, Output, State, callback, dcc, html, register_page
+
+from utilities import api
 
 register_page(__name__, path='/decision-support', name='Decision Support', title='LocABS Decision Support')
 

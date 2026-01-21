@@ -1,6 +1,7 @@
 """Data Visualisation Page for LocABS Application."""
 
 from datetime import datetime
+from typing import Any
 
 import dash
 import dash_ag_grid as dag
@@ -13,6 +14,23 @@ from utilities import api
 
 register_page(__name__, path='/data-viz', name='Data Visualisation', title='LocABS · Data Visualisation')
 
+# Constants
+EXPORT_TYPE_MAP = {
+    'tab-animation': ('ANIMATION', 'Animation', 'my-animation'),
+    'tab-snapshot': ('SNAPSHOT', 'Snapshot', 'my-snapshot'),
+    'tab-excess-risk': ('EXCESS_RISK', 'Excess Risk', 'excess-risk'),
+    'tab-epi-status': ('EPIDEMIOLOGICAL_STATUS', 'Epidemiological Status', 'epi-status'),
+    'tab-viral-conc': ('VIRAL_CONCENTRATION', 'Viral Concentration', 'viral-conc'),
+}
+
+EXPORT_TYPE_LABELS = {
+    'ANIMATION': 'Animation',
+    'SNAPSHOT': 'Snapshot',
+    'EXCESS_RISK': 'Excess Risk',
+    'EPIDEMIOLOGICAL_STATUS': 'Epidemiological Status',
+    'VIRAL_CONCENTRATION': 'Viral Concentration',
+}
+
 layout = html.Div(
     [
         dbc.Row(
@@ -20,7 +38,7 @@ layout = html.Div(
                 # LEFT SIDEBAR
                 dbc.Col(
                     [
-                        html.H5('SIMULATION', className='mb-3'),
+                        html.H5('SIMULATION'),
                         html.P(
                             'Configure and launch a new simulation or view existing simulations and their results.',
                             className='dv-sidebar-description',
@@ -33,7 +51,7 @@ layout = html.Div(
                                             [
                                                 dbc.Label('Simulation', html_for='dv-run-dropdown'),
                                                 html.I(
-                                                    className='fa fa-circle-question ms-2 dv-tooltip-icon',
+                                                    className='fa fa-circle-question dv-tooltip-icon',
                                                     id='dv-run-dropdown-tooltip',
                                                 ),
                                             ],
@@ -55,15 +73,15 @@ layout = html.Div(
                                             clearable=True,
                                         ),
                                     ],
-                                    className='mb-4',
+                                    className='dv-sidebar-section',
                                 ),
-                                html.Hr(className='mb-3'),
-                                html.H6('CREATE NEW SIMULATION', className='mb-3 fw-bold'),
+                                html.Hr(className='dv-sidebar-hr'),
+                                html.H6('CREATE NEW SIMULATION', className='fw-bold'),
                                 html.Div(
                                     [
-                                        dbc.Label('Name', html_for='dv-name-input', className='form-label'),
+                                        dbc.Label('Name', html_for='dv-name-input', className='dv-sidebar-form-label'),
                                         html.I(
-                                            className='fa fa-circle-question ms-2 dv-tooltip-icon',
+                                            className='fa fa-circle-question dv-tooltip-icon',
                                             id='dv-name-tooltip',
                                         ),
                                     ],
@@ -91,10 +109,10 @@ layout = html.Div(
                                                 dbc.Label(
                                                     'Participant Configuration',
                                                     html_for='dv-agent-dropdown',
-                                                    className='form-label',
+                                                    className='dv-sidebar-form-label',
                                                 ),
                                                 html.I(
-                                                    className='fa fa-circle-question ms-2 dv-tooltip-icon',
+                                                    className='fa fa-circle-question dv-tooltip-icon',
                                                     id='dv-agent-tooltip',
                                                 ),
                                             ],
@@ -113,7 +131,7 @@ layout = html.Div(
                                             id='dv-agent-dropdown', options=[], placeholder='Choose an option here'
                                         ),
                                     ],
-                                    className='mt-3',
+                                    className='dv-sidebar-input-section',
                                 ),
                                 html.Div(
                                     [
@@ -121,7 +139,7 @@ layout = html.Div(
                                             [
                                                 dbc.Label('Scenario', html_for='dv-scenario-dropdown'),
                                                 html.I(
-                                                    className='fa fa-circle-question ms-2 dv-tooltip-icon',
+                                                    className='fa fa-circle-question dv-tooltip-icon',
                                                     id='dv-scenario-tooltip',
                                                 ),
                                             ],
@@ -140,7 +158,7 @@ layout = html.Div(
                                             id='dv-scenario-dropdown', options=[], placeholder='Choose an option here'
                                         ),
                                     ],
-                                    className='mt-3',
+                                    className='dv-sidebar-input-section',
                                 ),
                                 html.Div(
                                     [
@@ -148,7 +166,7 @@ layout = html.Div(
                                             [
                                                 dbc.Label('Simulation Iterations', html_for='dv-runs-input'),
                                                 html.I(
-                                                    className='fa fa-circle-question ms-2 dv-tooltip-icon',
+                                                    className='fa fa-circle-question dv-tooltip-icon',
                                                     id='dv-runs-tooltip',
                                                 ),
                                             ],
@@ -172,10 +190,10 @@ layout = html.Div(
                                             className='form-control w-100',
                                         ),
                                     ],
-                                    className='mt-3',
+                                    className='dv-sidebar-input-section',
                                 ),
                                 dbc.Button(
-                                    'Start Simulation', id='dv-run-btn', color='primary', className='btn w-100 mt-3'
+                                    'Start Simulation', id='dv-run-btn', color='primary', className='dv-sidebar-run-btn'
                                 ),
                             ],
                             id='dv-run-form',
@@ -192,13 +210,13 @@ layout = html.Div(
                                     id='dv-cancel-btn',
                                     color='danger',
                                     outline=True,
-                                    className='w-100 mt-3',
+                                    className='dv-cancel-btn',
                                 ),
                                 dbc.Button(
                                     'Go to Decision Support',
                                     id='dv-goto-decision',
                                     color='info',
-                                    className='w-100',
+                                    className='dv-goto-decision-btn',
                                     href='/decision-support',
                                 ),
                             ],
@@ -212,11 +230,8 @@ layout = html.Div(
                 dbc.Col(
                     [
                         dbc.Row(
-                            [
-                                dbc.Col(dbc.Button('Export', id='dv-export-btn', color='secondary'), width='auto'),
-                            ],
-                            justify='end',
-                            className='mb-2',
+                            [dbc.Col(dbc.Button('Export', id='dv-export-btn', color='secondary'), width='auto')],
+                            className='dv-export-row',
                         ),
                         dbc.Tabs(
                             [
@@ -236,8 +251,7 @@ layout = html.Div(
                                     children=[
                                         html.Div(
                                             'Select a simulation to view or generate exports',
-                                            className='text-center text-muted',
-                                            style={'paddingLeft': '20px'},
+                                            className='dv-content-placeholder',
                                         )
                                     ],
                                     className='dv-summary',
@@ -255,12 +269,13 @@ layout = html.Div(
         # BOTTOM SUMMARY TABLE
         html.Div(
             id='dv-summary-table',
-            children=[html.Div('Loading runs...', className='text-center text-muted mt-5')],
+            children=[html.Div('Loading runs...', className='dv-summary-loading')],
             className='dv-summary w-100',
         ),
         # hidden store and init interval
         dcc.Store(id='dv-current-run'),
         dcc.Store(id='dv-run-metadata', storage_type='local'),
+        dcc.Store(id='dv-viewer-state', data={'open': False, 'export_id': None}),
         dcc.Interval(id='dv-init', interval=500, n_intervals=0, max_intervals=1),
         dcc.Interval(id='dv-run-poll', interval=3000, n_intervals=0, disabled=True),
         html.Div(id='dv-notification-area'),
@@ -278,7 +293,7 @@ layout = html.Div(
     Input('dv-init', 'n_intervals'),
     prevent_initial_call=False,
 )
-def _populate_dropdowns(_):
+def _populate_dropdowns(_: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Populate agent_config and scenario dropdown options on load."""
     agents = []
     scenarios = []
@@ -315,7 +330,7 @@ def _populate_dropdowns(_):
     ],
     prevent_initial_call=True,
 )
-def _start_run(_n, name, agent_id, scenario_id, runs):
+def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -> tuple[Any, Any, Any, Any, Any]:
     """Trigger a run creation via API and refresh run selection."""
     if not ctx.triggered_id:
         return no_update, no_update, no_update, no_update, no_update
@@ -377,7 +392,7 @@ def _start_run(_n, name, agent_id, scenario_id, runs):
     Output('dv-cancel-btn', 'disabled'),
     Input('dv-current-run', 'data'),
 )
-def _toggle_run_view(run_obj):
+def _toggle_run_view(run_obj: Any) -> tuple[dict[str, str], dict[str, str], bool]:
     """Hide form while a run is active and show the run details/cancel area."""
     if run_obj:
         return {'display': 'none'}, {'display': 'block'}, False
@@ -394,7 +409,7 @@ def _toggle_run_view(run_obj):
     State('dv-current-run', 'data'),
     prevent_initial_call=True,
 )
-def _cancel_run(_n, run_obj):
+def _cancel_run(_n: int, run_obj: Any) -> tuple[Any, Any, Any, Any, Any]:
     """Cancel the active run and restore the form."""
     if not _n or not run_obj:
         return no_update, no_update, no_update, no_update, no_update
@@ -426,31 +441,28 @@ def _cancel_run(_n, run_obj):
     return None, details, notification, run_opts or no_update, None
 
 
-def _render_run_details(run_obj):
+def _render_run_details(run_obj: Any) -> list[html.P]:
     """Format run details for display."""
     if not run_obj:
         return html.Div('No run yet.')
-
-    details = [
-        html.P([html.Strong('Name: '), run_obj.get('name')]),
-        html.P([html.Strong('ID: '), str(run_obj.get('id'))]),
-        html.P([html.Strong('Status: '), run_obj.get('status', 'UNKNOWN')]),
-        html.P([html.Strong('Runs: '), str(run_obj.get('runs'))]),
+    return [
+        html.P(
+            [html.Strong('Name: ', className='dv-run-details-label'), run_obj.get('name')],
+            className='dv-run-details-text',
+        ),
+        html.P(
+            [html.Strong('ID: ', className='dv-run-details-label'), str(run_obj.get('id'))],
+            className='dv-run-details-text',
+        ),
+        html.P(
+            [html.Strong('Status: ', className='dv-run-details-label'), run_obj.get('status', 'UNKNOWN')],
+            className='dv-run-details-text',
+        ),
+        html.P(
+            [html.Strong('Runs: ', className='dv-run-details-label'), str(run_obj.get('runs'))],
+            className='dv-run-details-text',
+        ),
     ]
-    return details
-
-
-def _safe_resource_name(resource, obj_id):
-    """Return a readable name for a related resource id."""
-    if not obj_id:
-        return 'Not selected'
-    try:
-        success, item, _ = api.get_by_id(resource, obj_id)
-        if success and item:
-            return item.get('name') or str(obj_id)
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error fetching %s %s: %s', resource, obj_id, exc)
-    return f'ID {obj_id}'
 
 
 def _format_duration(start_iso: str) -> str:
@@ -472,53 +484,135 @@ def _format_duration(start_iso: str) -> str:
     return f'{secs}s'
 
 
-def _render_exports(exports):
-    """Render a simple table/list of exports for a run."""
+def _render_exports(exports: list[dict[str, Any]], run_id: str, active_tab: str) -> html.Div:
+    """Render a scrollable, sortable, filterable table of exports for a run."""
     if not exports:
         return html.Div('No exports found for this run yet.', className='text-muted')
 
     rows = []
     for exp in exports:
-        if outfile := exp.get('outfile', ''):  # TODO: Properly show images
-            link = (
-                html.A('Download', href=outfile, target='_blank')
-                if exp.get('outfile')
-                else html.Span('Pending', className='text-muted')
+        exp_id = exp.get('id')
+        outfile = exp.get('outfile', '')
+        relative_path = outfile.replace('data/exports/', '') if outfile else ''
+
+        view_btn = (
+            dbc.Button(
+                [html.I(className='fa fa-eye'), ' View'],
+                id={'type': 'view-export-btn', 'export_id': exp_id, 'run': run_id, 'tab': active_tab},
+                color='success',
+                size='sm',
+                className='dv-export-view-btn',
             )
-            rows.append(
-                html.Tr(
-                    [
-                        html.Td(exp.get('name', 'unnamed'), className='fw-semibold'),
-                        html.Td(exp.get('export_type', '')),
-                        html.Td(exp.get('created_at', '')),
-                        html.Td(link),
-                        html.Td(html.Img(src=f'/{outfile}')),
-                    ]
-                )
+            if relative_path
+            else None
+        )
+
+        download_btn = (
+            html.A(
+                [html.I(className='fa fa-download'), ' Download'],
+                href=f'/exports/{relative_path}',
+                download=exp.get('name', 'export'),
+                className='btn btn-sm btn-outline-primary dv-export-download-btn',
             )
+            if relative_path
+            else html.Span('Pending', className='dv-export-pending')
+        )
+
+        rows.append(
+            html.Tr(
+                [
+                    html.Td(exp.get('name', 'unnamed'), className='dv-export-name-cell'),
+                    html.Td(exp.get('export_type', ''), className='dv-export-cell'),
+                    html.Td(exp.get('created_at', ''), className='dv-export-cell'),
+                    html.Td([view_btn, download_btn] if view_btn else download_btn, className='dv-export-actions-cell'),
+                ]
+            )
+        )
 
     return dbc.Card(
         dbc.CardBody(
             [
-                html.H5('Exports', className='mb-3'),
-                dbc.Table(
-                    [
-                        html.Thead(
-                            html.Tr(
-                                [html.Th('Name'), html.Th('Type'), html.Th('Created'), html.Th('File')],
-                                className='table-light',
-                            )
-                        ),
-                        html.Tbody(rows),
-                    ],
-                    bordered=False,
-                    striped=False,
-                    hover=False,
-                    responsive=True,
-                    size='sm',
+                html.H5('Exports', className='dv-exports-header'),
+                html.Div(
+                    dbc.Table(
+                        [
+                            html.Thead(
+                                html.Tr(
+                                    [
+                                        html.Th('Name'),
+                                        html.Th('Type'),
+                                        html.Th('Created'),
+                                        html.Th('Actions'),
+                                    ],
+                                    className='table-light',
+                                )
+                            ),
+                            html.Tbody(rows),
+                        ],
+                        bordered=False,
+                        striped=True,
+                        hover=True,
+                        responsive=True,
+                        size='sm',
+                        className='dv-exports-table',
+                    ),
+                    className='dv-exports-table-wrapper',
                 ),
             ]
         )
+    )
+
+
+def _create_export_form(
+    run_id: str, active_tab: str, export_type: str, export_label: str, placeholder: str
+) -> dbc.Card:
+    """Create export generation form."""
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H5(f'Generate {export_label}', className='dv-export-form-header'),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [
+                                dbc.Label('Export Name', className='dv-export-label'),
+                                dbc.Input(
+                                    id={'type': 'export-name', 'run': run_id, 'tab': active_tab},
+                                    type='text',
+                                    placeholder=f'{placeholder}.gif',
+                                    debounce=False,
+                                    className='dv-export-input',
+                                ),
+                                html.Small(
+                                    'Must include extension: .png, .gif, .svg, .html, or .pdf',
+                                    className='dv-export-help-text',
+                                ),
+                            ],
+                            width=8,
+                        ),
+                        dbc.Col(
+                            [
+                                dbc.Label('\u00a0', className='dv-export-btn-col-label'),
+                                dbc.Button(
+                                    [html.I(className='fa fa-file-export'), f' Generate {export_label}'],
+                                    id={
+                                        'type': 'generate-export-btn',
+                                        'run': run_id,
+                                        'tab': active_tab,
+                                        'export_type': export_type,
+                                    },
+                                    color='primary',
+                                    className='dv-export-btn',
+                                ),
+                            ],
+                            width=4,
+                        ),
+                    ],
+                    className='dv-export-form-row',
+                ),
+            ]
+        ),
+        className='dv-export-form',
     )
 
 
@@ -533,7 +627,9 @@ def _render_exports(exports):
     State('dv-run-metadata', 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def _load_runs_table(_init, _run_clicks, _cancel_clicks, metadata):
+def _load_runs_table(
+    _init: int, _run_clicks: int, _cancel_clicks: int, metadata: dict[str, Any]
+) -> tuple[Any, dict[str, Any]]:
     """Load runs table initially and after run creation/cancellation."""
     return _fetch_and_render_runs_table(metadata)
 
@@ -547,28 +643,13 @@ def _load_runs_table(_init, _run_clicks, _cancel_clicks, metadata):
     State('dv-run-metadata', 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def _render_runs_table(_tick, metadata):
+def _render_runs_table(_tick: int, metadata: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
     """Render a table of runs covering the bottom space."""
     return _fetch_and_render_runs_table(metadata)
 
 
-def _fetch_and_render_runs_table(metadata):
-    """Render a table of runs covering the bottom space."""
-    metadata = metadata or {}
-    try:
-        success, runs, err = api.get_all('run')
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error fetching runs table: %s', exc)
-        return dbc.Alert('Unable to load runs right now.', color='danger', className='mb-0'), metadata
-
-    if not success:
-        return dbc.Alert(f'Unable to load runs: {err}', color='danger', className='mb-0'), metadata
-
-    runs = runs or []
-    if not runs:
-        return html.Div('No runs yet.', className='text-center text-muted mt-3'), metadata
-
-    # Fetch all scenarios and agents once for efficient lookup
+def _get_resource_maps() -> tuple[dict[int, str], dict[int, str]]:
+    """Fetch scenarios and agents maps for efficient lookup."""
     scenarios_map = {}
     agents_map = {}
     try:
@@ -578,63 +659,81 @@ def _fetch_and_render_runs_table(metadata):
         agents_map = {a['id']: a['name'] for a in (agents or []) if 'id' in a and 'name' in a}
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching scenarios/agents for runs table: %s', exc)
+    return scenarios_map, agents_map
+
+
+def _get_resource_name(resource_obj: Any, resource_map: dict[int, str]) -> str:
+    """Get resource name from object or map."""
+    if isinstance(resource_obj, dict):
+        return resource_obj.get('name', 'Unknown')
+    if resource_obj:
+        return resource_map.get(resource_obj, f'ID {resource_obj}')
+    return 'Not selected'
+
+
+def _process_run_data(
+    r: dict[str, Any], metadata: dict[str, Any], scenarios_map: dict[int, str], agents_map: dict[int, str]
+) -> dict[str, Any]:
+    """Process a single run and return formatted row data."""
+    run_id = str(r.get('id'))
+    meta_entry = metadata.get(run_id, {})
+
+    timestamp = r.get('created_at') or r.get('timestamp') or r.get('started_at') or meta_entry.get('timestamp')
+    if not timestamp:
+        timestamp = datetime.now().isoformat(timespec='seconds')
+
+    str(r.get('status', '')).lower()
+    duration = r.get('duration') or r.get('runtime') or r.get('run_time') or meta_entry.get('duration')
+    if not duration:
+        duration = _format_duration(timestamp)
+
+    scenario_name = _get_resource_name(r.get('scenario'), scenarios_map)
+    agent_name = _get_resource_name(r.get('agents'), agents_map)
+
+    return {
+        'timestamp': timestamp,
+        'name': r.get('name', 'run'),
+        'status': str(r.get('status', '')).upper(),
+        'id': r.get('id'),
+        'runs': r.get('runs'),
+        'duration': duration,
+        'scenario': scenario_name,
+        'agent': agent_name,
+    }
+
+
+def _fetch_and_render_runs_table(metadata: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
+    """Render a table of runs covering the bottom space."""
+    metadata = metadata or {}
+    try:
+        success, runs, err = api.get_all('run')
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error fetching runs table: %s', exc)
+        return dbc.Alert('Unable to load runs right now.', color='danger', className='dv-summary-alert'), metadata
+
+    if not success:
+        return dbc.Alert(f'Unable to load runs: {err}', color='danger', className='dv-summary-alert'), metadata
+
+    runs = runs or []
+    if not runs:
+        return html.Div('No runs yet.', className='dv-summary-empty'), metadata
+
+    scenarios_map, agents_map = _get_resource_maps()
 
     updated_meta = dict(metadata)
     row_data = []
-    terminal = {'failed', 'cancelled', 'error', 'stopped', 'success', 'completed', 'finished'}
+
     for r in runs:
-        run_id = str(r.get('id'))
-        meta_entry = updated_meta.get(run_id, {})
-
-        timestamp = r.get('created_at') or r.get('timestamp') or r.get('started_at') or meta_entry.get('timestamp')
-        if not timestamp:
-            timestamp = datetime.now().isoformat(timespec='seconds')
-
-        status = str(r.get('status', '')).lower()
-        duration = r.get('duration') or r.get('runtime') or r.get('run_time') or meta_entry.get('duration')
-        if not duration:
-            duration = _format_duration(timestamp)
-            if status in terminal:
-                duration = _format_duration(timestamp)
-
-        # Get scenario name - check if embedded, otherwise lookup from map
-        scenario_obj = r.get('scenario')
-        if isinstance(scenario_obj, dict):
-            scenario_name = scenario_obj.get('name', 'Unknown')
-        elif scenario_obj:
-            scenario_name = scenarios_map.get(scenario_obj, f'ID {scenario_obj}')
-        else:
-            scenario_name = 'Not selected'
-
-        # Get agent name - check if embedded, otherwise lookup from map
-        agent_obj = r.get('agents')
-        if isinstance(agent_obj, dict):
-            agent_name = agent_obj.get('name', 'Unknown')
-        elif agent_obj:
-            agent_name = agents_map.get(agent_obj, f'ID {agent_obj}')
-        else:
-            agent_name = 'Not selected'
-
-        row_data.append(
-            {
-                'timestamp': timestamp,
-                'name': r.get('name', 'run'),
-                'status': str(r.get('status', '')).upper(),
-                'id': r.get('id'),
-                'runs': r.get('runs'),
-                'duration': duration,
-                'scenario': scenario_name,
-                'agent': agent_name,
-            }
-        )
-        updated_meta[run_id] = {'timestamp': timestamp, 'duration': duration}
+        run_data = _process_run_data(r, updated_meta, scenarios_map, agents_map)
+        row_data.append(run_data)
+        updated_meta[str(r.get('id'))] = {'timestamp': run_data['timestamp'], 'duration': run_data['duration']}
 
     column_defs = [
         {'headerName': 'Timestamp', 'field': 'timestamp', 'minWidth': 160},
         {'headerName': 'Run Name', 'field': 'name', 'minWidth': 160},
         {'headerName': 'Status', 'field': 'status', 'minWidth': 120},
-        {'headerName': 'ID', 'field': 'id', 'maxWidth': 90},
-        {'headerName': '# Runs', 'field': 'runs', 'maxWidth': 110},
+        {'headerName': 'ID', 'field': 'id', 'minWidth': 100},
+        {'headerName': '# Runs', 'field': 'runs', 'minWidth': 110},
         {'headerName': 'Scenario', 'field': 'scenario', 'minWidth': 160},
         {'headerName': 'Agent Config', 'field': 'agent', 'minWidth': 160},
     ]
@@ -656,7 +755,9 @@ def _fetch_and_render_runs_table(metadata):
         className='ag-theme-alpine w-100',
     )
 
-    return dbc.Card(dbc.CardBody([html.H5('Runs', className='mb-3'), grid]), className='w-100'), updated_meta
+    return dbc.Card(
+        dbc.CardBody([html.H5('Runs', className='dv-summary-header'), grid]), className='dv-summary-card'
+    ), updated_meta
 
 
 @callback(
@@ -670,16 +771,19 @@ def _fetch_and_render_runs_table(metadata):
     ],
     [
         State('dv-content-area', 'children'),
+        State('dv-viewer-state', 'data'),
     ],
     prevent_initial_call=True,
 )
-def _load_content(run_id, active_tab, _current_content):
+def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_state: dict):
     """Load content based on selected run and active tab."""
+    # Don't reload if viewer is open
+    if viewer_state and viewer_state.get('open'):
+        return no_update, no_update, no_update, no_update
+
     if not run_id:
         return (
-            html.Div(
-                'Select a simulation to view content', className='text-center text-muted', style={'paddingLeft': '20px'}
-            ),
+            html.Div('Select a simulation to view content', className='dv-content-placeholder'),
             no_update,
             no_update,
             True,
@@ -688,153 +792,73 @@ def _load_content(run_id, active_tab, _current_content):
     notification = no_update
     run_details = no_update
     poll_disabled = False
+    error_result = None
 
+    # Fetch run status
     try:
         run_success, run_data, run_err = api.get_run_status(run_id)
+        if not run_success or not run_data:
+            error_msg = f'Unable to load run status: {run_err}' if run_err else 'Unable to load run status right now.'
+            error_result = (
+                html.Div('Unable to load content right now.', className='dv-content-error'),
+                dbc.Alert(error_msg, color='danger', duration=3000),
+                run_details,
+                True,
+            )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching run status for run %s: %s', run_id, exc)
-        alert = dbc.Alert('Unable to load run status right now.', color='danger', duration=3000)
-        return (
-            html.Div('Unable to load content right now.', className='text-muted', style={'paddingLeft': '20px'}),
-            alert,
+        error_result = (
+            html.Div('Unable to load content right now.', className='dv-content-error'),
+            dbc.Alert('Unable to load run status right now.', color='danger', duration=3000),
             run_details,
             True,
         )
 
-    if not run_success or not run_data:
-        alert = dbc.Alert(f'Unable to load run status: {run_err}', color='danger', duration=3000)
-        return (
-            html.Div('Unable to load content right now.', className='text-muted', style={'paddingLeft': '20px'}),
-            alert,
-            run_details,
-            True,
-        )
+    if error_result:
+        return error_result
 
     run_details = _render_run_details(run_data)
-    # status = str(run_data.get('status', '')).lower()
 
-    # Map tab to export type
-    export_type_map = {
-        'tab-animation': ('ANIMATION', 'Animation', 'my-animation'),
-        'tab-snapshot': ('SNAPSHOT', 'Snapshot', 'my-snapshot'),
-        'tab-excess-risk': ('EXCESS_RISK', 'Excess Risk', 'excess-risk'),
-        'tab-epi-status': ('EPIDEMIOLOGICAL_STATUS', 'Epidemiological Status', 'epi-status'),
-        'tab-viral-conc': ('VIRAL_CONCENTRATION', 'Viral Concentration', 'viral-conc'),
-    }
-
-    if active_tab not in export_type_map:
+    if active_tab not in EXPORT_TYPE_MAP:
         return (
-            html.Div('Select a valid tab', className='text-center text-muted', style={'paddingLeft': '20px'}),
+            html.Div('Select a valid tab', className='dv-content-placeholder'),
             notification,
             run_details,
             poll_disabled,
         )
 
-    export_type, export_label, placeholder = export_type_map[active_tab]
+    export_type, export_label, placeholder = EXPORT_TYPE_MAP[active_tab]
 
+    # Fetch exports
     try:
         success, all_exports, err = api.get_exports_for_run(run_id)
+        if not success:
+            error_msg = f'Unable to load exports: {err}' if err else 'Unable to load exports right now.'
+            error_result = (
+                html.Div('Unable to load exports.', className='dv-content-error'),
+                dbc.Alert(error_msg, color='danger', duration=3000),
+                run_details,
+                poll_disabled,
+            )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching exports for run %s: %s', run_id, exc)
-        alert = dbc.Alert('Unable to load exports right now.', color='danger', duration=3000)
-        return (
-            html.Div('Unable to load exports.', className='text-muted', style={'paddingLeft': '20px'}),
-            alert,
+        error_result = (
+            html.Div('Unable to load exports.', className='dv-content-error'),
+            dbc.Alert('Unable to load exports right now.', color='danger', duration=3000),
             run_details,
             poll_disabled,
         )
 
-    if not success:
-        alert = dbc.Alert(f'Unable to load exports: {err}', color='danger', duration=3000)
-        return (
-            html.Div('Unable to load exports.', className='text-muted', style={'paddingLeft': '20px'}),
-            alert,
-            run_details,
-            poll_disabled,
-        )
+    if error_result:
+        return error_result
 
     all_exports = all_exports or []
-    # Filter exports by type for this tab
     exports = [exp for exp in all_exports if exp.get('export_type') == export_type]
 
-    # Create export generation form for this specific type
-    export_form = dbc.Card(
-        dbc.CardBody(
-            [
-                html.H5(f'Generate {export_label}', className='mb-3'),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dbc.Label('Export Name'),
-                                dbc.Input(
-                                    id={'type': 'export-name', 'run': run_id, 'tab': active_tab},
-                                    type='text',
-                                    placeholder=f'{placeholder}.gif',
-                                    debounce=False,
-                                    className='form-control',
-                                ),
-                                html.Small(
-                                    'Must include extension: .png, .gif, .svg, .html, or .pdf',
-                                    className='form-text text-muted',
-                                ),
-                            ],
-                            width=8,
-                        ),
-                        dbc.Col(
-                            [
-                                dbc.Label('\u00a0'),  # Non-breaking space for alignment
-                                dbc.Button(
-                                    [html.I(className='fa fa-file-export me-2'), f'Generate {export_label}'],
-                                    id={
-                                        'type': 'generate-export-btn',
-                                        'run': run_id,
-                                        'tab': active_tab,
-                                        'export_type': export_type,
-                                    },
-                                    color='primary',
-                                    className='w-100',
-                                ),
-                            ],
-                            width=4,
-                        ),
-                    ],
-                    className='mb-3',
-                ),
-                html.Hr(className='mb-3'),
-                html.H5(f'View Existing {export_label}s', className='mb-3'),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dbc.Label('Select Export to View'),
-                                dcc.Dropdown(
-                                    id={'type': 'export-select', 'run': run_id, 'tab': active_tab},
-                                    options=[
-                                        {
-                                            'label': f'{exp.get("name", "Unnamed")} (ID: {exp.get("id")})',
-                                            'value': exp.get('id'),
-                                        }
-                                        for exp in exports
-                                    ],
-                                    placeholder='Select an export to visualize',
-                                    clearable=True,
-                                ),
-                            ],
-                            width=12,
-                        ),
-                    ],
-                    className='mb-3',
-                )
-                if exports
-                else None,
-            ]
-        ),
-        className='mb-3',
-    )
+    export_form = _create_export_form(run_id, active_tab, export_type, export_label, placeholder)
 
     exports_display = (
-        _render_exports(exports)
+        _render_exports(exports, run_id, active_tab)
         if exports
         else html.Div(f'No {export_label.lower()} exports yet. Generate one above!', className='text-muted')
     )
@@ -910,23 +934,9 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
         alert = dbc.Alert(f'Failed to create export: {err}', color='danger', duration=4000)
         return alert, no_update
 
-    # Map export type to friendly name
-    type_labels = {
-        'ANIMATION': 'Animation',
-        'SNAPSHOT': 'Snapshot',
-        'EXCESS_RISK': 'Excess Risk',
-        'EPIDEMIOLOGICAL_STATUS': 'Epidemiological Status',
-        'VIRAL_CONCENTRATION': 'Viral Concentration',
-    }
-    type_label = type_labels.get(export_type, export_type)
+    type_label = EXPORT_TYPE_LABELS.get(export_type, export_type)
+    alert = dbc.Alert(f'{type_label} export "{name}" created successfully!', color='success', duration=4000)
 
-    alert = dbc.Alert(
-        f'{type_label} export "{name}" created successfully!',
-        color='success',
-        duration=4000,
-    )
-
-    # Refresh the exports list for the current type
     try:
         success, all_exports, _ = api.get_exports_for_run(run_id)
         all_exports = all_exports or []
@@ -935,94 +945,11 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
         logger.exception('Error refreshing exports: %s', exc)
         return alert, no_update
 
-    # Map tab to placeholder
-    placeholder_map = {
-        'tab-animation': 'my-animation',
-        'tab-snapshot': 'my-snapshot',
-        'tab-excess-risk': 'excess-risk',
-        'tab-epi-status': 'epi-status',
-        'tab-viral-conc': 'viral-conc',
-    }
-    placeholder = placeholder_map.get(active_tab, 'my-export')
-
-    # Recreate the export form and display
-    export_form = dbc.Card(
-        dbc.CardBody(
-            [
-                html.H5(f'Generate {type_label}', className='mb-3'),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dbc.Label('Export Name'),
-                                dbc.Input(
-                                    id={'type': 'export-name', 'run': run_id, 'tab': active_tab},
-                                    type='text',
-                                    placeholder=f'{placeholder}.gif',
-                                    debounce=False,
-                                    className='form-control',
-                                ),
-                                html.Small(
-                                    'Must include extension: .png, .gif, .svg, .html, or .pdf',
-                                    className='form-text text-muted',
-                                ),
-                            ],
-                            width=8,
-                        ),
-                        dbc.Col(
-                            [
-                                dbc.Label('\u00a0'),
-                                dbc.Button(
-                                    [html.I(className='fa fa-file-export me-2'), f'Generate {type_label}'],
-                                    id={
-                                        'type': 'generate-export-btn',
-                                        'run': run_id,
-                                        'tab': active_tab,
-                                        'export_type': export_type,
-                                    },
-                                    color='primary',
-                                    className='w-100',
-                                ),
-                            ],
-                            width=4,
-                        ),
-                    ],
-                    className='mb-3',
-                ),
-                html.Hr(className='mb-3'),
-                html.H5(f'View Existing {type_label}s', className='mb-3'),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dbc.Label('Select Export to View'),
-                                dcc.Dropdown(
-                                    id={'type': 'export-select', 'run': run_id, 'tab': active_tab},
-                                    options=[
-                                        {
-                                            'label': f'{exp.get("name", "Unnamed")} (ID: {exp.get("id")})',
-                                            'value': exp.get('id'),
-                                        }
-                                        for exp in exports
-                                    ],
-                                    placeholder='Select an export to visualize',
-                                    clearable=True,
-                                ),
-                            ],
-                            width=12,
-                        ),
-                    ],
-                    className='mb-3',
-                )
-                if exports
-                else None,
-            ]
-        ),
-        className='mb-3',
-    )
+    _, _, placeholder = EXPORT_TYPE_MAP[active_tab]
+    export_form = _create_export_form(run_id, active_tab, export_type, type_label, placeholder)
 
     exports_display = (
-        _render_exports(exports)
+        _render_exports(exports, run_id, active_tab)
         if exports
         else html.Div(f'No {type_label.lower()} exports yet. Generate one above!', className='text-muted')
     )
@@ -1030,45 +957,153 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
 
 
 @callback(
+    Output('dv-content-area', 'children', allow_duplicate=True),
     Output('dv-notification-area', 'children', allow_duplicate=True),
-    Input({'type': 'export-select', 'run': dash.dependencies.ALL, 'tab': dash.dependencies.ALL}, 'value'),
+    Output('dv-viewer-state', 'data', allow_duplicate=True),
+    Input(
+        {
+            'type': 'view-export-btn',
+            'export_id': dash.dependencies.ALL,
+            'run': dash.dependencies.ALL,
+            'tab': dash.dependencies.ALL,
+        },
+        'n_clicks',
+    ),
     [
         State('dv-run-dropdown', 'value'),
         State('dv-tabs', 'active_tab'),
     ],
     prevent_initial_call=True,
 )
-def _view_selected_export(export_ids, _run_id, _active_tab):
-    """Display details of the selected export."""
-    if not ctx.triggered_id or not export_ids or not export_ids[0]:
-        return no_update
+def _view_export(n_clicks_list, run_id, active_tab):
+    """Display the export image in full view with close button."""
+    if not ctx.triggered_id:
+        return no_update, no_update, no_update
 
-    export_id = export_ids[0]
+    triggered = ctx.triggered_id
+    export_id = triggered.get('export_id')
+
+    if not export_id:
+        return no_update, no_update, no_update
 
     try:
         success, export_data, err = api.get_by_id('export', export_id)
     except Exception as exc:
         logger.exception('Error fetching export %s: %s', export_id, exc)
-        alert = dbc.Alert('Failed to load export details', color='danger', duration=3000)
-        return alert
+        alert = dbc.Alert('Failed to load export', color='danger', duration=3000)
+        return no_update, alert, no_update
 
-    if not success:
+    if not success or not export_data:
         alert = dbc.Alert(f'Failed to load export: {err}', color='danger', duration=3000)
-        return alert
+        return no_update, alert, no_update
 
-    # Create a detailed view of the export
-    export_info = dbc.Alert(
-        [
-            html.H5(f'Export: {export_data.get("name", "Unnamed")}', className='mb-3'),
-            html.Hr(),
-            html.P([html.Strong('Type: '), export_data.get('export_type', 'Unknown')]),
-            html.P([html.Strong('ID: '), str(export_data.get('id', 'N/A'))]),
-            html.P([html.Strong('Output File: '), export_data.get('outfile', 'Not set')]),
-            html.P([html.Strong('Created: '), export_data.get('created_at', 'Unknown')]),
-            html.P([html.Strong('Parameters: '), str(export_data.get('params', {}))]),
-        ],
-        color='info',
-        dismissable=True,
+    outfile = export_data.get('outfile', '')
+    if not outfile:
+        alert = dbc.Alert('Export file not available', color='warning', duration=3000)
+        return no_update, alert, no_update
+
+    # Convert backend path to web route
+    relative_path = outfile.replace('data/exports/', '')
+    file_url = f'/exports/{relative_path}'
+
+    # Determine file type for rendering
+    file_ext = outfile.lower().split('.')[-1]
+
+    # Create appropriate viewer based on file type
+    if file_ext in ['png', 'jpg', 'jpeg', 'gif', 'svg']:
+        content = html.Img(src=file_url, className='dv-export-viewer-image')
+    elif file_ext in ['html', 'pdf']:
+        content = html.Iframe(src=file_url, className='dv-export-viewer-iframe')
+    else:
+        content = html.Div(
+            [
+                html.P('Preview not available for this file type.', className='dv-export-viewer-no-preview-text'),
+                html.A(
+                    [html.I(className='fa fa-download'), ' Download File'],
+                    href=file_url,
+                    target='_blank',
+                    className='btn btn-primary',
+                ),
+            ],
+            className='dv-export-viewer-no-preview',
+        )
+
+    # Create viewer with close button
+    viewer = dbc.Card(
+        dbc.CardBody(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.H5(export_data.get('name', 'Export'), className='dv-export-viewer-title'), width=10
+                        ),
+                        dbc.Col(
+                            dbc.Button(
+                                html.I(className='fa fa-times'),
+                                id={'type': 'close-export-btn', 'run': run_id, 'tab': active_tab},
+                                color='danger',
+                                size='sm',
+                                outline=True,
+                            ),
+                            width=2,
+                            className='dv-export-viewer-close-col',
+                        ),
+                    ],
+                    className='dv-export-viewer-header',
+                ),
+                html.Hr(),
+                html.Div(content, className='dv-export-viewer-content'),
+                html.Hr(className='dv-export-viewer-divider'),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.A(
+                                [html.I(className='fa fa-download'), ' Download'],
+                                href=file_url,
+                                download=export_data.get('name', 'export'),
+                                className='btn btn-primary btn-sm',
+                            ),
+                            className='dv-export-viewer-download-row',
+                        )
+                    ]
+                ),
+            ]
+        ),
+        className='dv-export-viewer',
     )
 
-    return export_info
+    return viewer, no_update, {'open': True, 'export_id': export_id}
+
+
+@callback(
+    Output('dv-content-area', 'children', allow_duplicate=True),
+    Output('dv-viewer-state', 'data', allow_duplicate=True),
+    Input({'type': 'close-export-btn', 'run': dash.dependencies.ALL, 'tab': dash.dependencies.ALL}, 'n_clicks'),
+    [
+        State('dv-run-dropdown', 'value'),
+        State('dv-tabs', 'active_tab'),
+    ],
+    prevent_initial_call=True,
+)
+def _close_export_view(n_clicks_list, run_id, active_tab):
+    """Close export view and return to export list."""
+    if not ctx.triggered_id or not run_id or active_tab not in EXPORT_TYPE_MAP:
+        return no_update, no_update
+
+    export_type, export_label, placeholder = EXPORT_TYPE_MAP[active_tab]
+
+    try:
+        success, all_exports, _ = api.get_exports_for_run(run_id)
+        exports = [exp for exp in (all_exports or []) if exp.get('export_type') == export_type]
+    except Exception as exc:
+        logger.exception('Error refreshing exports: %s', exc)
+        return no_update, no_update
+
+    export_form = _create_export_form(run_id, active_tab, export_type, export_label, placeholder)
+    exports_display = (
+        _render_exports(exports, run_id, active_tab)
+        if exports
+        else html.Div(f'No {export_label.lower()} exports yet. Generate one above!', className='text-muted')
+    )
+
+    return html.Div([export_form, exports_display]), {'open': False, 'export_id': None}

@@ -309,14 +309,26 @@ def create_export(run_id: int, name: str, export_type: str, params: dict | None 
     return create('export', payload)
 
 
-def get_exports_for_run(run_id: int) -> dict:
+def get_exports_for_run(run_id: int | str) -> dict:
     """Get all exports for a specific run."""
+    try:
+        run_id_int = int(run_id)
+    except (TypeError, ValueError):
+        return False, [], f'Invalid run id: {run_id}'
+
     try:
         success, all_exports, msg = get_all('export')
         if not success:
             return False, [], msg
 
-        run_exports = [exp for exp in (all_exports or []) if exp.get('run') == run_id]
+        run_exports = []
+        for exp in (all_exports or []):
+            try:
+                if int(exp.get('run')) == run_id_int:
+                    run_exports.append(exp)
+            except (TypeError, ValueError):
+                continue
+
         return True, run_exports, 'Success'
     except Exception as exc:
         return False, [], str(exc)
