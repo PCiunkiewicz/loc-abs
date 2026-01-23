@@ -1,8 +1,11 @@
 """Frontend Dash Application."""
 
+from pathlib import Path
+
 import dash
 import dash_bootstrap_components as dbc
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, Input, Output, dcc, html
+from flask import send_from_directory
 from loguru import logger
 
 from components import bottom_nav, footer, header
@@ -16,6 +19,18 @@ app = Dash(
     external_stylesheets=[dbc.themes.LUX, dbc.icons.FONT_AWESOME],
     suppress_callback_exceptions=True,
 )
+
+# Determine exports directory path
+docker_exports = Path('/data/exports')
+local_exports = Path(__file__).parents[1] / 'backend' / 'data' / 'exports'
+
+if docker_exports.exists():
+    EXPORTS_DIR = docker_exports
+else:
+    EXPORTS_DIR = local_exports
+    EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+logger.info(f'Using exports directory: {EXPORTS_DIR}')
 
 footer = footer.create_footer()
 
@@ -40,8 +55,18 @@ def update_header(pathname):
     return header.create_header(pathname=pathname or '/')
 
 
+@app.server.route('/exports/<path:filepath>')
+def serve_export(filepath):
+    """Serve export files from the exports directory."""
+    try:
+        full_path = EXPORTS_DIR / filepath
+        if not full_path.exists():
+            return 'File not found', 404
+        return send_from_directory(EXPORTS_DIR, filepath)
+    except Exception as exc:
+        logger.error(f'Error serving export: {filepath} - {exc}')
+        return 'Internal server error', 500
+
+
 if __name__ == '__main__':
-    logger.debug('Registered pages/routes:')
-    for p in dash.page_registry.values():
-        logger.debug(f'- {p["name"]} -> {p["path"]}')
     app.run(host='0.0.0.0', port=8050, debug=True)

@@ -14,21 +14,12 @@ from utilities import api
 
 register_page(__name__, path='/data-viz', name='Data Visualisation', title='LocABS · Data Visualisation')
 
-# Constants
 EXPORT_TYPE_MAP = {
     'tab-animation': ('ANIMATION', 'Animation', 'my-animation'),
     'tab-snapshot': ('SNAPSHOT', 'Snapshot', 'my-snapshot'),
     'tab-excess-risk': ('EXCESS_RISK', 'Excess Risk', 'excess-risk'),
     'tab-epi-status': ('EPIDEMIOLOGICAL_STATUS', 'Epidemiological Status', 'epi-status'),
     'tab-viral-conc': ('VIRAL_CONCENTRATION', 'Viral Concentration', 'viral-conc'),
-}
-
-EXPORT_TYPE_LABELS = {
-    'ANIMATION': 'Animation',
-    'SNAPSHOT': 'Snapshot',
-    'EXCESS_RISK': 'Excess Risk',
-    'EPIDEMIOLOGICAL_STATUS': 'Epidemiological Status',
-    'VIRAL_CONCENTRATION': 'Viral Concentration',
 }
 
 layout = html.Div(
@@ -47,25 +38,6 @@ layout = html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.Div(
-                                            [
-                                                dbc.Label('Simulation', html_for='dv-run-dropdown'),
-                                                html.I(
-                                                    className='fa fa-circle-question dv-tooltip-icon',
-                                                    id='dv-run-dropdown-tooltip',
-                                                ),
-                                            ],
-                                            className='dv-label-container',
-                                        ),
-                                        create_tooltip(
-                                            'Select a previous run to view its results and exports',
-                                            'dv-run-dropdown-tooltip',
-                                            placement='top',
-                                        ),
-                                        html.P(
-                                            'View results from completed simulations',
-                                            className='dv-helper-text',
-                                        ),
                                         dcc.Dropdown(
                                             id='dv-run-dropdown',
                                             options=[],
@@ -75,8 +47,7 @@ layout = html.Div(
                                     ],
                                     className='dv-sidebar-section',
                                 ),
-                                html.Hr(className='dv-sidebar-hr'),
-                                html.H6('CREATE NEW SIMULATION', className='fw-bold'),
+                                html.H5('CREATE NEW SIMULATION', className='fw-bold'),
                                 html.Div(
                                     [
                                         dbc.Label('Name', html_for='dv-name-input', className='dv-sidebar-form-label'),
@@ -203,22 +174,26 @@ layout = html.Div(
                             id='dv-run-details',
                             className='border p-3',
                             children=[
-                                html.H6('Simulation Details'),
+                                dbc.Row(
+                                    [
+                                        dbc.Col(html.H4('Simulation Details', className='mb-0'), width='auto'),
+                                        dbc.Col(
+                                            dbc.Button(
+                                                html.I(className='fa fa-times'),
+                                                id='dv-close-run-btn',
+                                                color='danger',
+                                                size='sm',
+                                                outline=True,
+                                                style={'display': 'none'},
+                                            ),
+                                            width='auto',
+                                        ),
+                                    ],
+                                    justify='between',
+                                    align='center',
+                                    className='mb-3',
+                                ),
                                 html.Div('No simulation yet.', id='dv-run-details-body'),
-                                dbc.Button(
-                                    'Cancel Simulation',
-                                    id='dv-cancel-btn',
-                                    color='danger',
-                                    outline=True,
-                                    className='dv-cancel-btn',
-                                ),
-                                dbc.Button(
-                                    'Go to Decision Support',
-                                    id='dv-goto-decision',
-                                    color='info',
-                                    className='dv-goto-decision-btn',
-                                    href='/decision-support',
-                                ),
                             ],
                             style={'display': 'none'},
                         ),
@@ -229,10 +204,6 @@ layout = html.Div(
                 # MAIN VISUALISATION AREA
                 dbc.Col(
                     [
-                        dbc.Row(
-                            [dbc.Col(dbc.Button('Export', id='dv-export-btn', color='secondary'), width='auto')],
-                            className='dv-export-row',
-                        ),
                         dbc.Tabs(
                             [
                                 dbc.Tab(label='Animation', tab_id='tab-animation'),
@@ -275,7 +246,7 @@ layout = html.Div(
         # hidden store and init interval
         dcc.Store(id='dv-current-run'),
         dcc.Store(id='dv-run-metadata', storage_type='local'),
-        dcc.Store(id='dv-viewer-state', data={'open': False, 'export_id': None}),
+        dcc.Store(id='dv-viewer-state', storage_type='session'),
         dcc.Interval(id='dv-init', interval=500, n_intervals=0, max_intervals=1),
         dcc.Interval(id='dv-run-poll', interval=3000, n_intervals=0, disabled=True),
         html.Div(id='dv-notification-area'),
@@ -320,6 +291,7 @@ def _populate_dropdowns(_: int) -> tuple[list[dict[str, Any]], list[dict[str, An
         Output('dv-notification-area', 'children', allow_duplicate=True),
         Output('dv-run-dropdown', 'options', allow_duplicate=True),
         Output('dv-run-dropdown', 'value', allow_duplicate=True),
+        Output('dv-run-poll', 'disabled', allow_duplicate=True),
     ],
     Input('dv-run-btn', 'n_clicks'),
     [
@@ -330,14 +302,14 @@ def _populate_dropdowns(_: int) -> tuple[list[dict[str, Any]], list[dict[str, An
     ],
     prevent_initial_call=True,
 )
-def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -> tuple[Any, Any, Any, Any, Any]:
+def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -> tuple[Any, Any, Any, Any, Any, bool]:
     """Trigger a run creation via API and refresh run selection."""
     if not ctx.triggered_id:
-        return no_update, no_update, no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update, no_update, no_update
 
     if not scenario_id or not agent_id:
         alert = dbc.Alert('Select both scenario and agent config before running.', color='warning', duration=3000)
-        return no_update, no_update, alert, no_update, no_update
+        return no_update, no_update, alert, no_update, no_update, no_update
 
     safe_name = (name or 'unnamed_run').replace(' ', '_')
     payload = {
@@ -352,11 +324,11 @@ def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error starting run: %s', exc)
         alert = dbc.Alert('Failed to start run.', color='danger', duration=3000)
-        return no_update, no_update, alert, no_update, no_update
+        return no_update, no_update, alert, no_update, no_update, no_update
 
     if not success or not run_obj:
         alert = dbc.Alert(f'Failed to start run: {err}', color='danger', duration=3000)
-        return no_update, no_update, alert, no_update, no_update
+        return no_update, no_update, alert, no_update, no_update, no_update
 
     notification = None
     try:
@@ -383,49 +355,57 @@ def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error refreshing runs list: %s', exc)
 
-    return run_obj, details, notification, run_opts or no_update, run_obj.get('id')
+    return run_obj, details, notification, run_opts or no_update, run_obj.get('id'), False
 
 
 @callback(
     Output('dv-run-form', 'style'),
     Output('dv-run-details', 'style'),
-    Output('dv-cancel-btn', 'disabled'),
+    Output('dv-close-run-btn', 'style'),
     Input('dv-current-run', 'data'),
 )
-def _toggle_run_view(run_obj: Any) -> tuple[dict[str, str], dict[str, str], bool]:
-    """Hide form while a run is active and show the run details/cancel area."""
+def _toggle_run_view(run_obj: Any) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+    """Hide form while a run is active and show the run details area."""
     if run_obj:
-        return {'display': 'none'}, {'display': 'block'}, False
-    return {}, {'display': 'none'}, True
+        status = run_obj.get('status', '').upper()
+        # If run is completed/finished, show close button
+        if status in ['SUCCESS', 'FAILED']:
+            return {'display': 'none'}, {'display': 'block'}, {'display': 'block'}
+        # If run is in progress, hide close button
+        return {'display': 'none'}, {'display': 'block'}, {'display': 'none'}
+    return {}, {'display': 'none'}, {'display': 'none'}
 
 
 @callback(
     Output('dv-current-run', 'data', allow_duplicate=True),
     Output('dv-run-details-body', 'children', allow_duplicate=True),
-    Output('dv-notification-area', 'children', allow_duplicate=True),
     Output('dv-run-dropdown', 'options', allow_duplicate=True),
-    Output('dv-run-dropdown', 'value', allow_duplicate=True),
-    Input('dv-cancel-btn', 'n_clicks'),
+    Input('dv-run-poll', 'n_intervals'),
     State('dv-current-run', 'data'),
     prevent_initial_call=True,
 )
-def _cancel_run(_n: int, run_obj: Any) -> tuple[Any, Any, Any, Any, Any]:
-    """Cancel the active run and restore the form."""
-    if not _n or not run_obj:
-        return no_update, no_update, no_update, no_update, no_update
+def _poll_run_status(_n: int, run_obj: Any) -> tuple[Any, Any, Any]:
+    """Poll the status of the current active run and update details."""
+    if not run_obj:
+        return no_update, no_update, no_update
 
     run_id = run_obj.get('id')
+    if not run_id:
+        return no_update, no_update, no_update
+
     try:
-        success, _, err = api.update('run', run_id, {'status': 'CANCELLED'})
+        success, updated_run, err = api.get_run_status(run_id)
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error cancelling run %s: %s', run_id, exc)
-        alert = dbc.Alert('Failed to cancel run.', color='danger', duration=3000)
-        return no_update, no_update, alert, no_update, no_update
+        logger.exception('Error polling run status for %s: %s', run_id, exc)
+        return no_update, no_update, no_update
 
-    if not success:
-        alert = dbc.Alert(f'Failed to cancel run: {err}', color='danger', duration=3000)
-        return no_update, no_update, alert, no_update, no_update
+    if not success or not updated_run:
+        return no_update, no_update, no_update
 
+    # Update the run details display
+    details = _render_run_details(updated_run)
+
+    # Refresh the dropdown to show updated status
     run_opts = []
     try:
         success_runs, runs_all, _ = api.get_all('run')
@@ -434,18 +414,56 @@ def _cancel_run(_n: int, run_obj: Any) -> tuple[Any, Any, Any, Any, Any]:
                 {'label': f'{r.get("name", "run")} ({r.get("status", "").lower()})', 'value': r['id']} for r in runs_all
             ]
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error refreshing runs list after cancel: %s', exc)
+        logger.exception('Error refreshing runs list: %s', exc)
 
-    details = html.Div('No run yet.')
-    notification = dbc.Alert('Run cancelled.', color='warning', duration=3000)
-    return None, details, notification, run_opts or no_update, None
+    # Check if run is complete - if so, clear the current run to show the form again
+    status = updated_run.get('status', '').upper()
+    if status in ['COMPLETED', 'FAILED', 'CANCELLED', 'ERROR']:
+        return None, details, run_opts or no_update
+
+    return updated_run, details, run_opts or no_update
+
+
+@callback(
+    Output('dv-current-run', 'data', allow_duplicate=True),
+    Output('dv-run-details-body', 'children', allow_duplicate=True),
+    Output('dv-run-dropdown', 'options', allow_duplicate=True),
+    Input('dv-close-run-btn', 'n_clicks'),
+    prevent_initial_call=True,
+)
+def _close_run_details(_n: int) -> tuple[Any, Any, Any]:
+    """Close the run details panel and return to form view."""
+    if not _n:
+        return no_update, no_update, no_update
+
+    # Refresh the dropdown to show updated runs
+    run_opts = []
+    try:
+        success_runs, runs_all, _ = api.get_all('run')
+        if success_runs and runs_all:
+            run_opts = [
+                {'label': f'{r.get("name", "run")} ({r.get("status", "").lower()})', 'value': r['id']} for r in runs_all
+            ]
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.exception('Error refreshing runs list: %s', exc)
+
+    details = html.Div('No simulation yet.')
+    return None, details, run_opts or no_update
 
 
 def _render_run_details(run_obj: Any) -> list[html.P]:
     """Format run details for display."""
     if not run_obj:
         return html.Div('No run yet.')
-    return [
+
+    if isinstance(run_obj, list):
+        if not run_obj:
+            return html.Div('No run yet.')
+        run_obj = run_obj[0]
+
+    status = run_obj.get('status', 'UNKNOWN').upper()
+
+    details = [
         html.P(
             [html.Strong('Name: ', className='dv-run-details-label'), run_obj.get('name')],
             className='dv-run-details-text',
@@ -455,7 +473,7 @@ def _render_run_details(run_obj: Any) -> list[html.P]:
             className='dv-run-details-text',
         ),
         html.P(
-            [html.Strong('Status: ', className='dv-run-details-label'), run_obj.get('status', 'UNKNOWN')],
+            [html.Strong('Status: ', className='dv-run-details-label'), status],
             className='dv-run-details-text',
         ),
         html.P(
@@ -463,6 +481,28 @@ def _render_run_details(run_obj: Any) -> list[html.P]:
             className='dv-run-details-text',
         ),
     ]
+
+    # Add success alert if run completed successfully
+    if status == 'SUCCESS':
+        details.insert(
+            0,
+            dbc.Alert(
+                [html.I(className='fa fa-check-circle me-2'), 'Simulation completed successfully!'],
+                color='success',
+                className='mb-3',
+            ),
+        )
+    elif status == 'FAILED':
+        details.insert(
+            0,
+            dbc.Alert(
+                [html.I(className='fa fa-exclamation-triangle me-2'), 'Simulation failed. Please check the logs.'],
+                color='danger',
+                className='mb-3',
+            ),
+        )
+
+    return details
 
 
 def _format_duration(start_iso: str) -> str:
@@ -482,6 +522,15 @@ def _format_duration(start_iso: str) -> str:
     if mins:
         return f'{mins}m {secs:02d}s'
     return f'{secs}s'
+
+
+def _format_timestamp(iso_timestamp: str) -> str:
+    """Format ISO timestamp to user-friendly format."""
+    try:
+        dt = datetime.fromisoformat(iso_timestamp.replace('Z', '+00:00'))
+        return dt.strftime('%b %d, %Y %I:%M %p')
+    except Exception:
+        return iso_timestamp
 
 
 def _render_exports(exports: list[dict[str, Any]], run_id: str, active_tab: str) -> html.Div:
@@ -518,12 +567,14 @@ def _render_exports(exports: list[dict[str, Any]], run_id: str, active_tab: str)
             else html.Span('Pending', className='dv-export-pending')
         )
 
+        created_at = _format_timestamp(exp.get('created_at', '')) if exp.get('created_at') else ''
+
         rows.append(
             html.Tr(
                 [
                     html.Td(exp.get('name', 'unnamed'), className='dv-export-name-cell'),
                     html.Td(exp.get('export_type', ''), className='dv-export-cell'),
-                    html.Td(exp.get('created_at', ''), className='dv-export-cell'),
+                    html.Td(created_at, className='dv-export-cell'),
                     html.Td([view_btn, download_btn] if view_btn else download_btn, className='dv-export-actions-cell'),
                 ]
             )
@@ -575,7 +626,21 @@ def _create_export_form(
                     [
                         dbc.Col(
                             [
-                                dbc.Label('Export Name', className='dv-export-label'),
+                                html.Div(
+                                    [
+                                        dbc.Label('Export Name', className='dv-export-label'),
+                                        html.I(
+                                            className='fa fa-circle-question dv-tooltip-icon ms-1',
+                                            id={'type': 'export-name-tooltip', 'run': run_id, 'tab': active_tab},
+                                        ),
+                                    ],
+                                    className='d-flex align-items-center',
+                                ),
+                                create_tooltip(
+                                    'Enter a name for your export file with a valid extension',
+                                    {'type': 'export-name-tooltip', 'run': run_id, 'tab': active_tab},
+                                    placement='top',
+                                ),
                                 dbc.Input(
                                     id={'type': 'export-name', 'run': run_id, 'tab': active_tab},
                                     type='text',
@@ -622,15 +687,12 @@ def _create_export_form(
     [
         Input('dv-init', 'n_intervals'),
         Input('dv-run-btn', 'n_clicks'),
-        Input('dv-cancel-btn', 'n_clicks'),
     ],
     State('dv-run-metadata', 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def _load_runs_table(
-    _init: int, _run_clicks: int, _cancel_clicks: int, metadata: dict[str, Any]
-) -> tuple[Any, dict[str, Any]]:
-    """Load runs table initially and after run creation/cancellation."""
+def _load_runs_table(_init: int, _run_clicks: int, metadata: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
+    """Load runs table initially and after run creation."""
     return _fetch_and_render_runs_table(metadata)
 
 
@@ -761,32 +823,27 @@ def _fetch_and_render_runs_table(metadata: dict[str, Any]) -> tuple[Any, dict[st
 
 
 @callback(
-    Output('dv-content-area', 'children'),
+    Output('dv-content-area', 'children', allow_duplicate=True),
     Output('dv-notification-area', 'children', allow_duplicate=True),
     Output('dv-run-details-body', 'children', allow_duplicate=True),
-    Output('dv-run-poll', 'disabled'),
+    Output('dv-run-poll', 'disabled', allow_duplicate=True),
+    Output('dv-viewer-state', 'data', allow_duplicate=True),
     [
         Input('dv-run-dropdown', 'value'),
         Input('dv-tabs', 'active_tab'),
     ],
-    [
-        State('dv-content-area', 'children'),
-        State('dv-viewer-state', 'data'),
-    ],
+    State('dv-viewer-state', 'data'),
     prevent_initial_call=True,
 )
-def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_state: dict):
+def _load_content(run_id: str, active_tab: str, viewer_state: dict):
     """Load content based on selected run and active tab."""
-    # Don't reload if viewer is open
-    if viewer_state and viewer_state.get('open'):
-        return no_update, no_update, no_update, no_update
-
-    if not run_id:
+    if not ctx.triggered_id:
         return (
             html.Div('Select a simulation to view content', className='dv-content-placeholder'),
             no_update,
             no_update,
             True,
+            {},
         )
 
     notification = no_update
@@ -804,6 +861,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
                 dbc.Alert(error_msg, color='danger', duration=3000),
                 run_details,
                 True,
+                {},
             )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching run status for run %s: %s', run_id, exc)
@@ -812,6 +870,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
             dbc.Alert('Unable to load run status right now.', color='danger', duration=3000),
             run_details,
             True,
+            {},
         )
 
     if error_result:
@@ -825,6 +884,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
             notification,
             run_details,
             poll_disabled,
+            {},
         )
 
     export_type, export_label, placeholder = EXPORT_TYPE_MAP[active_tab]
@@ -839,6 +899,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
                 dbc.Alert(error_msg, color='danger', duration=3000),
                 run_details,
                 poll_disabled,
+                {},
             )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching exports for run %s: %s', run_id, exc)
@@ -847,6 +908,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
             dbc.Alert('Unable to load exports right now.', color='danger', duration=3000),
             run_details,
             poll_disabled,
+            {},
         )
 
     if error_result:
@@ -863,7 +925,7 @@ def _load_content(run_id: str, active_tab: str, _current_content: Any, viewer_st
         else html.Div(f'No {export_label.lower()} exports yet. Generate one above!', className='text-muted')
     )
 
-    return html.Div([export_form, exports_display]), notification, run_details, poll_disabled
+    return html.Div([export_form, exports_display]), notification, run_details, poll_disabled, {}
 
 
 @callback(
@@ -894,14 +956,11 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
         alert = dbc.Alert('Please select a simulation run first', color='warning', duration=3000)
         return alert, no_update
 
-    # Get export type from triggered button
     triggered = ctx.triggered_id
     export_type = triggered.get('export_type') if isinstance(triggered, dict) else 'ANIMATION'
 
-    # Get the name from the input - names is a list of values from all matching inputs
     name = None
     if names:
-        # Find the first non-empty name
         for n in names:
             if n:
                 name = n
@@ -934,7 +993,8 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
         alert = dbc.Alert(f'Failed to create export: {err}', color='danger', duration=4000)
         return alert, no_update
 
-    type_label = EXPORT_TYPE_LABELS.get(export_type, export_type)
+    export_type_data = EXPORT_TYPE_MAP.get(active_tab, ('', '', ''))
+    type_label = export_type_data[1] if len(export_type_data) > 1 else export_type
     alert = dbc.Alert(f'{type_label} export "{name}" created successfully!', color='success', duration=4000)
 
     try:
@@ -957,8 +1017,6 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
 
 
 @callback(
-    Output('dv-content-area', 'children', allow_duplicate=True),
-    Output('dv-notification-area', 'children', allow_duplicate=True),
     Output('dv-viewer-state', 'data', allow_duplicate=True),
     Input(
         {
@@ -976,37 +1034,68 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
     prevent_initial_call=True,
 )
 def _view_export(n_clicks_list, run_id, active_tab):
-    """Display the export image in full view with close button."""
+    """Set viewer state to display the export."""
     if not ctx.triggered_id:
-        return no_update, no_update, no_update
+        return no_update
+
+    actual_clicks = [n for n in (n_clicks_list or []) if n is not None and n > 0]
+    if not actual_clicks:
+        return no_update
 
     triggered = ctx.triggered_id
     export_id = triggered.get('export_id')
 
     if not export_id:
-        return no_update, no_update, no_update
+        return no_update
 
     try:
         success, export_data, err = api.get_by_id('export', export_id)
     except Exception as exc:
         logger.exception('Error fetching export %s: %s', export_id, exc)
-        alert = dbc.Alert('Failed to load export', color='danger', duration=3000)
-        return no_update, alert, no_update
+        return no_update
 
     if not success or not export_data:
-        alert = dbc.Alert(f'Failed to load export: {err}', color='danger', duration=3000)
-        return no_update, alert, no_update
+        return no_update
+
+    return {'open': True, 'export_id': export_id, 'run_id': run_id, 'active_tab': active_tab}
+
+
+@callback(
+    Output('dv-content-area', 'children', allow_duplicate=True),
+    Input('dv-viewer-state', 'data'),
+    prevent_initial_call=True,
+)
+def _render_viewer(viewer_state: dict):
+    """Render the export viewer when viewer_state indicates it should be shown."""
+    if not viewer_state or not viewer_state.get('open'):
+        return no_update
+
+    export_id = viewer_state.get('export_id')
+    run_id = viewer_state.get('run_id')
+    active_tab = viewer_state.get('active_tab')
+
+    if not export_id or not run_id or not active_tab:
+        return no_update
+
+    try:
+        success, export_data, err = api.get_by_id('export', export_id)
+    except Exception as exc:
+        logger.exception('Error fetching export %s for viewer: %s', export_id, exc)
+        return html.Div('Failed to load export', className='text-danger')
+
+    if not success or not export_data:
+        return html.Div('Export not found', className='text-danger')
 
     outfile = export_data.get('outfile', '')
     if not outfile:
-        alert = dbc.Alert('Export file not available', color='warning', duration=3000)
-        return no_update, alert, no_update
+        return html.Div('Export file not available', className='text-warning')
 
-    # Convert backend path to web route
-    relative_path = outfile.replace('data/exports/', '')
+    if outfile.startswith('data/exports/'):
+        relative_path = outfile[len('data/exports/') :]
+    else:
+        relative_path = outfile
     file_url = f'/exports/{relative_path}'
 
-    # Determine file type for rendering
     file_ext = outfile.lower().split('.')[-1]
 
     # Create appropriate viewer based on file type
@@ -1035,59 +1124,61 @@ def _view_export(n_clicks_list, run_id, active_tab):
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H5(export_data.get('name', 'Export'), className='dv-export-viewer-title'), width=10
+                            html.H5(export_data.get('name', 'Export'), className='dv-export-viewer-title'),
+                            className='d-flex align-items-center',
                         ),
                         dbc.Col(
-                            dbc.Button(
-                                html.I(className='fa fa-times'),
-                                id={'type': 'close-export-btn', 'run': run_id, 'tab': active_tab},
-                                color='danger',
-                                size='sm',
-                                outline=True,
-                            ),
-                            width=2,
-                            className='dv-export-viewer-close-col',
+                            [
+                                html.A(
+                                    [html.I(className='fa fa-download'), ' Download'],
+                                    href=file_url,
+                                    download=export_data.get('name', 'export'),
+                                    className='btn btn-primary btn-sm me-2',
+                                ),
+                                dbc.Button(
+                                    html.I(className='fa fa-times'),
+                                    id={'type': 'close-export-btn', 'run': run_id, 'tab': active_tab},
+                                    color='danger',
+                                    size='sm',
+                                    outline=True,
+                                ),
+                            ],
+                            width='auto',
+                            className='ms-auto d-flex align-items-center',
                         ),
                     ],
                     className='dv-export-viewer-header',
                 ),
                 html.Hr(),
                 html.Div(content, className='dv-export-viewer-content'),
-                html.Hr(className='dv-export-viewer-divider'),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.A(
-                                [html.I(className='fa fa-download'), ' Download'],
-                                href=file_url,
-                                download=export_data.get('name', 'export'),
-                                className='btn btn-primary btn-sm',
-                            ),
-                            className='dv-export-viewer-download-row',
-                        )
-                    ]
-                ),
             ]
         ),
         className='dv-export-viewer',
     )
 
-    return viewer, no_update, {'open': True, 'export_id': export_id}
+    return viewer
 
 
 @callback(
     Output('dv-content-area', 'children', allow_duplicate=True),
     Output('dv-viewer-state', 'data', allow_duplicate=True),
     Input({'type': 'close-export-btn', 'run': dash.dependencies.ALL, 'tab': dash.dependencies.ALL}, 'n_clicks'),
-    [
-        State('dv-run-dropdown', 'value'),
-        State('dv-tabs', 'active_tab'),
-    ],
     prevent_initial_call=True,
 )
-def _close_export_view(n_clicks_list, run_id, active_tab):
+def _close_export_view(n_clicks_list):
     """Close export view and return to export list."""
-    if not ctx.triggered_id or not run_id or active_tab not in EXPORT_TYPE_MAP:
+    if not ctx.triggered_id:
+        return no_update, no_update
+
+    actual_clicks = [n for n in (n_clicks_list or []) if n is not None and n > 0]
+    if not actual_clicks:
+        return no_update, no_update
+
+    triggered = ctx.triggered_id
+    run_id = triggered.get('run')
+    active_tab = triggered.get('tab')
+
+    if not run_id or active_tab not in EXPORT_TYPE_MAP:
         return no_update, no_update
 
     export_type, export_label, placeholder = EXPORT_TYPE_MAP[active_tab]
@@ -1106,4 +1197,4 @@ def _close_export_view(n_clicks_list, run_id, active_tab):
         else html.Div(f'No {export_label.lower()} exports yet. Generate one above!', className='text-muted')
     )
 
-    return html.Div([export_form, exports_display]), {'open': False, 'export_id': None}
+    return html.Div([export_form, exports_display]), {}

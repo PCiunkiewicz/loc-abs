@@ -5,11 +5,23 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 from dash import Input, Output, callback, dcc, html, register_page, State
+from datetime import datetime
 
 from components.tooltip import create_info_icon_with_tooltip, create_tooltip
 from utilities import api
 
 register_page(__name__, path='/dashboard', name='Dashboard', title='LocABS Dashboard')
+
+
+def _format_timestamp(iso_timestamp: str) -> str:
+    """Format ISO timestamp to user-friendly format."""
+    if not iso_timestamp or iso_timestamp == 'No timestamp':
+        return iso_timestamp
+    try:
+        dt = datetime.fromisoformat(iso_timestamp.replace('Z', '+00:00'))
+        return dt.strftime('%b %d, %Y %I:%M %p')
+    except Exception:
+        return iso_timestamp
 
 
 def _get_resource_lookup(resource: str) -> dict:
@@ -98,6 +110,7 @@ def _build_runs_df(dv_metadata: dict = None) -> tuple[pd.DataFrame, str | None]:
 
     df = pd.DataFrame(rows)
     if not df.empty:
+        df['timestamp'] = df['timestamp'].apply(_format_timestamp)
         df['duration_display'] = df['duration_min'].apply(lambda m: f'{m} min' if m is not None else 'N/A')
         # Fill None values in runs column
         df['runs'] = df['runs'].fillna('N/A')
@@ -401,7 +414,6 @@ column_defs = [
             'status-running': "value === 'RUNNING'",
         },
     },
-    {'field': 'timestamp', 'headerName': 'Time Created', 'minWidth': 160},
     {'field': 'runs', 'headerName': '# Runs', 'maxWidth': 100},
     {'field': 'scenario', 'headerName': 'Scenario', 'minWidth': 150},
     {'field': 'agent', 'headerName': 'Agent Config', 'minWidth': 150},
@@ -533,9 +545,7 @@ def update_dashboard(_n, time_filter, _refresh_clicks, metadata, dv_metadata):
             agent_cfg_count = 'N/A'
 
     row_data = (
-        df[['run_name', 'run_id', 'status', 'timestamp', 'runs', 'scenario', 'agent']].to_dict('records')
-        if not df.empty
-        else []
+        df[['run_name', 'run_id', 'status', 'runs', 'scenario', 'agent']].to_dict('records') if not df.empty else []
     )
 
     status_graph = status_bar(df)
