@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tables as tb
 from matplotlib import image
+from matplotlib.colors import ListedColormap
 
 from simulation.scenario import VIRUS_SCALE
 from utilities.tools import STATUS_COLOR, reshape, str_date
@@ -34,7 +35,14 @@ class SimSnapshot:
             results: Path to the simulation output .h5 file.
             mapfile: Path to the map image or directory containing map images.
         """
-        self.img = image.imread(mapfile)
+        self.imgs = []
+        if mapfile.is_dir():
+            for file in sorted(mapfile.iterdir()):
+                if file.suffix == '.png' and '.nodes' not in file.suffixes:
+                    self.imgs.append(image.imread(file))
+        else:
+            self.imgs.append(image.imread(mapfile))
+        self.exits = [np.all(np.isclose(img, (1, 1, 0, 1)), axis=2) for img in self.imgs]
 
         with tb.open_file(results, mode='r') as file:
             self.agents = file.root.agents.read()
@@ -44,42 +52,83 @@ class SimSnapshot:
             except tb.NoSuchNodeError:
                 self.virus = np.zeros((*self.imgs[0].shape[:2], len(self.imgs)))
 
-    def export(self, outfile: Path, i: int, cmap: str = 'bwr_r', label: bool = True) -> None:
+    def export(self, outfile: Path, frame_idx: int) -> None:
         """Export snapshot to output file.
 
         Args:
             outfile: Path to the output file.
-            i: Index of the snapshot frame to export.
-            cmap: Colormap for the virus overlay.
-                https://matplotlib.org/stable/users/explain/colors/colormaps.html
-            label: Whether to label agents with their IDs.
+            frame_idx: Index of the snapshot frame to export.
         """
-        _, ax = plt.subplots(figsize=[10, 10])
-        ax.imshow(self.img)
-        ax.imshow(self.virus[i] != 0, alpha=self.virus[i] / VIRUS_SCALE, cmap=cmap)
-        ax.text(1, 2, str_date(self.timesteps[i]), c='w', fontsize=14)
+        ncols = min(2, len(self.imgs))
+        self.fig, self.axes = plt.subplots(
+            nrows=len(self.imgs) // ncols,
+            ncols=ncols,
+            figsize=[8 * ncols, 4 * len(self.imgs) // ncols],
+        )
+        self.axes = self.axes.flatten()
+        self.fig.subplots_adjust(left=0, bottom=0, right=1, top=0.95)
 
-        plot_ref = []
+        for floor in range(len(self.imgs)):
+            self.draw_floor(floor, frame_idx)
+
+        plt.savefig(outfile, dpi=300, bbox_inches='tight')
+
+    def draw_floor(self, floor: int, i: int) -> None:
+        """Draw frame from simulation results for a given floor.
+
+        Args:
+            floor: Floor number to draw.
+            i: Frame index to draw.
+        """
+        ax: plt.Axes = self.axes[floor]
+        ax.set_title(f'Floor {floor}\n', fontweight='bold', fontsize=14)
+        ax.axis('off')
+
+        ax.imshow(self.imgs[floor])
+        ax.imshow(
+            self.virus[i, :, :, floor] != 0,
+            alpha=(self.virus[i, :, :, floor] / VIRUS_SCALE) ** 0.35,
+            cmap=ListedColormap(['white', 'red'], N=2),
+            vmin=0,
+            vmax=1,
+        )
+
+        info = [f'{str_date(self.timesteps[i])}\n']
         for status in AgentStatus:
-            ref = ax.plot(
-                *reshape(self.agents[i], status.value),
+            agents = reshape(self.agents[i], status.value, floor)
+            info.append(f'{status.name.capitalize()}: {agents.shape[1]}')
+        ax.text(
+            x=0.03,
+            y=0.05,
+            s='\n'.join(info),
+            c='black',
+            fontsize=8,
+            fontweight='bold',
+            horizontalalignment='left',
+            verticalalignment='bottom',
+            transform=ax.transAxes,
+        )
+
+        for status in AgentStatus:
+            ax.plot(
+                *reshape(self.agents[i], status.value, floor),
                 'o',
-                ms=16,
+                ms=4,
+                mew=0.25,
                 c=STATUS_COLOR[status.name],
                 mec='black',
                 label=status.name,
             )
-            plot_ref.append(ref[0])
 
-        if label:
-            for n in range(self.agents[i].shape[0]):
-                x, y, _ = self.agents[i][n]
-                ax.annotate(
-                    n + 1,
-                    (y, x),
-                    va='center',
-                    ha='center',
+        for agent in range(self.agents.shape[1]):
+            x, y, z = self.agents[i, agent][:3]
+            if z == floor and not self.exits[z][x, y]:
+                ax.text(
+                    y,
+                    x,
+                    agent,
+                    fontsize=2,
+                    c='black',
+                    horizontalalignment='center',
+                    verticalalignment='center',
                 )
-
-        ax.set(xticks=[], yticks=[])
-        plt.savefig(outfile, dpi=300, bbox_inches='tight')

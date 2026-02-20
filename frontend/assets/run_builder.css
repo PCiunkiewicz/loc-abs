@@ -1,0 +1,866 @@
+/* Styles for Run Builder page */
+
+/* ========== Color Picker Settings ========== */
+#terrain-color-input .chrome-picker {
+    border-radius: 0% !important;
+    border: 1px solid #000000 !important;
+}
+
+.chrome-picker {
+    width: 200px !important;
+}
+
+/* ========== Page Containers ========== */
+.page-container {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    gap: 2rem;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 150px);
+}
+
+.scenario-builder-page {
+    background-color: #f5f5f5;
+    min-height: calc(100vh - 200px);
+}
+
+/* ========== Main Layout ========== */
+.main-container {
+    display: flex;
+    gap: 16px;
+    padding: 30px;
+    margin: 10px;
+}
+
+.side-panels-container {
+    width: 50vw;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.config-panel {
+    flex: 1;
+    margin-right: 16px;
+    width: 22vw;
+}
+
+.top-dropdowns {
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.dropdown-with-actions {
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    /* width: 50vw; */
+}
+
+.top-dropdowns .dropdown-with-actions {
+    width: 48%;
+}
+
+/* ========== Tab Styles ========== */
+.tab-headers {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tab-button-active {
+    background-color: #ffffff;
+}
+
+.tab-button-inactive {
+    background-color: #e0e0e0;
+}
+
+.tab-content {
+    background-color: #ffffff;
+    border-radius: 0 0 8px 8px;
+}
+
+
+/* 70/30 split for the two .dropdown-with-actions inside .top-dropdowns */
+.top-dropdowns .dropdown-with-actions:first-child {
+    width: 57%;
+}
+.top-dropdowns .dropdown-with-actions:last-child {
+    width: 43%;
+}
+
+.drop-down-btn{
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+
+}
+
+.dropdown-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+    justify-content: space-evenly ;
+}
+
+.tooltip-icon{
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.dropdown-label {
+    font-weight: bold;
+    /* margin-bottom: 0.5rem; */
+}
+
+.dropdown-standard {
+    width: 100%;
+}
+
+.dropdown-row{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between ;
+    width: 100%;
+    margin: auto;
+}
+
+.dropdown-col{
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 10px;
+}
+
+#scenario-actions-container, #agent-config-actions-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* div[id='{"type": "dropdown", "resource": "scenario"}'] .dropdown-standard {
+    width: 50vw;
+} */
+
+.form-section-label{
+    margin-top: 1rem;
+    padding-bottom: .7rem;
+    margin-bottom: 1rem;;
+    border-bottom: 1px solid #000000;
+}
+
+.form-input-number{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d9d9e0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #11131a;
+}
+
+/* ========== Form Labels ========== */
+.form-label {
+    font-weight: 600;
+    margin: 8px 0px 8px 0px;
+}
+
+.form-label-small {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Required field indicator */
+.form-label::after {
+    content: " *";
+    color: #dc3545;
+}
+
+/* ========== Input Validation Styles ========== */
+/* Invalid state - only after user input */
+.form-input:not(:placeholder-shown):invalid,
+.form-input-number:not(:placeholder-shown):invalid,
+.virus-rate-input:not(:placeholder-shown):invalid {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+/*========== Side Panel Styles ========== */
+.side-panel {
+    margin-bottom: 16px;
+    width: 50vw;
+    min-height: 35vh;
+}
+
+.side-panel-header {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px 8px 0 0;
+}
+
+.side-panel-content {
+    background-color: #ffffff;
+    padding: 20px;
+    max-height: 35vh;
+    border-radius: 0 0 8px 8px;
+}
+
+/* ========== Terrain Form Styles ========== */
+.terrain-form-container {
+    display: flex;
+    flex-direction: row;
+    gap: 150px;
+    margin-bottom: 20px;
+}
+
+.terrain-type-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.terrain-properties-row {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.terrain-properties-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.checklist-label {
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+/* ========== Virus Form Styles ========== */
+.virus-rates-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.virus-rate-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.virus-rate-container {
+    margin-bottom: 20px;
+}
+
+.virus-rate-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* ========== Agent Configuration Styles ========== */
+.agent-config-container {
+    background-color: #ffffff;
+    margin: 30px 50px;
+    padding: 20px;
+    align-items: center;
+    min-height: 500px;
+    border-radius: 0 0 8px 8px;
+}
+
+.agent-config-header {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px 8px 0 0;
+}
+
+.agent-population-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.agent-population-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.agent-full-width-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+/* ========== Section Headers ========== */
+.section-header {
+    font-weight: 600;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+}
+
+.section-header-with-margin {
+    font-weight: 600;
+    margin-bottom: 16px;
+    margin-top: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+}
+
+/* ========== Prevention Headers ========== */
+.prevention-header {
+    margin-bottom: 20px;
+}
+
+.prevention-section-header {
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+}
+
+.prevention-section-header-with-margin {
+    font-weight: 600;
+    margin: 20px 20px 0px 0px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+}
+
+.simulation-header {
+    margin-bottom: 20px;
+}
+
+/* ========== Mask Input Styles ========== */
+.mask-container {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.mask-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.mask-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.mask-checkbox-label {
+    margin-right: 10px;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.mask-slider-container {
+    flex: 1;
+}
+
+.mask-slider {
+    margin-top: 12px;
+}
+
+/* ========== Vaccine Input Styles ========== */
+.vaccine-container {
+    margin-bottom: 20px;
+}
+
+.vaccine-wrapper {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin: 10px 12px 0px 0px;
+    background-color: #fafafa;
+}
+
+.vaccine-checkbox-label {
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.vaccine-doses-container {
+    margin-top: 8px;
+}
+
+.vaccine-dose-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.vaccine-dose-header-item {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+}
+
+.vaccine-dose-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.vaccine-dose-input {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* ========== Tooltip Styles ========== */
+.tooltip-container {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* ========== Button Styles ========== */
+.btn-container {
+    margin-top: 20px;
+}
+
+/* Valid state - only after user input */
+.form-input:not(:placeholder-shown):valid,
+.form-input-number:not(:placeholder-shown):valid,
+.virus-rate-input:not(:placeholder-shown):valid {
+    border-color: #28a745;
+}
+
+/* Focus states - show validation colors when focused and has input */
+.form-input:focus:not(:placeholder-shown):invalid,
+.form-input-number:focus:not(:placeholder-shown):invalid,
+.virus-rate-input:focus:not(:placeholder-shown):invalid {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-input:focus:not(:placeholder-shown):valid,
+.form-input-number:focus:not(:placeholder-shown):valid,
+.virus-rate-input:focus:not(:placeholder-shown):valid {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Keep default gray focus when no input yet */
+.form-input:focus:placeholder-shown,
+.form-input-number:focus:placeholder-shown,
+.virus-rate-input:focus:placeholder-shown {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Helper text styling */
+.form-text.text-muted {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Radio items styling - horizontal layout with spacing */
+.form-radio-items {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: center;
+}
+
+.form-radio-items label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.agent-config-form-column{
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
+}
+
+/* Action button styles moved to app.css */
+
+.dash-tabs {
+    margin-bottom: 2rem;
+}
+
+.dash-tab {
+    font-weight: bold;
+
+
+/* ========== Responsive Styles ========== */
+@media (max-width: 1200px) {
+    .side-panels-container {
+        width: 70vw;
+    }
+
+    .config-panel {
+        width: 30vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .side-panels-container,
+    .config-panel,
+    .side-panel {
+        width: 100%;
+    }
+
+    .side-panels-container {
+        flex-direction: row;
+    }
+
+    .agent-config-container {
+        padding: 20px;
+    }
+}   font-size: 1.1rem;
+}
+
+.dash-tab--selected {
+    color: #1976d2;
+    border-bottom: 2px solid #1976d2;
+}
+
+#scenario-tab-content, #agent-config-tab-content {
+    background: #fafafa;
+    border-radius: 6px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 2rem;
+}
+
+#clone-confirm-modal {
+    font-size: 1.05rem;
+}
+
+#notification-area {
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+
+/* Button styles consolidated in app.css */
+.summary-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.summary-value {
+    color: #222;
+    margin-bottom: 0.5rem;
+}
+
+.action-modal {
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    padding: 2rem 2.5rem;
+    min-width: 350px;
+    margin: auto;
+    font-size: 1.05rem;
+}
+
+.modal-content{
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+}
+
+.action-modal h5, .action-modal h4 {
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #1976d2;
+}
+
+.action-modal p {
+    margin-bottom: 1.2rem;
+    color: #444;
+}
+
+.dropdown-item-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.2rem;
+    justify-content: flex-start;
+}
+
+/* Dropdown item actions inherit from base button styles in app.css */
+
+.scenario-form-dropdowns-container{
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.scenario-form-subforms-container1{
+    display: flex;
+    gap: 2rem;
+    justify-content: space-around;
+    flex-direction: row;
+}
+
+.generic-form-container{
+    width: 100%;
+    /* background-color: #ffffff; */
+    padding: 1rem;
+    border-radius: 8px;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217); */
+    /* margin-top: 2rem; */
+}
+
+.forms-section{
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+}
+
+.forms-section .form-column:first-child {
+    width: 70%;
+}
+.forms-section .form-column:last-child {
+    width: 30%;
+}
+
+
+resource-form-container{
+    width: 100%;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
+    /* margin-top: 2rem; */
+}
+
+.scenario-form-container{
+    width: 100%;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.217);
+    /* margin-top: 2rem; */
+}
+
+/* All button styles consolidated in app.css */
+
+/* Tab Navigation Full Width Styling */
+#main-tabs {
+    width: 100%;
+}
+
+#main-tabs .nav-tabs {
+    display: flex;
+    width: 100%;
+    border-bottom: none;
+}
+
+#main-tabs .nav-item {
+    flex: 1;
+    text-align: center;
+}
+
+#main-tabs .nav-link {
+    width: 100%;
+    border-bottom: 3px solid #e2e8f0;
+}
+
+#main-tabs .nav-link.active {
+    border-bottom: 3px solid #3b82f6;
+}
+
+/* Single Row Button Layout */
+.form-button-group-single-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+}
+
+.btn-action {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    min-width: 110px;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action i {
+    font-size: 0.85rem;
+}
+
+/* Notification Modal Styling */
+.notification-success .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.notification-success .modal-header {
+    background: linear-gradient(135deg, #e6f9f4 0%, #f0fdf9 100%);
+    color: #059669;
+    border-radius: 12px 12px 0 0;
+}
+
+.notification-success #notification-modal-icon {
+    color: #10b981;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.notification-success #notification-modal-icon::before {
+    content: '\f058';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+
+.notification-success .modal-body {
+    background-color: #ffffff;
+    color: #334155;
+}
+
+.notification-success .modal-footer {
+    background-color: #f8fafc;
+    border-radius: 0 0 12px 12px;
+}
+
+.notification-error .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.notification-error .modal-header {
+    background: linear-gradient(135deg, #fef0f1 0%, #fef2f2 100%);
+    color: #dc2626;
+    border-radius: 12px 12px 0 0;
+}
+
+.notification-error #notification-modal-icon {
+    color: #ef4444;
+    animation: scaleIn 0.3s ease-out;
+}
+
+.notification-error #notification-modal-icon::before {
+    content: '\f06a';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+
+.notification-error .modal-body {
+    background-color: #ffffff;
+    color: #334155;
+}
+
+.notification-error .modal-footer {
+    background-color: #f8fafc;
+    border-radius: 0 0 12px 12px;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ========== Page Title Styles ========== */
+.page-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+    margin: 0.5rem 0 0 0;
+}
+
+/* ========== How-to Modal Styles ========== */
+.how-to-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d6efd;
+}
+
+.how-to-step-number {
+    background-color: #0d6efd;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}

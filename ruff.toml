@@ -46,7 +46,7 @@ src = [
   "backend/utilities",
   "frontend",
   "frontend/components",
-  "frontend/content",
+  "frontend/pages",
   "frontend/utilities",
 ]
 

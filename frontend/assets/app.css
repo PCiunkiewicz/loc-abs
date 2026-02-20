@@ -1,0 +1,542 @@
+
+:root {
+    --color-primary: #0056b3;
+    --color-success: #155724;
+    --color-success-bg: #d4edda;
+    --color-error: #721c24;
+    --color-error-bg: #f8d7da;
+    --color-text: #212529;
+    --color-text-secondary: #6c757d;
+    --color-border: #dee2e6;
+    --focus-outline: 3px solid #0056b3;
+    --focus-outline-offset: 2px;
+    --button-min-size: 44px;
+}
+
+.hero-section {
+    text-align: center;
+    padding: 1.75rem 1rem;
+    margin-bottom: .5rem;
+}
+
+.hero-title {
+    font-size: 38px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 0.85rem;
+    letter-spacing: 1.2px;
+}
+
+.hero-subtitle {
+    font-size: 16px;
+    color: #333;
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Section Titles */
+.section-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.4px;
+}
+
+.section-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 0.85rem;
+}
+
+.workflow-section .section-title {
+    color: white;
+}
+
+.workflow-section .section-subtitle {
+    color: #ccc;
+}
+
+/* Workflow Section */
+.workflow-section {
+    background-color: #000;
+    padding: 1.5rem 0.85rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.workflow-step {
+    text-align: center;
+    padding: 0.6rem 0.45rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.workflow-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background-color: white;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 auto 0.6rem;
+}
+
+.workflow-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 0.45rem;
+}
+
+.workflow-description {
+    font-size: 12px;
+    color: #ddd;
+    line-height: 1.35;
+    margin-bottom: 0.6rem;
+    min-height: 48px;
+}
+
+.platform-overview-section{
+    margin: 2rem 0;
+}
+
+.platform-card {
+    background-color: white;
+    color: #000;
+    text-align: center;
+    padding: 1.3rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.platform-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+.platform-icon {
+    color: #000;
+    margin-bottom: 0.65rem;
+    font-size: 1.75rem;
+}
+
+.platform-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.65rem;
+}
+
+.platform-card-text {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 0.85rem;
+    min-height: 45px;
+}
+
+.platform-card-button {
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 0.55rem 1.3rem;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 4px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.platform-card-button:hover {
+    background-color: #333;
+    color: white;
+    transform: scale(1.02);
+}
+
+.cta-section {
+    margin-bottom: 1.5rem;
+}
+
+.cta-content {
+    background: linear-gradient(135deg, #2c2c2c 0%, #000 100%);
+    padding: 2.25rem 1.65rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.workflow-steps-row {
+    align-self: center;
+    gap: 2.25rem;
+    justify-content: center;}
+
+
+
+.cta-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.85rem;
+}
+
+.cta-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 650px;
+    margin: 0 auto 1.65rem;
+}
+
+.cta-button {
+    background-color: white;
+    color: #000;
+    border: none;
+    padding: 0.85rem 2.25rem;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.cta-button:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 26px;
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+
+    .workflow-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 17px;
+    }
+
+    .cta-title {
+        font-size: 22px;
+    }
+
+    .cta-subtitle {
+        font-size: 14px;
+    }
+}
+
+/* Focus visible styles (WCAG 2.2) */
+*:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-offset);
+}
+
+/* ========================================
+   UNIFIED BUTTON SYSTEM
+   ======================================== */
+
+/* Base Button Styles */
+button,
+.btn,
+a.btn,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+    min-height: var(--button-min-size);
+    min-width: var(--button-min-size);
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn:hover {
+    transform: scale(1.02);
+}
+
+/* Primary Button - Yellow/Gold */
+.btn-primary {
+    background-color: #f5c400 !important;
+    color: #0b0b0d;
+}
+
+.btn-primary:hover {
+    background-color: #ffd84d !important;
+}
+
+/* Secondary Button - Dark Gray */
+.btn-secondary {
+    background-color: #2b2b31 !important;
+    color: #f5f5f7;
+}
+
+.btn-secondary:hover {
+    background-color: #3a3a42 !important;
+}
+
+/* Success Button - Green */
+.btn-success {
+    background-color: #00c38a !important;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #06d39a !important;
+}
+
+/* Danger Button - Red */
+.btn-danger {
+    background-color: #e63946 !important;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #ff5f6b !important;
+}
+
+/* Info Button - Blue */
+.btn-info {
+    background-color: #5aa8ff !important;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #7cb8ff !important;
+}
+
+/* Action Button - Light with Border */
+.action-btn {
+    background-color: #eef1f7;
+    border: 1px solid #d9d9e0;
+    color: #1f232d;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.action-btn:hover {
+    background-color: #dde4f0;
+    border-color: #b8c3d6;
+    color: #0f1118;
+}
+
+/* Small Dropdown Button */
+.drop-down-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+}
+
+/* Tab Button */
+.tab-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-button-active {
+    background-color: #ffffff;
+}
+
+.tab-button-inactive {
+    background-color: #e0e0e0;
+}
+
+.tab-button-inactive:hover {
+    background-color: #d0d0d0;
+}
+
+/* Reduced motion (WCAG 2.2) */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+.notification-success .modal-header {
+    background-color: var(--color-success-bg);
+    border-bottom: 1px solid #c3e6cb;
+}
+
+.notification-success .modal-title {
+    color: var(--color-success);
+}
+
+.notification-success .modal-body {
+    color: var(--color-success);
+    font-size: 16px;
+}
+
+.notification-error .modal-header {
+    background-color: var(--color-error-bg);
+    border-bottom: 1px solid #f5c6cb;
+}
+
+.notification-error .modal-title {
+    color: var(--color-error);
+}
+
+.notification-error .modal-body {
+    color: var(--color-error);
+    font-size: 16px;
+}
+
+.modal-body i {
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+/* Tooltip accessibility */
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: var(--color-text-secondary);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.tooltip-icon:focus {
+    outline: var(--focus-outline);
+    outline-offset: 2px;
+}
+
+/* Form accessibility improvements */
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+    border-color: var(--color-error);
+    border-width: 2px;
+}
+
+.error-message {
+    color: var(--color-error);
+    font-size: 14px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.error-message::before {
+    content: "⚠";
+    font-weight: bold;
+}
+
+/* ...existing code... */
+
+/* Homepage enhancements */
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.step-number {
+    flex-shrink: 0;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Button enhancements */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: scale(1.02);
+}
+
+/* Navigation Link Styles */
+.nav-link-active {
+    /* background-color: #ffffff !important; */
+    border-radius: 7px !important;
+    border-bottom: #ffffff 4px solid !important;
+    color: rgb(255, 255, 255) !important;
+    padding: 8px 16px !important;
+    font-weight: bold !important;
+}
+
+.nav-link-inactive {
+    color: rgba(255, 255, 255, 0.8) !important;
+    /* padding: 8px 16px !important; */
+}
+
+.nav-link-inactive:hover {
+    color: white !important;
+    background-color: rgba(255, 252, 252, 0.1) !important;
+    border-radius: 5px !important;
+    padding: 8px 16px !important;
+}
+
+/* Dropdown Menu Item Styles */
+.dropdown-item-active {
+    background-color: #007bff !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.dropdown-item-active:hover {
+    background-color: #0056b3 !important;
+    color: white !important;
+}

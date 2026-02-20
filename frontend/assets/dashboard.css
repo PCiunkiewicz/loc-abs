@@ -1,0 +1,503 @@
+/* Overview section */
+.dashboard-shell {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #e3e4e6;
+}
+
+.overview-section.compact {
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.overview-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px;
+}
+
+.overview-description {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: 10px 14px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-title {
+  color: #6c757d;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.kpi-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ratio-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  text-align: right;
+}
+
+.kpi-subtitle {
+  color: #6c757d;
+  font-size: 0.7rem;
+  margin: 0;
+}
+
+.split-row {
+  display: grid;
+  grid-template-columns: 30fr 70fr;
+  gap: 15px;
+  max-height: 380px;
+}
+
+.panel-card,
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  height: 100%;
+  max-height: 380px;
+  padding: 8px;
+}
+
+/* Enhanced Summary Card Styles */
+.enhanced-summary-card .card-body {
+  padding: 1rem;
+}
+
+.summary-content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.summary-item {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.75rem;
+  border-left: 3px solid #0d6efd;
+}
+
+.summary-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.summary-item-row:hover {
+  background-color: #e9ecef;
+}
+
+/* Side by side container for scenario and participants */
+.summary-side-by-side {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.summary-side-by-side .summary-item-row {
+  flex: 1;
+}
+
+/* Action button container */
+.summary-action-container {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: center;
+}
+
+.summary-action-btn {
+  width: 100%;
+  max-width: 300px;
+  font-weight: 500;
+}
+
+.summary-item-icon {
+  font-size: 1.25rem;
+  color: #0d6efd;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.summary-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.summary-item-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-item-value {
+  font-size: 0.95rem;
+  color: #212529;
+  font-weight: 600;
+}
+
+.summary-item-highlight {
+  /* color: #0d6efd; */
+  font-size: 1.1rem;
+}
+
+.summary-id-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  padding-left: 2rem;
+}
+
+.summary-id-label {
+  font-size: 0.7rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.summary-id-value {
+  font-size: 0.75rem;
+  color: #495057;
+  font-weight: 600;
+  background-color: #e9ecef;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+}
+
+.status-badge-success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge-default {
+  background-color: #e2e3e5;
+  color: #383d41;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.card-title {
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.activity-grid {
+  height: 140px;
+  /* width: 100%; */
+}
+
+#recent-activity-grid{
+  height: 250px !important;
+  /* width: 100%; */
+}
+
+.summary-table th {
+  width: 40%;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.summary-table td {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.status-success {
+  color: #198754;
+  font-weight: 600;
+}
+
+.status-failed {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.status-running {
+  color: #0dcaf0;
+  font-weight: 600;
+}
+
+@media (max-width: 1200px) {
+  .cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .split-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* KPI Card Info Icon */
+.kpi-info-icon {
+  font-size: 1.2em;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+/* Chart Containers */
+.duration-graph-container,
+.status-graph-container {
+  height: 300px;
+}
+
+.status-graph-container {
+  height: 270px;
+}
+
+/* Dropdown Filters */
+.filter-dropdown {
+  min-width: 180px;
+}
+
+/* Glossary Modal */
+.glossary-title {
+  margin-bottom: 1rem;
+}
+
+.glossary-term-title {
+  color: #0d6efd;
+}
+
+.glossary-close-button {
+  margin-left: auto;
+}
+
+.dashboard-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.overview-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.overview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+
+/* Filter Section - Right side */
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.refresh-button {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.refresh-button:active {
+  transform: scale(0.95);
+}
+
+.refresh-button i {
+  font-size: 1rem;
+  color: #495057;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  margin: 0;
+}
+
+.last-updated-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.learn-more-button {
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin: 0;
+}
+
+/* Graph Placeholder */
+.graph-placeholder-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+.graph-placeholder {
+  color: #6c757d;
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+  padding: 1rem;
+}
+
+/* Card Content */
+.card-description {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Hidden KPI Divs */
+.hidden-kpi {
+  display: none;
+}
+
+/* Overview Header */
+.overview-header-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.section-subtitle-inline {
+  display: inline;
+}
+
+.overview-info-icon-inline {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Quick Actions Card - Specific centering */
+.quick-actions-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.quick-actions-title {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.quick-actions-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+}
+
+.quick-action-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* Average Duration Graph */
+#avg-duration-graph-container {
+  height: 280px;
+  min-height: 280px;
+  width: 100%;
+  overflow: hidden;
+}

@@ -1,34 +1,72 @@
-"""Main streamlit app."""
+"""Frontend Dash Application."""
 
-import streamlit as st
+from pathlib import Path
 
-from components.sidebar import default_sidebar
+import dash
+import dash_bootstrap_components as dbc
+from dash import Dash, Input, Output, dcc, html
+from flask import Response, send_from_directory
+from loguru import logger
 
-home_page = st.Page('content/home.py', title='Home')
-terrains_page = st.Page('content/terrains.py', title='Terrains')
-simulations_page = st.Page('content/simulations.py', title='Simulations')
-viruses_page = st.Page('content/viruses.py', title='Viruses')
-preventions_page = st.Page('content/preventions.py', title='Preventions')
-scenarios_page = st.Page('content/scenarios.py', title='Scenarios')
-agent_configs_page = st.Page('content/agent_configs.py', title='Agent Configs')
-runs_page = st.Page('content/runs.py', title='Runs')
-importer_page = st.Page('content/importer.py', title='Importer')
-admin_page = st.Page('content/admin.py', title='Admin')
+from components import bottom_nav, footer, header
+from utilities.logs import configure_logger
 
-pg = st.navigation(
-    pages=[
-        home_page,
-        terrains_page,
-        simulations_page,
-        viruses_page,
-        preventions_page,
-        scenarios_page,
-        agent_configs_page,
-        runs_page,
-        importer_page,
-        admin_page,
-    ],
+configure_logger(level='DEBUG')
+
+app = Dash(
+    __name__,
+    use_pages=True,
+    external_stylesheets=[dbc.themes.LUX, dbc.icons.FONT_AWESOME],
+    suppress_callback_exceptions=True,
 )
 
-default_sidebar()
-pg.run()
+# Determine exports directory path
+docker_exports = Path('/data/exports')
+local_exports = Path(__file__).parents[1] / 'backend' / 'data' / 'exports'
+
+if docker_exports.exists():
+    EXPORTS_DIR = docker_exports
+else:
+    EXPORTS_DIR = local_exports
+    EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+logger.info(f'Using exports directory: {EXPORTS_DIR}')
+
+footer = footer.create_footer()
+
+bottom_nav = bottom_nav.create_bottom_nav()
+
+app.layout = html.Div(
+    [
+        dcc.Location(id='url', refresh=False),
+        html.Div(id='header-container'),
+        dash.page_container,
+        footer,
+        bottom_nav,
+    ],
+    className='app-container',
+    style={'minHeight': '100vh', 'backgroundColor': '#f5f5f5'},
+)
+
+
+@app.callback(Output('header-container', 'children'), Input('url', 'pathname'))
+def update_header(pathname: str) -> html.Header:
+    """Update header based on current pathname."""
+    return header.create_header(pathname=pathname or '/')
+
+
+@app.server.route('/exports/<path:filepath>')
+def serve_export(filepath: str) -> tuple[str, int] | Response:
+    """Serve export files from the exports directory."""
+    try:
+        full_path = EXPORTS_DIR / filepath
+        if not full_path.exists():
+            return 'File not found', 404
+        return send_from_directory(EXPORTS_DIR, filepath)
+    except Exception as exc:
+        logger.error(f'Error serving export: {filepath} - {exc}')
+        return 'Internal server error', 500
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8050, debug=True)

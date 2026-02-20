@@ -117,7 +117,7 @@ class SIRModel(BaseModel):
         self._write_outputs(data, outfile)
         logger.debug(f'Simulation data written to {outfile}')
 
-    def _write_outputs(self, data: dict, outfile: Path) -> None:
+    def _write_outputs(self, data: dict, outfile: Path) -> None:  # TODO: Fix array max-length
         """Write simulation data to HDF5 file directly."""
         with tb.open_file(outfile, mode='w') as f:
             filters = tb.Filters(complevel=9, complib='blosc2')

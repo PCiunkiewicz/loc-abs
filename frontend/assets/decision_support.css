@@ -1,0 +1,300 @@
+/* Decision Support Page Styles */
+
+.ds-page-container {
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 150px);
+    padding: 2rem;
+    gap: 1.5rem;
+}
+
+/* ========== Top Section Layout ========== */
+.ds-top-section {
+    display: flex;
+    gap: 1rem;
+    height: 60vh;
+    min-height: 500px;
+}
+
+/* ========== Sidebar Styles ========== */
+.ds-sidebar {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    min-width: 300px;
+}
+
+.ds-right-sidebar {
+    width: 320px;
+    min-width: 320px;
+}
+
+.ds-sidebar-header {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+    font-size: 0.95rem;
+    border-radius: 8px 8px 0 0;
+    letter-spacing: 0.05em;
+}
+
+.ds-sidebar-content {
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+/* ========== Input Groups ========== */
+.ds-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ds-input-label {
+    color: #333333;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.ds-section-title {
+    color: #000000;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 0.5rem;
+}
+
+.ds-details-section {
+    margin-top: 1.5rem;
+}
+
+.ds-details-container {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.ds-detail-row {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #333333;
+}
+
+.ds-detail-row:last-child {
+    margin-bottom: 0;
+}
+
+/* ========== Button Styles ========== */
+.ds-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.ds-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+    border: none;
+}
+
+.ds-btn.btn-primary {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.ds-btn.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.ds-btn.btn-secondary {
+    background-color: #6b7280;
+    color: #ffffff;
+}
+
+.ds-btn.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* ========== Center Section ========== */
+.ds-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ds-main-section {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ds-section-header {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+    font-size: 0.95rem;
+    border-radius: 8px 8px 0 0;
+    letter-spacing: 0.05em;
+}
+
+.ds-visualization-area {
+    flex: 1;
+    background-color: #f8f9fa;
+    position: relative;
+    min-height: 300px;
+    border-radius: 0 0 8px 8px;
+}
+
+.ds-network-graph {
+    width: 100%;
+    height: 100%;
+}
+
+.ds-action-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+}
+
+.ds-action-btn {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    color: #000000;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.ds-action-btn:hover {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.ds-action-btn i {
+    font-size: 0.85rem;
+}
+
+/* ========== Results Area ========== */
+.ds-result-section {
+    flex: 1;
+    min-height: 100px;
+}
+
+.ds-result-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    height: 100%;
+    min-height: 150px;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+/* ========== Bottom Section - Inference ========== */
+.ds-bottom-section {
+    display: flex;
+    gap: 1rem;
+    height: 25vh;
+    min-height: 200px;
+}
+
+.ds-inference-section {
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.ds-inference-header {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+    font-size: 0.95rem;
+    border-radius: 8px 8px 0 0;
+    letter-spacing: 0.05em;
+}
+
+.ds-inference-content {
+    flex: 1;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0 0 8px 8px;
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 1400px) {
+    .ds-sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .ds-right-sidebar {
+        width: 250px;
+        min-width: 250px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .ds-top-section {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .ds-sidebar,
+    .ds-right-sidebar {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+    }
+
+    .ds-bottom-section {
+        flex-direction: column;
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .ds-action-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .ds-action-btn {
+        width: 100%;
+    }
+}
