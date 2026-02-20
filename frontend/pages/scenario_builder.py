@@ -1,12 +1,11 @@
-﻿"""Run Builder Page for LocABS Application."""
+"""Run Builder Page for LocABS Application."""
 
 from dash import register_page
 
-from utilities.logging import configure_logger
+from pages.run_builder import callbacks
+from utilities.logs import configure_logger
 
 # Import layout and callbacks
-from pages.run_builder.layout import layout
-from pages.run_builder import callbacks
 
 # Configure logging
 configure_logger(level='DEBUG')

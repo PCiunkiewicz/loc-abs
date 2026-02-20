@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import sys
 from functools import partialmethod
 from pathlib import Path
-from typing import Literal, TextIO, get_args
+from typing import TYPE_CHECKING, Literal, TextIO, get_args
 
 import loguru
 from loguru import logger
 
-from utilities.types.system import ClosableAndWritable, OpenTextMode, Writable
+if TYPE_CHECKING:
+    from utilities.types.system import ClosableAndWritable, OpenTextMode, Writable
 
 LogLevel = Literal['TRACE', 'DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL', 'PROFILER', 'RELOADER']
 
@@ -63,6 +65,8 @@ LEVEL_COLOR: dict[LogLevel, str] = {
     'CRITICAL': '<RED><bold>',
 }
 
+MAX_PATH_CHARS = 30
+
 
 def configure_logger(level: LogLevel = 'SUCCESS', file: Writable | None = None) -> None:
     """Configure the logger with a specific level."""
@@ -71,16 +75,16 @@ def configure_logger(level: LogLevel = 'SUCCESS', file: Writable | None = None) 
     if file:
         logger.add(file, level=level, format=formatter)
 
-    for level in ['RELOADER', 'PROFILER']:
+    for loglevel in ['RELOADER', 'PROFILER']:
         try:
-            logger.level(level, no=20, color=LEVEL_COLOR[level])
-            setattr(logger.__class__, level.lower(), partialmethod(logger.__class__.log, level))
+            logger.level(loglevel, no=20, color=LEVEL_COLOR[loglevel])
+            setattr(logger.__class__, loglevel.lower(), partialmethod(logger.__class__.log, loglevel))
         except ValueError:
             # If the level already exists, we can just use it
             pass
 
-    for level in get_args(LogLevel):
-        logger.level(level, color=LEVEL_COLOR[level])
+    for loglevel in get_args(LogLevel):
+        logger.level(loglevel, color=LEVEL_COLOR[loglevel])
 
 
 def formatter(record: loguru.Record) -> str:
@@ -90,8 +94,8 @@ def formatter(record: loguru.Record) -> str:
         return HEADER_FORMAT if record['source'] == 'source' else PROFILER_FORMAT
     if record['level'].name == 'RELOADER':
         record.update(json.loads(record['message']))
-        if len(record['path']) > 30:
-            record['path'] = f'..{record["path"][-28:]}'
+        if len(record['path']) > MAX_PATH_CHARS:
+            record['path'] = f'..{record["path"][-(MAX_PATH_CHARS - 2) :]}'
         if record['path']:
             record['path'] = f'file::{record["path"]}'
         return RELOADER_FORMAT
@@ -147,7 +151,12 @@ class TeeWriter:
         """Flush all files."""
         for file in self.files:
             file.flush()
-            try:
+            with contextlib.suppress(AttributeError, OSError):
                 os.fsync(file.fileno())
-            except (AttributeError, OSError):
-                pass
+
+
+class NullWriter:
+    """Null values passed to `write`."""
+
+    def write[**P](self, *_: P.args) -> None:
+        """Do nothing."""

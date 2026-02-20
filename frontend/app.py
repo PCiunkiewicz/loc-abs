@@ -5,11 +5,11 @@ from pathlib import Path
 import dash
 import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, dcc, html
-from flask import send_from_directory
+from flask import Response, send_from_directory
 from loguru import logger
 
 from components import bottom_nav, footer, header
-from utilities.logging import configure_logger
+from utilities.logs import configure_logger
 
 configure_logger(level='DEBUG')
 
@@ -50,13 +50,13 @@ app.layout = html.Div(
 
 
 @app.callback(Output('header-container', 'children'), Input('url', 'pathname'))
-def update_header(pathname):
+def update_header(pathname: str) -> html.Header:
     """Update header based on current pathname."""
     return header.create_header(pathname=pathname or '/')
 
 
 @app.server.route('/exports/<path:filepath>')
-def serve_export(filepath):
+def serve_export(filepath: str) -> tuple[str, int] | Response:
     """Serve export files from the exports directory."""
     try:
         full_path = EXPORTS_DIR / filepath
