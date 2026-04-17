@@ -6,7 +6,7 @@ import traceback
 from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING
 
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from api.simulation import models
 from utilities import paths
@@ -132,14 +132,16 @@ class ConfigImporter:
     ) -> models.BaseModel:
         """Generic helper method to create a model instance."""
         try:
-            instance = model(**data)
-            instance.save()
-            self.info.messages.append(f'Created {model.__name__.capitalize()}(name={instance.name}, id={instance.id})')
-            return instance
+            with transaction.atomic():
+                obj = model(**data)
+                obj.save()
+                self.info.messages.append(f'Created {model.__name__.capitalize()}(name={obj.name}, id={obj.id})')
+                return obj
         except IntegrityError as e:
             if 'already exists' in str(e) and self.exist_ok:
                 self.info.warnings.append(f'{model.__name__.capitalize()}(name={data.get("name")}): {e}')
-                return model.objects.get(name=data.get('name'))
+                with transaction.atomic():
+                    return model.objects.get(name=data.get('name'))
             self.info.summary = str(e)
             self.info.traceback = traceback.format_exc().splitlines()
             raise

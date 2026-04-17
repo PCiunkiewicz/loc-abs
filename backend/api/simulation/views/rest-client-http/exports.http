@@ -1,0 +1,29 @@
+# Title: Exports API
+# Description: API for creating and viewing exports
+@base_url = http://localhost:8000/api/v1
+
+###
+# @name List Exports
+GET {{base_url}}/exports/
+
+###
+# @name Retrieve Export
+GET {{base_url}}/exports/1
+
+###
+# @name Create Export
+POST {{base_url}}/exports/
+content-type: application/json
+
+{
+    "run": 1,
+    "name": "test.gif",
+    "export_type": "ANIMATION",
+    "params": {
+        "run_file": "0.hdf5"
+    },
+}
+
+###
+# @name Download Export
+GET {{base_url}}/exports/1/download/
