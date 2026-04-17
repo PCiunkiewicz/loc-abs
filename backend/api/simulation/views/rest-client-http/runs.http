@@ -21,3 +21,15 @@ content-type: application/json
     "agents": 1,
     "runs": 16
 }
+
+###
+# @name Run Status
+GET {{base_url}}/runs/1/status/
+
+###
+# @name List Run Outputs
+GET {{base_url}}/runs/1/outputs/
+
+###
+# @name List Run Exports
+GET {{base_url}}/runs/1/exports/

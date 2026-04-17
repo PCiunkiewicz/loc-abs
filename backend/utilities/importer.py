@@ -49,7 +49,6 @@ class ConfigImporter:
         self.import_new_prevention()
         self.import_new_scenario()
         self.import_new_agent_config()
-        return self.register_new_run()
 
     def import_new_terrains(self) -> None:
         """Save terrain data to the database."""

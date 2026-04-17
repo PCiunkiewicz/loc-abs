@@ -49,7 +49,8 @@ class SimLauncher:
             raise FileNotFoundError(f'Config file {config} does not exist.')
 
         importer = ConfigImporter(config, exist_ok=exist_ok)
-        run = importer.import_config()
+        importer.import_config()
+        run = importer.register_new_run()
         run.runs = runs
         run.save()
 

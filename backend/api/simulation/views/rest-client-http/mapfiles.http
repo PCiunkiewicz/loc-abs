@@ -1,0 +1,7 @@
+# Title: Runs API
+# Description: API for creating and viewing runs
+@base_url = http://localhost:8000/api/v1
+
+###
+# @name List mapfiles
+GET {{base_url}}/mapfiles/

@@ -6,13 +6,16 @@ from multiprocessing import Process
 from pathlib import Path
 from typing import ClassVar, override
 
+from django.db.models import QuerySet
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.generics import ListAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.simulation.models import Run
-from api.simulation.serializers import NestedRunSerializer, RunSerializer
+from api.simulation.models import Export, Run
+from api.simulation.serializers import ExportSerializer, NestedRunSerializer, RunSerializer
 from simulation.launcher import SimLauncher
 from utilities import paths
 
@@ -53,11 +56,7 @@ class RunViewSet(viewsets.ModelViewSet):
 
     @override
     def partial_update(self, request: Request, pk: int) -> Response:
-        try:
-            run = Run.objects.get(id=pk)
-        except Run.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
+        run = get_object_or_404(Run, pk=pk)
         name = request.data.get('name', run.name)
         response = super().partial_update(request, pk=pk)
 
@@ -80,6 +79,36 @@ class RunViewSet(viewsets.ModelViewSet):
 class CheckRunStatus(APIView):
     """API View to check runs for completion."""
 
-    def get(self, request: Request) -> Response:
+    def get(self, _: Request, pk: int) -> Response:
         """Handle GET request to check run(s) status and update accordingly."""
-        # TODO: implement
+        run = get_object_or_404(Run, pk=pk)
+        outputs = len(list(Path(run.save_dir).iterdir()))
+        progress = round(outputs / run.runs * 100, 2)
+
+        if outputs == run.runs:
+            run.status = Run.Status.SUCCESS
+            run.save()
+
+        result = {'status': run.status, 'outputs': outputs, 'total': run.runs, 'progress': progress}
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class ListRunOutputs(APIView):
+    """API View to list run output files."""
+
+    def get(self, _: Request, pk: int) -> Response:
+        """Handle GET request to list all run output files."""
+        run = get_object_or_404(Run, pk=pk)
+        outputs = [path.name for path in Path(run.save_dir).iterdir()]
+        return Response(outputs, status=status.HTTP_200_OK)
+
+
+class ListRunExports(ListAPIView):
+    """API view to list exports for a specific run."""
+
+    serializer_class = ExportSerializer
+
+    def get_queryset(self) -> QuerySet[Export]:
+        """Get exports queryset filtered by run ID."""
+        run = get_object_or_404(Run, pk=self.kwargs['pk'])
+        return Export.objects.filter(run=run).order_by('-id')

@@ -72,4 +72,4 @@ class SimulationViewSet(viewsets.ModelViewSet):
             else:
                 raise ValidationError({'terrain': 'must provide valid terrain id or data', 'invalid': t})
 
-        return terrain
+        return terrain or Terrain.objects.all()

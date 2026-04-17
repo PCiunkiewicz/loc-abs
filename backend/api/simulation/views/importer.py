@@ -43,6 +43,7 @@ class ImportConfig(APIView):
         try:
             importer = ConfigImporter(config_path, exist_ok)
             importer.import_config()
+            # importer.register_new_run() # TODO: Make sure this is necessary for importing
         except IntegrityError:
             return Response(asdict(importer.info), status=status.HTTP_400_BAD_REQUEST)
         except Exception:

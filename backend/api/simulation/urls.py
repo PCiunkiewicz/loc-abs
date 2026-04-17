@@ -17,7 +17,12 @@ router.register('exports', views.ExportViewSet)
 
 urlpatterns = router.urls
 urlpatterns += [
+    path('admin/resetdb/', views.ResetDB.as_view()),
+    path('exports/<int:pk>/download/', views.DownloadExportFile.as_view()),
     path('importer/configs/', views.ListConfigs.as_view()),
     path('importer/import/', views.ImportConfig.as_view()),
-    path('admin/resetdb/', views.ResetDB.as_view()),
+    path('mapfiles/', views.ListMapfiles.as_view()),
+    path('runs/<int:pk>/exports/', views.ListRunExports.as_view()),
+    path('runs/<int:pk>/outputs/', views.ListRunOutputs.as_view()),
+    path('runs/<int:pk>/status/', views.CheckRunStatus.as_view()),
 ]
