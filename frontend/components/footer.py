@@ -1,7 +1,7 @@
 """Footer component for the Dash app."""
 
-from dash import html
 import dash_bootstrap_components as dbc
+from dash import html
 
 
 def create_footer() -> html.Div:
@@ -10,13 +10,13 @@ def create_footer() -> html.Div:
         dbc.Row(
             dbc.Col(
                 html.P(
-                    '© 2025 LocABS. All rights reserved.',
+                    '© 2026 Biometric Technologies Laboratory. All rights reserved.',
                     className='text-center color-black',
-                    style={'padding': '10px 0', 'font-size': '14px'},
+                    style={'padding': '1rem 0', 'fontSize': '0.8rem'},
                 )
             )
         ),
         fluid=True,
         className='app-footer',
-        style={'backgroundColor': '#f8f9fa', 'marginTop': '40px'},
+        style={'backgroundColor': '#f8f9fa'},
     )

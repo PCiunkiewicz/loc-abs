@@ -2,36 +2,24 @@
 
 import dash_bootstrap_components as dbc
 from dash import html, register_page
-from utilities.logging import configure_logger
 
-configure_logger(level='DEBUG')
-
-register_page(__name__, path='/', name='Home', title='LocABS · Home')
+register_page(__name__, path='/', name='Home', title='Loc-ABS - Home')
 
 
-def create_workflow_step(number, title, description, button_text, button_href):
+def workflow_step(number: int, title: str, description: str, button_text: str, button_href: str) -> dbc.Col:
     """Create a workflow step with numbered circle and navigation button."""
     return dbc.Col(
         html.Div(
             [
                 html.Div(str(number), className='workflow-circle'),
                 html.H5(title, className='workflow-title'),
-                html.P(description, className='workflow-description'),
                 dbc.Button(
                     button_text,
                     href=button_href,
-                    size='sm',
-                    className='mt-2',
-                    style={
-                        'background-color': 'white',
-                        'color': '#000',
-                        'border': 'none',
-                        'padding': '0.4rem 1rem',
-                        'font-size': '12px',
-                        'font-weight': '600',
-                        'border-radius': '4px',
-                    },
+                    className='btn-secondary',
+                    style={'border': 'none', 'borderRadius': '0.25rem', 'width': '12rem'},
                 ),
+                html.P(description, className='workflow-description'),
             ],
             className='workflow-step',
         ),
@@ -43,7 +31,7 @@ def create_workflow_step(number, title, description, button_text, button_href):
     )
 
 
-def create_workflow_visual():
+def workflow_visual() -> html.Div:
     """Create the main workflow visualization section with 5 steps."""
     return html.Div(
         html.Div(
@@ -52,37 +40,30 @@ def create_workflow_visual():
                 html.P('Follow these steps to begin using the application', className='section-subtitle'),
                 dbc.Row(
                     [
-                        create_workflow_step(
+                        workflow_step(
                             1,
-                            'Start with the Dashboard',
-                            'Get an overview of your scenarios, simulations, and key metrics.',
-                            'Go to Dashboard',
-                            '/dashboard',
-                        ),
-                        create_workflow_step(
-                            2,
                             'Build Your Scenario',
-                            'Configure scenarios and participant profiles for your simulations.',
+                            'Configure scenarios and population profiles for your simulations.',
                             'Build Scenario',
                             '/scenario-builder',
                         ),
-                        create_workflow_step(
-                            3,
-                            'Explore Data Visualization',
+                        workflow_step(
+                            2,
+                            'Data Visualization',
                             'Create interactive charts and analyze your simulation data.',
                             'View Data',
                             '/data-viz',
                         ),
-                        create_workflow_step(
-                            4,
-                            'Use Decision Support',
+                        workflow_step(
+                            3,
+                            'Decision Support',
                             'Interact with Bayesian networks and evaluate intervention strategies.',
                             'Explore Tools',
                             '/decision-support',
                         ),
-                        create_workflow_step(
-                            5,
-                            'Generate Info Reports',
+                        workflow_step(
+                            4,
+                            'Generate Reports',
                             'Document your findings and share insights with stakeholders.',
                             'Create Report',
                             '/reports',
@@ -96,28 +77,6 @@ def create_workflow_visual():
     )
 
 
-def create_cta_section():
-    """Create a call-to-action section."""
-    return html.Div(
-        html.Div(
-            [
-                html.H2('Ready to Get Started?', className='cta-title'),
-                html.P(
-                    'Launch the dashboard and start configuring your first simulation. No installation, no setup—just powerful simulation management.',
-                    className='cta-subtitle',
-                ),
-                dbc.Button(
-                    ['Launch Dashboard Now ', html.I(className='fas fa-arrow-right ms-2')],
-                    href='/dashboard',
-                    className='cta-button',
-                ),
-            ],
-            className='cta-content',
-        ),
-        className='cta-section',
-    )
-
-
 layout = html.Div(
     [
         html.Main(
@@ -126,21 +85,20 @@ layout = html.Div(
                     # Hero section
                     html.Div(
                         [
-                            html.H1('WELCOME TO LOCABS', className='hero-title'),
+                            html.H1('Welcome to Loc-ABS', className='hero-title'),
                             html.P(
-                                'The Location-Based Agent Simulation System is a comprehensive platform designed to help researchers, analysts, and policymakers visualize and interact with simulated spatial data for informed decision-making.',
+                                'The Localized Agent-Based Simulation framework is a comprehensive platform designed to help researchers, analysts, and policymakers visualize and interact with simulated spatial data for informed decision-making.',
                                 className='hero-subtitle',
                             ),
                         ],
                         className='hero-section',
                     ),
                     # Workflow visual section
-                    create_workflow_visual(),
+                    workflow_visual(),
                     # Use Cases & Applications section
                     html.Div(
                         [
-                            html.H2('USE CASES & APPLICATIONS', className='section-title'),
-                            # html.P('Real-world scenarios where LocABS excels', className='section-subtitle'),
+                            html.H2('Use Cases and Applications', className='section-title'),
                             dbc.Row(
                                 [
                                     dbc.Col(
@@ -228,9 +186,8 @@ layout = html.Div(
                         ],
                         className='platform-overview-section',
                     ),
-                    # Call to action
-                    create_cta_section(),
                     # Help section
+                    html.H2('Resources', className='section-title'),
                     html.Div(
                         dbc.Row(
                             [
@@ -247,7 +204,7 @@ layout = html.Div(
                                                 dbc.Button(
                                                     'Visit Help Center',
                                                     href='/help',
-                                                    className='platform-card-button',
+                                                    className='platform-card-button btn-secondary',
                                                 ),
                                             ]
                                         ),
@@ -268,7 +225,7 @@ layout = html.Div(
                                                 dbc.Button(
                                                     'Read Docs',
                                                     href='/developers',
-                                                    className='platform-card-button',
+                                                    className='platform-card-button btn-secondary',
                                                 ),
                                             ]
                                         ),
@@ -289,7 +246,7 @@ layout = html.Div(
                                                 dbc.Button(
                                                     'Explore Tools',
                                                     href='/decision-support',
-                                                    className='platform-card-button',
+                                                    className='platform-card-button btn-secondary',
                                                 ),
                                             ]
                                         ),

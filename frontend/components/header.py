@@ -21,26 +21,16 @@ def create_header(pathname: str = '/') -> html.Header:
             dbc.InputGroupText(html.I(className='fa fa-magnifying-glass'), className='bg-grey border-0'),
         ],
         className='rounded-pill',
-        style={'width': '30vw', 'overflow': 'hidden'},
-    )
-
-    brand = dbc.NavbarBrand(
-        'LocABS',
-        href='/',
-        style={'font-weight': 'bold', 'font-size': '24px', 'color': 'white'},
+        style={'width': '20vw', 'overflow': 'hidden'},
     )
 
     nav_bar = html.Nav(
         dbc.Navbar(
             [
-                brand,
-                dbc.NavItem(
-                    dbc.NavLink(
-                        'Dashboard',
-                        href='/dashboard',
-                        active=pathname == '/dashboard',
-                        className='nav-link-active' if pathname == '/dashboard' else 'nav-link-inactive',
-                    )
+                dbc.NavbarBrand(
+                    'Loc-ABS',
+                    href='/',
+                    style={'fontWeight': 'bold', 'fontSize': '3rem', 'color': '#6d192a'},
                 ),
                 dbc.NavItem(
                     dbc.NavLink(
@@ -95,10 +85,9 @@ def create_header(pathname: str = '/') -> html.Header:
                 ),
                 search_bar,
             ],
-            color='black',
-            className='navbar d-flex justify-content-evenly align-items-center font-weight-bold text-white',
+            className='navbar d-flex justify-content-evenly align-items-center font-weight-bold',
             style={
-                'padding': '20px 10px',
+                'padding': '1rem 0.5rem',
             },
         )
     )

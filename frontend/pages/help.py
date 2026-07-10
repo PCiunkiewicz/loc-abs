@@ -1,91 +1,34 @@
-"""Help Page for LocABS Application."""
+"""Help Page for Loc-ABS Application."""
 
-from dash import html, register_page, callback, Input, Output, State
-import dash_bootstrap_components as dbc
+from dash import html, register_page
 
-register_page(__name__, path='/help', name='Help', title='LocABS · Help')
+from components.faq import FAQSection
+
+register_page(__name__, path='/help', name='Help', title='Loc-ABS - Help')
 
 # FAQ Data Structure
 FAQ_DATA = {
-    'Getting Started': [
-        {
-            'question': 'How do I create my first simulation?',
-            'answer': 'To create your first simulation, navigate to the Run Builder page. Start by selecting or creating a scenario in Step 1, then configure your participants in Step 2. Finally, review and launch your simulation in Step 3.',
-        },
-        {
-            'question': 'What are the system requirements?',
-            'answer': 'LocABS runs in a web browser and requires Docker for deployment. Recommended browsers include Chrome, Firefox, or Edge. For optimal performance, use a system with at least 8GB RAM.',
-        },
-        {
-            'question': 'How do I access my simulation results?',
-            'answer': 'Navigate to the Dashboard page to view all completed simulations. Click on any simulation to view detailed results, or use the Data Visualization page for advanced analytics.',
-        },
-    ],
-    'Scenario Configuration': [
-        {
-            'question': 'What is a scenario?',
-            'answer': 'A scenario represents a unique test condition that includes outbreak settings, protective measures, and simulation parameters. Each scenario can be reused across multiple simulation runs.',
-        },
-        {
-            'question': 'How do I configure prevention measures?',
-            'answer': 'In the Scenario Builder, navigate to the Protective Measures tab. Here you can configure masks, vaccines, social distancing policies, and other prevention strategies.',
-        },
-        {
-            'question': 'Can I clone existing scenarios?',
-            'answer': 'Yes! When viewing a scenario in the dropdown, click the "Clone" button to create a copy that you can modify without affecting the original.',
-        },
-    ],
-    'Participant Configuration': [
-        {
-            'question': 'What are participant profiles?',
-            'answer': 'Participant profiles define how individuals behave in the simulation, including movement patterns, social interactions, and compliance with protective measures.',
-        },
-        {
-            'question': 'How many participants can I configure?',
-            'answer': 'You can configure up to 20 different participant profiles, each representing a unique behavior pattern within your facility.',
-        },
-        {
-            'question': 'What is the difference between population and profiles?',
-            'answer': 'Population refers to the total number of individuals in the simulation, while profiles define the behavior categories. Multiple individuals can share the same profile.',
-        },
-    ],
-    'Results & Analysis': [
-        {
-            'question': 'How do I interpret simulation results?',
-            'answer': 'The Dashboard provides key metrics including infection rates, duration, and status. Use the Data Visualization page for detailed charts and graphs showing transmission patterns over time.',
-        },
-        {
-            'question': 'Can I export my results?',
-            'answer': 'Yes! Navigate to the Data Visualization page and use the export functionality to download your simulation results in various formats.',
-        },
-        {
-            'question': 'How long are results stored?',
-            'answer': 'Simulation results are stored permanently in the database unless manually deleted. You can access historical runs at any time through the Dashboard.',
-        },
-    ],
+    'Getting Started': {
+        'How do I create my first simulation?': 'To create your first simulation, navigate to the Run Builder page. Start by selecting or creating a scenario in Step 1, then configure your population in Step 2. Finally, review and launch your simulation in Step 3.',
+        'What are the system requirements?': 'Loc-ABS runs in a web browser and requires Docker for deployment. Recommended browsers include Chrome, Firefox, or Edge. For optimal performance, use a system with at least 8GB RAM.',
+        'How do I access my simulation results?': 'Navigate to the Dashboard page to view all completed simulations. Click on any simulation to view detailed results, or use the Data Visualization page for advanced analytics.',
+    },
+    'Scenario Configuration': {
+        'What is a scenario?': 'A scenario represents a unique test condition that includes outbreak settings, protective measures, and simulation parameters. Each scenario can be reused across multiple simulation runs.',
+        'How do I configure prevention measures?': 'In the Scenario Builder, navigate to the Protective Measures tab. Here you can configure masks, vaccines, social distancing policies, and other prevention strategies.',
+        'Can I clone existing scenarios?': 'Yes! When viewing a scenario in the dropdown, click the "Clone" button to create a copy that you can modify without affecting the original.',
+    },
+    'Population Configuration': {
+        'What are population profiles?': 'Population profiles define how individuals behave in the simulation, including movement patterns, social interactions, and compliance with protective measures.',
+        'How many populations can I configure?': 'You can configure unlimited distinct population profiles, each representing a unique behavior pattern within your facility.',
+        'What is the difference between population and profiles?': 'Population refers to the total number of individuals in the simulation, while profiles define the behavior categories. Multiple individuals can share the same profile.',
+    },
+    'Results & Analysis': {
+        'How do I interpret simulation results?': 'The Dashboard provides key metrics including infection rates, duration, and status. Use the Data Visualization page for detailed charts and graphs showing transmission patterns over time.',
+        'Can I export my results?': 'Yes! Navigate to the Data Visualization page and use the export functionality to download your simulation results in various formats.',
+        'How long are results stored?': 'Simulation results are stored permanently in the database unless manually deleted. You can access historical runs at any time through the Dashboard.',
+    },
 }
-
-
-def create_faq_accordion(topic, faqs, topic_id):
-    """Create an accordion component for FAQ items."""
-    accordion_items = []
-
-    for idx, faq in enumerate(faqs):
-        accordion_items.append(
-            dbc.AccordionItem(
-                html.P(faq['answer'], className='help-faq-answer'),
-                title=faq['question'],
-                item_id=f'{topic_id}-{idx}',
-            )
-        )
-
-    return dbc.Accordion(
-        accordion_items,
-        id=f'accordion-{topic_id}',
-        start_collapsed=True,
-        always_open=True,
-        className='help-accordion',
-    )
 
 
 layout = html.Div(
@@ -96,22 +39,22 @@ layout = html.Div(
                 html.Button(
                     [html.I(className='fa fa-rocket me-2'), 'GETTING STARTED'],
                     id='help-getting-started-btn',
-                    className='btn btn-outline-dark help-action-btn',
+                    className='btn help-action-btn',
                 ),
                 html.Button(
                     [html.I(className='fa fa-wrench me-2'), 'SCENARIO BUILDER'],
                     id='help-scenario-builder-btn',
-                    className='btn btn-outline-dark help-action-btn',
+                    className='btn help-action-btn',
                 ),
                 html.Button(
                     [html.I(className='fa fa-book me-2'), 'GLOSSARY TERMS'],
                     id='help-glossary-btn',
-                    className='btn btn-outline-dark help-action-btn',
+                    className='btn help-action-btn',
                 ),
                 html.Button(
                     [html.I(className='fa fa-headset me-2'), 'CONTACT SUPPORT'],
                     id='help-contact-btn',
-                    className='btn btn-outline-dark help-action-btn',
+                    className='btn help-action-btn',
                 ),
             ],
             className='help-action-buttons',
@@ -130,13 +73,13 @@ layout = html.Div(
                                 html.I(className='fa fa-play-circle help-video-icon'),
                                 html.H5('Getting Started Tutorial', className='help-video-title'),
                                 html.P(
-                                    'Learn the basics of LocABS in this comprehensive walkthrough. '
-                                    'This 10-minute tutorial covers scenario creation, participant configuration, and running your first simulation.',
+                                    'Learn the basics of Loc-ABS in this comprehensive walkthrough. '
+                                    'This 10-minute tutorial covers scenario creation, population configuration, and running your first simulation.',
                                     className='help-video-description',
                                 ),
                                 html.Button(
                                     [html.I(className='fa fa-play me-2'), 'Watch Tutorial'],
-                                    className='btn btn-dark help-video-btn',
+                                    className='btn-secondary help-video-btn',
                                 ),
                             ],
                             className='help-video-card',
@@ -152,7 +95,7 @@ layout = html.Div(
                                 ),
                                 html.Button(
                                     [html.I(className='fa fa-play me-2'), 'Watch Guide'],
-                                    className='btn btn-dark help-video-btn',
+                                    className='btn-secondary help-video-btn',
                                 ),
                             ],
                             className='help-video-card',
@@ -168,7 +111,7 @@ layout = html.Div(
                                 ),
                                 html.Button(
                                     [html.I(className='fa fa-play me-2'), 'Watch Tips'],
-                                    className='btn btn-dark help-video-btn',
+                                    className='btn-secondary help-video-btn',
                                 ),
                             ],
                             className='help-video-card',
@@ -182,122 +125,23 @@ layout = html.Div(
         # FAQ Section
         html.Div(
             [
-                # Top Row - Getting Started & Scenario Configuration
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                html.Div(
-                                    'FAQ: GETTING STARTED',
-                                    className='help-section-header',
-                                ),
-                                html.Div(
-                                    create_faq_accordion(
-                                        'Getting Started', FAQ_DATA['Getting Started'], 'getting-started'
-                                    ),
-                                    className='help-section-content',
-                                ),
-                            ],
-                            className='help-faq-section',
-                        ),
-                        html.Div(
-                            [
-                                html.Div(
-                                    'FAQ: SCENARIO CONFIGURATION',
-                                    className='help-section-header',
-                                ),
-                                html.Div(
-                                    create_faq_accordion(
-                                        'Scenario Configuration', FAQ_DATA['Scenario Configuration'], 'scenario-config'
-                                    ),
-                                    className='help-section-content',
-                                ),
-                            ],
-                            className='help-faq-section',
-                        ),
+                        FAQSection('Getting Started', FAQ_DATA['Getting Started']),
+                        FAQSection('Scenario Configuration', FAQ_DATA['Scenario Configuration']),
                     ],
                     className='help-faq-row',
                 ),
-                # Bottom Row - Participant Configuration & Results
                 html.Div(
                     [
-                        html.Div(
-                            [
-                                html.Div(
-                                    'FAQ: PARTICIPANT CONFIGURATION',
-                                    className='help-section-header',
-                                ),
-                                html.Div(
-                                    create_faq_accordion(
-                                        'Participant Configuration',
-                                        FAQ_DATA['Participant Configuration'],
-                                        'participant-config',
-                                    ),
-                                    className='help-section-content',
-                                ),
-                            ],
-                            className='help-faq-section',
-                        ),
-                        html.Div(
-                            [
-                                html.Div(
-                                    'FAQ: RESULTS & ANALYSIS',
-                                    className='help-section-header',
-                                ),
-                                html.Div(
-                                    create_faq_accordion(
-                                        'Results & Analysis', FAQ_DATA['Results & Analysis'], 'results-analysis'
-                                    ),
-                                    className='help-section-content',
-                                ),
-                            ],
-                            className='help-faq-section',
-                        ),
+                        FAQSection('Population Configuration', FAQ_DATA['Population Configuration']),
+                        FAQSection('Results & Analysis', FAQ_DATA['Results & Analysis']),
                     ],
                     className='help-faq-row',
                 ),
             ],
             className='help-faq-container',
         ),
-        # Modals for action buttons
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle('Contact Support')),
-                dbc.ModalBody(
-                    [
-                        html.P('Need help? Our support team is here to assist you.'),
-                        html.Hr(),
-                        html.Div(
-                            [
-                                html.P([html.Strong('Email: '), 'support@locabs.com']),
-                                html.P(
-                                    [html.Strong('Documentation: '), html.A('View Docs', href='#', target='_blank')]
-                                ),
-                                html.P(
-                                    [html.Strong('GitHub Issues: '), html.A('Report a Bug', href='#', target='_blank')]
-                                ),
-                            ]
-                        ),
-                    ]
-                ),
-                dbc.ModalFooter(dbc.Button('Close', id='close-contact-modal', className='btn btn-secondary')),
-            ],
-            id='contact-support-modal',
-            is_open=False,
-            centered=True,
-        ),
     ],
     className='help-page-container',
 )
-
-
-# Callbacks
-@callback(
-    Output('contact-support-modal', 'is_open'),
-    [Input('help-contact-btn', 'n_clicks'), Input('close-contact-modal', 'n_clicks')],
-    [State('contact-support-modal', 'is_open')],
-    prevent_initial_call=True,
-)
-def toggle_contact_modal(n1, n2, is_open):
-    """Toggle contact support modal."""
-    return not is_open

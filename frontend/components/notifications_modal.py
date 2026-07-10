@@ -1,10 +1,10 @@
-"""Notification Modal Component for LocABS Application - WCAG 2.2 Accessible."""
+"""Notification Modal Component for Loc-ABS Application - WCAG 2.2 Accessible."""
 
 import dash_bootstrap_components as dbc
 from dash import html
 
 
-def create_notification_modal(_message='', is_error=False, is_open=False):
+def create_notification_modal(_message: str = '', is_error: bool = False, is_open: bool = False) -> dbc.Modal:
     """Create an accessible notification modal component.
 
     Args:

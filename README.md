@@ -1,4 +1,4 @@
-# Localized Epidemiological Agent-Based Simulation (LocABS)
+# Localized Epidemiological Agent-Based Simulation (Loc-ABS)
 
 [![DOI:10.1016/j.compbiomed.2022.105396](http://img.shields.io/badge/DOI-10.1016/j.compbiomed.2022.105396-027397.svg)](https://doi.org/10.1016/j.compbiomed.2022.105396)
 [![Python >=3.13](https://img.shields.io/badge/python-%3E%3D3.13-blue.svg)](https://www.python.org/downloads/)
