@@ -3,7 +3,6 @@
 .help-page-container {
     display: flex;
     flex-direction: column;
-    background-color: #f9f9f9;
     min-height: calc(100vh - 150px);
     padding: 2rem;
     gap: 2rem;
@@ -16,7 +15,6 @@
     align-items: center;
     gap: 2.5rem;
     padding: 2rem;
-    background-color: #000000;
     border-radius: 8px;
     flex-wrap: wrap;
 }
@@ -27,27 +25,19 @@
     font-size: 0.9rem;
     letter-spacing: 0.05em;
     border-radius: 6px;
-    border: 2px solid #000000;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #f5c56a;
+    color: #6d192a;
     transition: all 0.2s ease;
 }
 
 .help-action-btn:hover {
-    background-color: #000000;
+    background-color: #6d192a;
     color: #ffffff;
-    border-color: #ffffff;
+    border-color: #f5c56a;
 }
 
 .help-action-btn i {
     font-size: 1rem;
-}
-
-/* ========== FAQ Container ========== */
-.help-faq-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
 }
 
 /* ========== Video Demo Section ========== */
@@ -60,7 +50,7 @@
 }
 
 .help-video-header {
-    background-color: #000000;
+    background-color: #6d192a;
     color: #ffffff;
     text-align: center;
     padding: 1rem;
@@ -95,20 +85,20 @@
 
 .help-video-icon {
     font-size: 3rem;
-    color: #000000;
+    color: #6d192a;
     margin-bottom: 1rem;
 }
 
 .help-video-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: bold;
-    color: #000000;
+    color: black;
     margin-bottom: 0.75rem;
 }
 
 .help-video-description {
-    font-size: 0.9rem;
-    color: #555555;
+    font-size: 1rem;
+    color: black;
     line-height: 1.6;
     margin-bottom: 1.5rem;
     flex: 1;
@@ -117,13 +107,20 @@
 .help-video-btn {
     padding: 0.6rem 1.5rem;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
     border-radius: 6px;
-    width: 100%;
+    width: 12rem;
 }
 
 .help-video-btn:hover {
     background-color: #333333;
+}
+
+/* ========== FAQ Container ========== */
+.help-faq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .help-faq-row {
@@ -143,12 +140,12 @@
 }
 
 .help-section-header {
-    background-color: #000000;
+    background-color: #6d192a;
     color: #ffffff;
     text-align: center;
     padding: 1rem;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 1rem;
     letter-spacing: 0.05em;
 }
 
@@ -174,17 +171,14 @@
 }
 
 .help-accordion .accordion-button {
-    background-color: #f8f9fa;
-    color: #333333;
+    color: black;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
     padding: 1rem 1.25rem;
     border: none;
 }
 
 .help-accordion .accordion-button:not(.collapsed) {
-    background-color: #000000;
-    color: #ffffff;
     box-shadow: none;
 }
 
@@ -207,50 +201,10 @@
 }
 
 .help-faq-answer {
-    color: #555555;
-    font-size: 0.9rem;
+    color: black;
+    font-size: 1rem;
     line-height: 1.6;
     margin: 0;
-}
-
-/* ========== Modal Styles ========== */
-#contact-support-modal .modal-content {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-}
-
-#contact-support-modal .modal-header {
-    background-color: #000000;
-    color: #ffffff;
-    border-radius: 12px 12px 0 0;
-    border-bottom: none;
-}
-
-#contact-support-modal .modal-title {
-    font-weight: bold;
-    font-size: 1.25rem;
-    color: #ffffff;
-}
-
-#contact-support-modal .modal-body {
-    padding: 2rem;
-    font-size: 0.95rem;
-}
-
-#contact-support-modal .modal-body a {
-    color: #000000;
-    font-weight: 600;
-    text-decoration: underline;
-}
-
-#contact-support-modal .modal-body a:hover {
-    color: #333333;
-}
-
-#contact-support-modal .modal-footer {
-    border-top: 1px solid #e0e0e0;
-    padding: 1rem 1.5rem;
 }
 
 /* ========== Responsive Design ========== */

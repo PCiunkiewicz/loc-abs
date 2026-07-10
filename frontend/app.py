@@ -8,7 +8,7 @@ from dash import Dash, Input, Output, dcc, html
 from flask import Response, send_from_directory
 from loguru import logger
 
-from components import bottom_nav, footer, header
+from components import footer, header
 from utilities.logs import configure_logger
 
 configure_logger(level='DEBUG')
@@ -34,15 +34,12 @@ logger.info(f'Using exports directory: {EXPORTS_DIR}')
 
 footer = footer.create_footer()
 
-bottom_nav = bottom_nav.create_bottom_nav()
-
 app.layout = html.Div(
     [
         dcc.Location(id='url', refresh=False),
         html.Div(id='header-container'),
         dash.page_container,
         footer,
-        bottom_nav,
     ],
     className='app-container',
     style={'minHeight': '100vh', 'backgroundColor': '#f5f5f5'},

@@ -1,15 +1,5 @@
 /* Styles for Run Builder page */
 
-/* ========== Color Picker Settings ========== */
-#terrain-color-input .chrome-picker {
-    border-radius: 0% !important;
-    border: 1px solid #000000 !important;
-}
-
-.chrome-picker {
-    width: 200px !important;
-}
-
 /* ========== Page Containers ========== */
 .page-container {
     display: flex;
@@ -571,8 +561,8 @@
 }
 
 .dash-tab--selected {
-    color: #1976d2;
-    border-bottom: 2px solid #1976d2;
+    color: #6d192a;
+    border-bottom: 2px solid #6d192a;
 }
 
 #scenario-tab-content, #agent-config-tab-content {
@@ -622,7 +612,7 @@
 .action-modal h5, .action-modal h4 {
     margin-bottom: 1rem;
     font-weight: bold;
-    color: #1976d2;
+    color: #6d192a;
 }
 
 .action-modal p {
@@ -717,7 +707,7 @@ resource-form-container{
 }
 
 #main-tabs .nav-link.active {
-    border-bottom: 3px solid #3b82f6;
+    border-bottom: 3px solid #6d192a;
 }
 
 /* Single Row Button Layout */
@@ -848,11 +838,11 @@ resource-form-container{
     padding: 1rem;
     background-color: #f8f9fa;
     border-radius: 8px;
-    border-left: 4px solid #0d6efd;
+    border-left: 4px solid #6d192a;
 }
 
 .how-to-step-number {
-    background-color: #0d6efd;
+    background-color: #6d192a;
     color: white;
     width: 36px;
     height: 36px;
