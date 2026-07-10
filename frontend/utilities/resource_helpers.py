@@ -8,23 +8,19 @@ from dash import html
 from loguru import logger
 
 from utilities import api
-from utilities.messages import get_user_friendly_message as get_message
-
-# Re-export the centralized message function
-get_user_friendly_message = get_message
 
 
-def friendly_name(resource: str, res_id: Any) -> str:
+def friendly_name(resource: str, obj_id: Any) -> str:
     """Resolve a readable name for a related resource id."""
-    if not res_id:
+    if not obj_id:
         return 'Not set'
     try:
-        success, obj, _ = api.get_by_id(resource, res_id)
+        success, obj, _ = api.API[resource].get_by_id(obj_id)
         if success and obj:
-            return obj.get('name') or str(res_id)
+            return obj.get('name') or str(obj_id)
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error fetching %s %s: %s', resource, res_id, exc)
-    return str(res_id)
+        logger.exception('Error fetching %s %s: %s', resource, obj_id, exc)
+    return str(obj_id)
 
 
 def _format_dict_items(data: dict[str, Any]) -> list[html.Li]:
@@ -124,10 +120,10 @@ def build_rows(resource_type: str, item: dict[str, Any]) -> Iterable[tuple[str, 
     return [(k.title().replace('_', ' '), v) for k, v in item.items() if k != 'id']
 
 
-def render_summary(resource_type: str, item: dict[str, Any]):
+def render_summary(resource_type: str, item: dict[str, Any]) -> list[html.Div]:
     """Render a readable summary block for a resource item."""
     if not item:
-        return html.Div()
+        return [html.Div()]
 
     rows = build_rows(resource_type, item)
 
@@ -162,12 +158,12 @@ def render_summary(resource_type: str, item: dict[str, Any]):
         'Vaccines': 'Immunization types and dose schedules',
         'Random Agents': 'Total number of people in the facility',
         'Random Infected': 'People who start with the infection',
-        'Mask Type': 'Default face covering for participants',
-        'Vax Type': 'Default vaccine type for participants',
+        'Mask Type': 'Default face covering for individuals',
+        'Vax Type': 'Default vaccine type for individuals',
         'Vax Doses': 'Number of vaccine doses received',
         'Access Level': 'Clearance level for restricted areas',
         'Urgency': 'Movement urgency factor (higher = faster)',
-        'Custom Profiles': 'Individually configured participant types',
+        'Custom Profiles': 'Specifically configured individuals',
         'Mapfile': 'Floor plan or facility map reference',
         'XY Scale': 'Real-world distance conversion factor',
         'Time Step (s)': 'How often the simulation updates',
@@ -182,17 +178,7 @@ def render_summary(resource_type: str, item: dict[str, Any]):
         icon_class = icon_map.get(label, 'fa-circle-info')
         description = description_map.get(label, '')
 
-        if isinstance(val, dict):
-            val_display = html.Pre(
-                json.dumps(val, indent=2),
-                style={
-                    'fontSize': '0.875rem',
-                    'backgroundColor': '#f8fafc',
-                    'padding': '0.5rem',
-                    'borderRadius': '4px',
-                },
-            )
-        elif isinstance(val, list) and all(isinstance(x, str | int | float) for x in val):
+        if isinstance(val, dict) or (isinstance(val, list) and all(isinstance(x, str | int | float) for x in val)):
             val_display = html.Pre(
                 json.dumps(val, indent=2),
                 style={
@@ -216,7 +202,7 @@ def render_summary(resource_type: str, item: dict[str, Any]):
                     [
                         html.I(
                             className=f'fa {icon_class}',
-                            style={'color': '#3b82f6', 'fontSize': '1.1rem', 'marginRight': '0.75rem'},
+                            style={'color': '#6d192a', 'fontSize': '1.1rem', 'marginRight': '0.75rem'},
                         ),
                         html.Span(
                             f'{label}',

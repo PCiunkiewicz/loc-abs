@@ -1,9 +1,9 @@
-"""Input Components for LocABS Application."""
+"""Input Components for Loc-ABS Application."""
 
-from dash import html, dcc, callback, Input, Output, MATCH
+from dash import MATCH, Input, Output, callback, dcc, html
 
 
-def create_mask_input(mask_type, label, is_disabled, default_value):
+def create_mask_input(mask_type: str, label: str, is_disabled: bool, default_value: float) -> html.Div:
     """Create a mask input component with label and slider.
 
     Args:
@@ -45,7 +45,7 @@ def create_mask_input(mask_type, label, is_disabled, default_value):
     )
 
 
-def create_vaccine_type(vaccine_type, label, is_disabled, default_doses):
+def create_vaccine_type(vaccine_type: str, label: str, is_disabled: bool, default_doses: list[float]) -> html.Div:
     """Create a vaccine input component.
 
     Args:
@@ -131,7 +131,7 @@ def create_vaccine_type(vaccine_type, label, is_disabled, default_doses):
     Output({'type': 'mask-slider-container', 'mask': MATCH}, 'style'),
     Input({'type': 'mask-checkbox', 'mask': MATCH}, 'value'),
 )
-def toggle_slider_visibility(checkbox_value):
+def toggle_slider_visibility(checkbox_value: str) -> dict[str, str]:
     """Show slider only when checkbox is checked."""
     is_checked = len(checkbox_value) > 0
     return {'display': 'block' if is_checked else 'none'}
@@ -141,7 +141,7 @@ def toggle_slider_visibility(checkbox_value):
     Output({'type': 'vaccine-doses-container', 'vaccine': MATCH}, 'style'),
     Input({'type': 'vaccine-checkbox', 'vaccine': MATCH}, 'value'),
 )
-def toggle_vaccine_doses_visibility(checkbox_value):
+def toggle_vaccine_doses_visibility(checkbox_value: str) -> dict[str, str]:
     """Show vaccine dose inputs only when checkbox is checked."""
     is_checked = len(checkbox_value) > 0
     return {'display': 'block' if is_checked else 'none'}

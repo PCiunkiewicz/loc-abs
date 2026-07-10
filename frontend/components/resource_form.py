@@ -1,10 +1,13 @@
-"""Resource Form Component for LocABS Application."""
+"""Resource Form Component for Loc-ABS Application."""
 
-from dash import html, dcc
+from dash import dcc, html
+
 from components.tooltip import create_tooltip
 
 
-def render_resource_form(resource_type, fields, values=None, readonly=True):
+def render_resource_form(
+    resource_type: str, fields: list, values: dict | None = None, readonly: bool = True
+) -> html.Div:
     """Render a resource form with given fields and values.
 
     Args:
@@ -25,10 +28,7 @@ def render_resource_form(resource_type, fields, values=None, readonly=True):
             continue
 
         field_id = field.get('id')
-        if isinstance(field_id, dict):
-            field_key = field_id.get('field')
-        else:
-            field_key = field_id  # simple id (rare)
+        field_key = field_id.get('field') if isinstance(field_id, dict) else field_id
 
         field_value = values.get(field_key, None)
 

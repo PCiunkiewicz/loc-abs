@@ -1,9 +1,9 @@
-"""Normalization utilities for the LocABS frontend."""
+"""Normalization utilities for the Loc-ABS frontend."""
 
 from pathlib import Path
 
 
-def normalize_values(resource, values):
+def normalize_values(resource: str, values: dict) -> dict:
     """Normalize values for specific resources before rendering forms.
 
     Args:
@@ -29,7 +29,7 @@ def normalize_values(resource, values):
     return dict(values)
 
 
-def _normalize_prevention(values):
+def _normalize_prevention(values: dict) -> dict:
     """Normalize prevention resource values."""
     normalized = dict(values)
     mask = values.get('mask', {})
@@ -49,21 +49,9 @@ def _normalize_prevention(values):
     return normalized
 
 
-def _normalize_simulation(values):
+def _normalize_simulation(values: dict) -> dict:
     """Normalize simulation resource values."""
     normalized = dict(values)
-
-    # Normalize terrain
-    terrain = values.get('terrain')
-    if isinstance(terrain, list):
-        normalized['terrain'] = []
-        for t in terrain:
-            tid = t['id'] if isinstance(t, dict) else t
-            try:
-                tid = int(tid)
-            except (ValueError, TypeError):
-                pass
-            normalized['terrain'].append(tid)
 
     # Normalize mapfile
     mapfile = values.get('mapfile')
@@ -77,7 +65,7 @@ def _normalize_simulation(values):
     return normalized
 
 
-def _normalize_mapfile_path(mapfile):
+def _normalize_mapfile_path(mapfile: str) -> str:
     """Normalize mapfile path to relative format."""
     p = Path(mapfile)
     parts = p.parts
@@ -87,7 +75,7 @@ def _normalize_mapfile_path(mapfile):
     return p.as_posix()
 
 
-def _normalize_scenario(values):
+def _normalize_scenario(values: dict) -> dict:
     """Normalize scenario resource values."""
     normalized = dict(values)
 

@@ -1,20 +1,20 @@
-"""Reports Page for LocABS Application."""
+"""Reports Page for Loc-ABS Application."""
 
-from dash import html, register_page
 import dash_bootstrap_components as dbc
+from dash import html, register_page
 
-register_page(__name__, path='/reports', name='Reports', title='LocABS · Reports')
+register_page(__name__, path='/reports', name='Reports', title='Loc-ABS - Reports')
 
 layout = html.Div(
     [
         html.Div(
             [
                 html.I(
-                    className='fa fa-file-alt', style={'fontSize': '4rem', 'color': '#000000', 'marginBottom': '1rem'}
+                    className='fa fa-file-alt', style={'fontSize': '4rem', 'color': '#6d192a', 'marginBottom': '1rem'}
                 ),
                 html.H1(
                     'Reports',
-                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'},
+                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#6d192a', 'marginBottom': '1rem'},
                 ),
                 html.P(
                     'Generate comprehensive reports and analytics from your simulation data.',
@@ -23,7 +23,7 @@ layout = html.Div(
                 dbc.Alert(
                     [
                         html.I(className='fa fa-info-circle me-2'),
-                        'This page is under development. Report generation features will be available soon.',
+                        'This page is under development.',
                     ],
                     color='info',
                     className='d-flex align-items-center',

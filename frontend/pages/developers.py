@@ -1,18 +1,18 @@
-"""Developers Page for LocABS Application."""
+"""Developers Page for Loc-ABS Application."""
 
-from dash import html, register_page
 import dash_bootstrap_components as dbc
+from dash import html, register_page
 
-register_page(__name__, path='/developers', name='Developers', title='LocABS · Developers')
+register_page(__name__, path='/developers', name='Developers', title='Loc-ABS - Developers')
 
 layout = html.Div(
     [
         html.Div(
             [
-                html.I(className='fa fa-code', style={'fontSize': '4rem', 'color': '#000000', 'marginBottom': '1rem'}),
+                html.I(className='fa fa-code', style={'fontSize': '4rem', 'color': '#6d192a', 'marginBottom': '1rem'}),
                 html.H1(
                     'Developers',
-                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#000000', 'marginBottom': '1rem'},
+                    style={'fontSize': '2.5rem', 'fontWeight': 'bold', 'color': '#6d192a', 'marginBottom': '1rem'},
                 ),
                 html.P(
                     'API documentation, integration guides, and developer resources.',
@@ -21,7 +21,7 @@ layout = html.Div(
                 dbc.Alert(
                     [
                         html.I(className='fa fa-info-circle me-2'),
-                        'This page is under development. Developer documentation will be available soon.',
+                        'Developer documentation will be available soon.',
                     ],
                     color='info',
                     className='d-flex align-items-center',

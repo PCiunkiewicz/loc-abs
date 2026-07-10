@@ -1,4 +1,4 @@
-"""Input validation utilities for the LocABS frontend."""
+"""Input validation utilities for the Loc-ABS frontend."""
 
 import re
 

@@ -1,5 +1,9 @@
 """Centralized user-facing messages, labels, and tooltips for accessibility and consistency."""
 
+from typing import Any
+
+from utilities.types.api import Action, Resource, Result
+
 # Field labels and tooltips (WCAG 2.2 - user-friendly terminology)
 TERM_MAP = {
     'range': {
@@ -13,10 +17,6 @@ TERM_MAP = {
     'mapfile': {
         'label': 'Map (Visual Layout)',
         'tooltip': 'The spatial layout file that defines walkable areas and rooms.',
-    },
-    'terrain': {
-        'label': 'Terrain Types',
-        'tooltip': 'Types of terrain that control walkable areas, rooms, and restricted zones.',
     },
     'vaccine': {
         'label': 'Vaccine Configuration',
@@ -37,7 +37,7 @@ TERM_MAP = {
 }
 
 # Resource-friendly names
-RESOURCE_LABELS = {
+RESOURCE_LABELS: dict[Resource, str] = {
     'scenario': 'Scenario',
     'simulation': 'Simulation Configuration',
     'virus': 'Virus Parameters',
@@ -46,7 +46,7 @@ RESOURCE_LABELS = {
 }
 
 # Action messages for notifications
-ACTION_MESSAGES = {
+ACTION_MESSAGES: dict[Action, dict[Result, str]] = {
     'create': {
         'success': 'Successfully created {resource}.',
         'error': 'Failed to create {resource}. {detail}',
@@ -77,16 +77,7 @@ ERROR_TRANSLATIONS = {
 }
 
 
-def yes_no(value):
-    """Convert boolean to accessible Yes/No label."""
-    if value is True or value == 'true' or value == 'True':
-        return 'Yes'
-    if value is False or value == 'false' or value == 'False':
-        return 'No'
-    return str(value) if value else 'No'
-
-
-def get_user_friendly_message(resource, action, success, error=None):
+def get_user_friendly_message(resource: Resource, action: Action, success: bool, error: Any = None) -> str:
     """Generate user-friendly message for notifications.
 
     Args:
@@ -117,15 +108,3 @@ def get_user_friendly_message(resource, action, success, error=None):
 
     template = ACTION_MESSAGES.get(action, {}).get('error', '{resource} action failed.')
     return template.format(resource=resource_label, detail=detail)
-
-
-# Delete confirmation messages
-DELETE_CONFIRM_TITLE = 'Confirm Deletion'
-DELETE_CONFIRM_TEMPLATE = (
-    'Are you sure you want to delete the {resource_type} "{resource_name}"? This action cannot be undone.'
-)
-
-# Homepage content
-HOMEPAGE_TITLE = 'LocABS — Location-Based Agent Simulation'
-HOMEPAGE_SUBTITLE = 'Configure, run, and visualize agent-based simulations for infectious disease modeling.'
-

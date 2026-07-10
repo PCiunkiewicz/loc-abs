@@ -1,13 +1,16 @@
 """Payload builder for API requests."""
 
 import copy
+
+from pages.run_builder.config import AGENT_LOCKED_FIELDS
 from utilities import api
+from utilities.types.api import Resource
 
 
-def build_payload(resource, form_data, original=None, extras=None):
+def build_payload(
+    resource: Resource, form_data: dict, original: dict | None = None, extras: dict | None = None
+) -> dict:
     """Build API payload from form data with resource-specific transformations."""
-    from pages.run_builder.config import AGENT_LOCKED_FIELDS
-
     data = dict(form_data)
     extras = extras or {}
 
@@ -19,27 +22,14 @@ def build_payload(resource, form_data, original=None, extras=None):
     elif resource == 'prevention':
         data['mask'] = extras.get('mask', {})
         data['vax'] = extras.get('vax', {})
-        for key in list(data.keys()):
-            if key.startswith('mask_') or key.startswith('vaccine_'):
+        for key in data:
+            if key.startswith(('mask_', 'vaccine_')):
                 data.pop(key, None)
 
     elif resource == 'simulation':
-        # Auto-populate terrain with all available terrain IDs
-        if 'terrain' not in data or not data.get('terrain'):
-            success_terrain, terrains, _ = api.get_all('terrain')
-            if success_terrain and terrains:
-                data['terrain'] = [t['id'] for t in terrains]
-            else:
-                data['terrain'] = []
-        else:
-            # Process existing terrain data
-            terrain = data.get('terrain')
-            if isinstance(terrain, list):
-                data['terrain'] = [t['id'] if isinstance(t, dict) else t for t in terrain]
-
         # Auto-populate mapfile with first available mapfile
-        if 'mapfile' not in data or not data.get('mapfile'):
-            success_mapfile, mapfiles, _ = api.get_map_files()
+        if 'mapfile' not in data:
+            success_mapfile, mapfiles, _ = api.MAPFILES.get_all()
             if success_mapfile and mapfiles:
                 data['mapfile'] = mapfiles[0]  # Use first available mapfile
             else:
@@ -52,11 +42,7 @@ def build_payload(resource, form_data, original=None, extras=None):
 
         # Convert save_verbose to boolean if it's a string
         save_verbose = data.get('save_verbose')
-        if save_verbose == 'true':
-            data['save_verbose'] = True
-        elif save_verbose == 'false':
-            data['save_verbose'] = False
-        elif save_verbose is None or save_verbose == '':
-            data['save_verbose'] = False  # Default to False if not provided
+        if not isinstance(save_verbose, bool):
+            data['save_verbose'] = save_verbose == 'true'
 
     return data
