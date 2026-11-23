@@ -1,35 +1,39 @@
 """Callbacks for Run Builder page."""
 
 import copy
+from typing import Any, Literal
 
 from dash import ALL, Input, Output, State, callback, ctx, html, no_update
+from dash._no_update import NoUpdate
 from dash.exceptions import PreventUpdate
 from loguru import logger
 
 from components.resource_form import render_resource_form
 from pages.run_builder.config import (
+    AGENT_CONFIG_FIELDS,
+    PREVENTION_FIELDS,
     RESOURCES,
-    SCENARIO_CHILD_RESOURCES,
-    agentconfig_fields,
-    prevention_fields,
-    scenario_fields,
-    simulation_fields,
-    virus_fields,
+    SCENARIO_FIELDS,
+    SCENARIO_RESOURCES,
+    SIMULATION_FIELDS,
+    VIRUS_FIELDS,
 )
 from pages.run_builder.layout import render_summary_view
 from utilities import api
+from utilities.messages import get_user_friendly_message
 from utilities.normalizers import normalize_values
 from utilities.payload_builder import build_payload
-from utilities.resource_helpers import get_user_friendly_message
+from utilities.types.api import Resource
 
 
 @callback(
     Output('scenario-builder-how-to-modal', 'is_open'),
-    [Input('scenario-builder-how-to-btn', 'n_clicks'), Input('scenario-builder-how-to-close', 'n_clicks')],
-    [State('scenario-builder-how-to-modal', 'is_open')],
+    State('scenario-builder-how-to-modal', 'is_open'),
+    Input('scenario-builder-how-to-btn', 'n_clicks'),
+    Input('scenario-builder-how-to-close', 'n_clicks'),
     prevent_initial_call=True,
 )
-def toggle_how_to_modal(_n1, _n2, is_open):
+def toggle_how_to_modal(is_open: bool, *_: Any) -> bool:
     """Toggle how-to modal."""
     return not is_open
 
@@ -42,7 +46,7 @@ def toggle_how_to_modal(_n1, _n2, is_open):
     ],
     State('scenario-agent-completion-store', 'data'),
 )
-def track_scenario_agent_completion(scenario_value, agent_value, completion_data):
+def track_scenario_agent_completion(scenario_value: Any, agent_value: Any, completion_data: Any) -> dict:
     """Track when both scenario and agent config are selected or created."""
     completion_data = completion_data or {'scenario_ready': False, 'agent_ready': False}
 
@@ -61,7 +65,7 @@ def track_scenario_agent_completion(scenario_value, agent_value, completion_data
     State('scenario-agent-completion-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def show_completion_modal(completion_data, _keep_editing_clicks, is_open):
+def show_completion_modal(completion_data: dict, _keep_editing_clicks: Any, is_open: bool) -> bool:
     """Show modal when both scenario and agent are ready."""
     triggered_id = ctx.triggered_id
 
@@ -70,14 +74,12 @@ def show_completion_modal(completion_data, _keep_editing_clicks, is_open):
         return False
 
     # Open modal if both are ready and modal is not already open
-    if completion_data and completion_data.get('scenario_ready') and completion_data.get('agent_ready'):
-        if not is_open:
-            return True
-
+    if completion_data and completion_data.get('scenario_ready') and completion_data.get('agent_ready') and not is_open:
+        return True
     return is_open
 
 
-def extract_resource_id(value):
+def extract_resource_id(value: dict | str | None) -> str | None:
     """Return an id from either a raw value or mapping."""
     if isinstance(value, dict):
         return value.get('id') or value.get('value') or value.get('name')
@@ -94,7 +96,9 @@ def extract_resource_id(value):
     State({'type': 'form-mode', 'resource': 'scenario'}, 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def sync_child_dropdowns_from_scenario(scenario_data, scenario_mode):
+def sync_child_dropdowns_from_scenario(
+    scenario_data: dict, scenario_mode: dict
+) -> tuple[str | None, str | None, str | None]:
     """Keep child dropdown selections in sync with the selected scenario only when editing."""
     if not scenario_data:
         return None, None, None
@@ -117,41 +121,37 @@ def sync_child_dropdowns_from_scenario(scenario_data, scenario_mode):
 
 @callback(
     [
-        *[Output({'type': 'form-mode', 'resource': r}, 'data', allow_duplicate=True) for r in SCENARIO_CHILD_RESOURCES],
-        *[
-            Output({'type': 'original-data', 'resource': r}, 'data', allow_duplicate=True)
-            for r in SCENARIO_CHILD_RESOURCES
-        ],
-        *[
-            Output({'type': 'resource-store', 'resource': r}, 'data', allow_duplicate=True)
-            for r in SCENARIO_CHILD_RESOURCES
-        ],
-        *[Output({'type': 'dropdown', 'resource': r}, 'value', allow_duplicate=True) for r in SCENARIO_CHILD_RESOURCES],
+        *[Output({'type': 'form-mode', 'resource': r}, 'data', allow_duplicate=True) for r in SCENARIO_RESOURCES],
+        *[Output({'type': 'original-data', 'resource': r}, 'data', allow_duplicate=True) for r in SCENARIO_RESOURCES],
+        *[Output({'type': 'resource-store', 'resource': r}, 'data', allow_duplicate=True) for r in SCENARIO_RESOURCES],
+        *[Output({'type': 'dropdown', 'resource': r}, 'value', allow_duplicate=True) for r in SCENARIO_RESOURCES],
     ],
     Input({'type': 'form-mode', 'resource': 'scenario'}, 'data'),
     prevent_initial_call='initial_duplicate',
 )
-def reset_children_when_scenario_resets(scenario_mode):
+def reset_children_when_scenario_resets(
+    scenario_mode: dict,
+) -> tuple[dict[str, str | None] | None, ...] | tuple[NoUpdate, ...]:
     """Return child sections to idle/blank when scenario is idle, in summary mode, or creating new."""
     if not scenario_mode:
-        form_modes = [{'mode': 'idle', 'resource_id': None} for _ in SCENARIO_CHILD_RESOURCES]
-        originals = [None for _ in SCENARIO_CHILD_RESOURCES]
-        stores = [None for _ in SCENARIO_CHILD_RESOURCES]
-        dropdowns = [None for _ in SCENARIO_CHILD_RESOURCES]
+        form_modes = [{'mode': 'idle', 'resource_id': None} for _ in SCENARIO_RESOURCES]
+        originals = [None for _ in SCENARIO_RESOURCES]
+        stores = [None for _ in SCENARIO_RESOURCES]
+        dropdowns = [None for _ in SCENARIO_RESOURCES]
         return tuple(form_modes + originals + stores + dropdowns)
 
     mode = scenario_mode.get('mode')
     editing = scenario_mode.get('editing', False)
 
     # Keep children idle unless we're actively editing a scenario
-    if mode == 'idle' or mode == 'summary' or (mode == 'edit' and not editing):
-        form_modes = [{'mode': 'idle', 'resource_id': None} for _ in SCENARIO_CHILD_RESOURCES]
-        originals = [None for _ in SCENARIO_CHILD_RESOURCES]
-        stores = [None for _ in SCENARIO_CHILD_RESOURCES]
-        dropdowns = [None for _ in SCENARIO_CHILD_RESOURCES]
+    if mode in {'idle', 'summary'} or (mode == 'edit' and not editing):
+        form_modes = [{'mode': 'idle', 'resource_id': None} for _ in SCENARIO_RESOURCES]
+        originals = [None for _ in SCENARIO_RESOURCES]
+        stores = [None for _ in SCENARIO_RESOURCES]
+        dropdowns = [None for _ in SCENARIO_RESOURCES]
         return tuple(form_modes + originals + stores + dropdowns)
 
-    return (no_update,) * (len(SCENARIO_CHILD_RESOURCES) * 4)
+    return (no_update,) * (len(SCENARIO_RESOURCES) * 4)
 
 
 @callback(
@@ -161,7 +161,7 @@ def reset_children_when_scenario_resets(scenario_mode):
     Input({'type': 'dropdown', 'resource': 'scenario'}, 'value'),
     prevent_initial_call=False,
 )
-def toggle_child_tabs(scenario_mode, _scenario_selected):
+def toggle_child_tabs(scenario_mode: dict, _: Any) -> tuple[dict[str, str], dict[str, str]]:
     """Show child config tabs (and scenario save/cancel) only when creating/editing a scenario."""
     data = scenario_mode or {}
     mode = data.get('mode', 'idle')
@@ -171,7 +171,7 @@ def toggle_child_tabs(scenario_mode, _scenario_selected):
     return {'display': 'none'}, {'display': 'none'}
 
 
-def register_form_renderer(resource_type, fields):
+def register_form_renderer(resource_type: Resource, fields: list) -> None:
     """Register a form rendering callback for a resource."""
 
     @callback(
@@ -182,7 +182,7 @@ def register_form_renderer(resource_type, fields):
         ],
         prevent_initial_call=False,
     )
-    def render_form(mode_data, values_data):
+    def render_form(mode_data: dict, values_data: dict) -> html.Div:
         mode = (mode_data or {}).get('mode', 'idle')
         clean = normalize_values(resource_type, values_data)
 
@@ -259,22 +259,22 @@ def register_form_renderer(resource_type, fields):
 @callback(
     [Output({'type': 'dropdown', 'resource': ALL}, 'options')], [Input({'type': 'dropdown', 'resource': ALL}, 'id')]
 )
-def populate_dropdowns(dropdown_ids):
+def populate_dropdowns(dropdown_ids: dict) -> list[list[list[dict[str, Any]]]]:
     """Populate all dropdowns from API."""
     return [
         [
             [{'label': r['name'], 'value': r['id']} for r in resources]
-            if (success := api.get_all(d['resource']))[0] and (resources := success[1])
+            if (success := api.API[d['resource']].get_all())[0] and (resources := success[1])
             else []
             for d in dropdown_ids
         ]
     ]
 
 
-def register_modal_loader(resource):
+def register_modal_loader(resource: Resource) -> None:  # noqa: C901
     """Load a resource from dropdown selection and show summary inline."""
     # Child resources need to check scenario mode
-    if resource in SCENARIO_CHILD_RESOURCES:
+    if resource in SCENARIO_RESOURCES:
 
         @callback(
             Output({'type': 'resource-store', 'resource': resource}, 'data', allow_duplicate=True),
@@ -285,7 +285,9 @@ def register_modal_loader(resource):
             State({'type': 'form-mode', 'resource': resource}, 'data'),
             prevent_initial_call=True,
         )
-        def _load_selection(selected_id, scenario_mode, current_mode):
+        def _load_selection(
+            selected_id: int | None, scenario_mode: dict, current_mode: dict
+        ) -> tuple[int | None, dict | None, dict | None]:
             # If dropdown cleared but we're in edit mode (creating new), don't reset
             if not selected_id:
                 if current_mode and current_mode.get('mode') == 'edit':
@@ -300,7 +302,7 @@ def register_modal_loader(resource):
             if mode != 'edit' or not editing:
                 raise PreventUpdate
 
-            success, item, _ = api.get_by_id(resource, selected_id)
+            success, item, _ = api.API[resource].get_by_id(selected_id)
             if not success:
                 raise PreventUpdate
 
@@ -316,7 +318,7 @@ def register_modal_loader(resource):
             State({'type': 'form-mode', 'resource': resource}, 'data'),
             prevent_initial_call=True,
         )
-        def _load_selection(selected_id, current_mode):
+        def _load_selection(selected_id: int | None, current_mode: dict) -> tuple[int | None, dict | None, dict | None]:
             # If dropdown cleared but we're in edit mode (creating new), don't reset
             if not selected_id:
                 if current_mode and current_mode.get('mode') == 'edit':
@@ -326,7 +328,7 @@ def register_modal_loader(resource):
                     mode_payload['editing'] = False
                 return None, None, mode_payload
 
-            success, item, _ = api.get_by_id(resource, selected_id)
+            success, item, _ = api.API[resource].get_by_id(selected_id)
             if not success:
                 raise PreventUpdate
 
@@ -337,7 +339,7 @@ def register_modal_loader(resource):
             return selected_id, item, mode_payload
 
 
-def register_create(resource):
+def register_create(resource: Resource) -> None:
     """Register a create callback for a resource."""
 
     @callback(
@@ -348,7 +350,7 @@ def register_create(resource):
         Input({'type': 'create-btn', 'resource': resource}, 'n_clicks'),
         prevent_initial_call=True,
     )
-    def _create(_n):
+    def _create(_: Any) -> tuple[dict, dict, None, None]:
         mode_payload = {'mode': 'edit', 'resource_id': None}
         if resource == 'scenario':
             mode_payload['editing'] = True  # Show child tabs when creating new scenario
@@ -356,7 +358,7 @@ def register_create(resource):
         return mode_payload, {}, None, None
 
 
-def register_edit_clone(resource):
+def register_edit_clone(resource: Resource) -> None:
     """Register an edit and clone callback for a resource."""
 
     @callback(
@@ -368,7 +370,7 @@ def register_edit_clone(resource):
         State({'type': 'resource-store', 'resource': resource}, 'data'),
         prevent_initial_call=True,
     )
-    def _edit_clone(_edit, _clone, stored_id):
+    def _edit_clone(_edit: Any, _clone: Any, stored_id: int) -> tuple[Any, dict, int]:
         # Prevent firing when buttons are first rendered (n_clicks is None)
         if not _edit and not _clone:
             raise PreventUpdate
@@ -377,7 +379,7 @@ def register_edit_clone(resource):
             raise PreventUpdate
 
         is_clone = ctx.triggered_id['type'] == 'clone-btn'
-        success, item, _ = api.get_by_id(resource, stored_id)
+        success, item, _ = api.API[resource].get_by_id(stored_id)
 
         if not success:
             raise PreventUpdate
@@ -395,7 +397,7 @@ def register_edit_clone(resource):
         return item, mode_payload, stored_id
 
 
-def register_delete(resource):
+def register_delete(resource: Resource) -> None:
     """Register a delete callback for a resource - shows confirmation modal."""
 
     @callback(
@@ -408,7 +410,7 @@ def register_delete(resource):
         State({'type': 'original-data', 'resource': resource}, 'data'),
         prevent_initial_call=True,
     )
-    def _show_delete_confirmation(n, stored_id, item_data):
+    def _show_delete_confirmation(n: int, stored_id: int, item_data: dict) -> tuple[Literal[True], str, Resource, int]:
         if not n or not stored_id:
             raise PreventUpdate
 
@@ -428,7 +430,7 @@ def register_delete(resource):
         return True, message, resource, stored_id
 
 
-def register_confirm(resource):
+def register_confirm(resource: Resource) -> None:
     """Register a confirm/select callback for a resource selection."""
 
     @callback(
@@ -439,14 +441,14 @@ def register_confirm(resource):
         State({'type': 'resource-store', 'resource': resource}, 'data'),
         prevent_initial_call=True,
     )
-    def _confirm(n, stored_id):
+    def _confirm(n: int, stored_id: int) -> tuple[int, str, Literal['success']]:
         if not n:
             raise PreventUpdate
         message = get_user_friendly_message(resource, 'select', True)
         return stored_id, message, 'success'
 
 
-def register_cancel(resource):
+def register_cancel(resource: Resource) -> None:
     """Register a cancel callback for a resource form."""
 
     @callback(
@@ -457,14 +459,14 @@ def register_cancel(resource):
         Input(f'{resource}-cancel-btn-bottom', 'n_clicks'),
         prevent_initial_call=True,
     )
-    def _cancel(n):
+    def _cancel(n: int) -> tuple[dict, None, None, None]:
         if not n:
             raise PreventUpdate
         # Return to initial state with no selection
         return {'mode': 'idle', 'resource_id': None}, None, None, None
 
 
-def register_save(resource):
+def register_save(resource: Resource) -> None:  # noqa: C901
     """Register a save callback for a resource."""
     extra_states = []
     if resource == 'prevention':
@@ -501,10 +503,12 @@ def register_save(resource):
         *extra_states,
         prevent_initial_call=True,
     )
-    def _save(n, values, ids, mode, original, *extras):
+    def _save(
+        n: int, values: list[Any], ids: list[int], mode: dict, original: dict, *extras: list[Any]
+    ) -> tuple[dict, int, list[dict], int, Any, str, Literal['success']]:
         if not n:
             raise PreventUpdate
-        form_data = {input_id['field']: value for input_id, value in zip(ids, values)}
+        form_data = {input_id['field']: value for input_id, value in zip(ids, values, strict=False)}
 
         extras_map = {}
         if resource == 'prevention' and extras:
@@ -521,27 +525,27 @@ def register_save(resource):
 
             selected_masks = {
                 chk_id.get('mask')
-                for chk_id, chk_val in zip(mask_check_ids, mask_checks)
+                for chk_id, chk_val in zip(mask_check_ids, mask_checks, strict=False)
                 if chk_val and chk_id.get('mask') in chk_val
             }
             mask_payload = {
                 m_id.get('mask'): (float(m_val) if m_id.get('mask') in selected_masks else 0.0)
-                for m_id, m_val in zip(mask_ids, mask_values)
+                for m_id, m_val in zip(mask_ids, mask_values, strict=False)
                 if isinstance(m_id, dict)
             }
 
             selected_vax = {
                 chk_id.get('vaccine')
-                for chk_id, chk_val in zip(vaccine_check_ids, vaccine_checks)
+                for chk_id, chk_val in zip(vaccine_check_ids, vaccine_checks, strict=False)
                 if chk_val and chk_id.get('vaccine') in chk_val
             }
             vax_payload = {}
-            for v_id, v_val in zip(vaccine_dose_ids, vaccine_dose_values):
+            for v_id, v_val in zip(vaccine_dose_ids, vaccine_dose_values, strict=False):
                 if not isinstance(v_id, dict):
                     continue
                 v_type, dose_idx = v_id.get('vaccine'), (v_id.get('dose') or 1) - 1
                 doses = vax_payload.setdefault(v_type, [0.0, 0.0, 0.0])
-                if v_type and 0 <= dose_idx < 3:
+                if v_type:
                     doses[dose_idx] = float(v_val) if v_type in selected_vax else 0.0
 
             for v_type in selected_vax:
@@ -563,9 +567,9 @@ def register_save(resource):
         rid = mode.get('resource_id')
 
         if rid:
-            success, item, err = api.update(resource, rid, payload)
+            success, item, err = api.API[resource].update(rid, payload)
         else:
-            success, item, err = api.create(resource, payload)
+            success, item, err = api.API[resource].create(payload)
 
         action = 'update' if rid else 'create'
 
@@ -576,7 +580,7 @@ def register_save(resource):
         new_id = item['id']
         message = get_user_friendly_message(resource, action, True)
 
-        success_all, resources, _ = api.get_all(resource)
+        success_all, resources, _ = api.API[resource].get_all()
         opts = [{'label': r['name'], 'value': r['id']} for r in resources] if success_all and resources else []
 
         return {'mode': 'summary', 'resource_id': new_id}, new_id, opts, new_id, item, message, 'success'
@@ -598,7 +602,7 @@ def register_save(resource):
     State({'type': 'dropdown', 'resource': ALL}, 'id'),
     prevent_initial_call=True,
 )
-def handle_delete_confirmation(_confirm_clicks, _cancel_clicks, pending_resource, pending_id, dropdown_ids):
+def handle_delete_confirmation(*, pending_resource: dict, pending_id: dict, dropdown_ids: list[dict]) -> tuple:
     """Handle the actual delete after confirmation or cancel."""
     if not ctx.triggered_id:
         raise PreventUpdate
@@ -607,7 +611,7 @@ def handle_delete_confirmation(_confirm_clicks, _cancel_clicks, pending_resource
         return False, *[no_update] * (len(dropdown_ids) * 5 + 2)
 
     if ctx.triggered_id == 'confirm-delete-btn' and pending_resource and pending_id:
-        success, _, err = api.delete(pending_resource, pending_id)
+        success, _, err = api.API[pending_resource].delete(pending_id)
 
         message = get_user_friendly_message(pending_resource, 'delete', success, err)
         notification_type = 'success' if success else 'error'
@@ -623,7 +627,7 @@ def handle_delete_confirmation(_confirm_clicks, _cancel_clicks, pending_resource
             res = dropdown_id['resource']
             if res == pending_resource and success:
                 # Update the deleted resource's dropdown
-                success_all, resources, _ = api.get_all(res)
+                success_all, resources, _ = api.API[res].get_all()
                 opts = [{'label': r['name'], 'value': r['id']} for r in resources] if success_all and resources else []
 
                 dropdown_values.append(None)
@@ -668,7 +672,7 @@ def handle_delete_confirmation(_confirm_clicks, _cancel_clicks, pending_resource
     State('notification-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_notification_modal(message, notification_type, _close_clicks, _is_open):
+def toggle_notification_modal(message: str, notification_type: str, _close_clicks: Any, _is_open: bool) -> tuple:
     """Open/close notification modal with appropriate message and styling."""
     triggered_id = ctx.triggered_id
 
@@ -687,36 +691,36 @@ def toggle_notification_modal(message, notification_type, _close_clicks, _is_ope
 
 @callback(
     Output('scenario-learn-more-modal', 'is_open'),
+    State('scenario-learn-more-modal', 'is_open'),
     Input('scenario-learn-more-btn', 'n_clicks'),
     Input('close-scenario-learn-more', 'n_clicks'),
-    State('scenario-learn-more-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_scenario_learn_more(_open_clicks, _close_clicks, is_open):
+def toggle_scenario_learn_more(is_open: bool, *_: Any) -> bool:
     """Toggle scenario learn more modal."""
     return not is_open
 
 
 @callback(
     Output('agent-config-learn-more-modal', 'is_open'),
+    State('agent-config-learn-more-modal', 'is_open'),
     Input('agent-config-learn-more-btn', 'n_clicks'),
     Input('close-agent-config-learn-more', 'n_clicks'),
-    State('agent-config-learn-more-modal', 'is_open'),
     prevent_initial_call=True,
 )
-def toggle_agent_config_learn_more(_open_clicks, _close_clicks, is_open):
+def toggle_agent_config_learn_more(is_open: bool, *_: Any) -> bool:
     """Toggle agent config learn more modal."""
     return not is_open
 
 
-def register_all_callbacks():
+def register_all_callbacks() -> None:
     """Register all callbacks for resources."""
     # Register form renderers
-    register_form_renderer('agent_config', agentconfig_fields)
-    register_form_renderer('virus', virus_fields)
-    register_form_renderer('prevention', prevention_fields)
-    register_form_renderer('simulation', simulation_fields)
-    register_form_renderer('scenario', scenario_fields)
+    register_form_renderer('agent_config', AGENT_CONFIG_FIELDS)
+    register_form_renderer('virus', VIRUS_FIELDS)
+    register_form_renderer('prevention', PREVENTION_FIELDS)
+    register_form_renderer('simulation', SIMULATION_FIELDS)
+    register_form_renderer('scenario', SCENARIO_FIELDS)
 
     # Register CRUD callbacks for all resources
     for res in RESOURCES:

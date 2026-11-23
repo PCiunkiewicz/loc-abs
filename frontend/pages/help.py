@@ -14,12 +14,12 @@ FAQ_DATA = {
         'How do I access my simulation results?': 'Navigate to the Dashboard page to view all completed simulations. Click on any simulation to view detailed results, or use the Data Visualization page for advanced analytics.',
     },
     'Scenario Configuration': {
-        'What is a scenario?': 'A scenario represents a unique test condition that includes outbreak settings, protective measures, and simulation parameters. Each scenario can be reused across multiple simulation runs.',
-        'How do I configure prevention measures?': 'In the Scenario Builder, navigate to the Protective Measures tab. Here you can configure masks, vaccines, social distancing policies, and other prevention strategies.',
+        'What is a scenario?': 'A scenario represents a unique test condition that includes outbreak settings, preventative measures, and simulation parameters. Each scenario can be reused across multiple simulation runs.',
+        'How do I configure prevention measures?': 'In the Scenario Builder, navigate to the Preventative Measures tab. Here you can configure masks, vaccines, social distancing policies, and other prevention strategies.',
         'Can I clone existing scenarios?': 'Yes! When viewing a scenario in the dropdown, click the "Clone" button to create a copy that you can modify without affecting the original.',
     },
     'Population Configuration': {
-        'What are population profiles?': 'Population profiles define how individuals behave in the simulation, including movement patterns, social interactions, and compliance with protective measures.',
+        'What are population profiles?': 'Population profiles define how individuals behave in the simulation, including movement patterns, social interactions, and compliance with preventative measures.',
         'How many populations can I configure?': 'You can configure unlimited distinct population profiles, each representing a unique behavior pattern within your facility.',
         'What is the difference between population and profiles?': 'Population refers to the total number of individuals in the simulation, while profiles define the behavior categories. Multiple individuals can share the same profile.',
     },

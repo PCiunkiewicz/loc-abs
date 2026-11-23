@@ -3,15 +3,10 @@
 from dash import register_page
 
 from pages.run_builder import callbacks
-from utilities.logs import configure_logger
-
-# Import layout and callbacks
-
-# Configure logging
-configure_logger(level='DEBUG')
+from pages.run_builder.layout import layout  # noqa
 
 # Register page
-register_page(__name__, path='/scenario-builder', name='Run Builder', title='LocABS  Run Builder')
+register_page(__name__, path='/scenario-builder', name='Run Builder', title='Loc-ABS  Run Builder')
 
 # Register all callbacks
 callbacks.register_all_callbacks()

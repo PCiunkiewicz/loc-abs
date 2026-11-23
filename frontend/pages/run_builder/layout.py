@@ -1,17 +1,18 @@
 """Layout components for Run Builder page."""
 
 import json
+from typing import Any
+
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from components.notifications_modal import create_notification_modal
 from components.tooltip import create_tooltip
+from pages.run_builder.config import RESOURCES
 from utilities.resource_helpers import render_summary
 
-from pages.run_builder.config import RESOURCES
 
-
-def render_summary_view(resource_type, item):
+def render_summary_view(resource_type: str, item: dict[str, Any]) -> html.Div:
     """Render a readable summary block for a resource item."""
     if not item:
         return html.Div(
@@ -42,7 +43,7 @@ def render_summary_view(resource_type, item):
                             [
                                 html.H5(
                                     [
-                                        html.I(className='fa fa-info-circle me-2', style={'color': '#3b82f6'}),
+                                        html.I(className='fa fa-info-circle me-2', style={'color': '#6d192a'}),
                                         'Summary',
                                     ],
                                     style={'marginBottom': '0', 'fontSize': '1.1rem', 'fontWeight': '600'},
@@ -72,7 +73,7 @@ def render_summary_view(resource_type, item):
                                             html.I(className='fa fa-chevron-right me-2', style={'fontSize': '0.75rem'}),
                                             'View Full Details',
                                         ],
-                                        style={'cursor': 'pointer', 'color': '#3b82f6', 'fontWeight': '500'},
+                                        style={'cursor': 'pointer', 'color': '#6d192a', 'fontWeight': '500'},
                                     ),
                                     dbc.Card(
                                         dbc.CardBody(
@@ -105,7 +106,7 @@ def render_summary_view(resource_type, item):
     )
 
 
-def create_resource_tab(resource_type, label=None):
+def create_resource_tab(resource_type: str, label: str | None = None) -> dbc.Tab:
     """Create a tab with dropdown, create button, and editable form area."""
     label = label or resource_type.replace('_', ' ').title()
     return dbc.Tab(
@@ -152,7 +153,7 @@ def create_resource_tab(resource_type, label=None):
     )
 
 
-def create_stores_for_resource(resource_type):
+def create_stores_for_resource(resource_type: str) -> html.Div:
     """Create all stores needed for a resource."""
     return html.Div(
         [
@@ -163,7 +164,7 @@ def create_stores_for_resource(resource_type):
     )
 
 
-def create_delete_confirmation_modal():
+def create_delete_confirmation_modal() -> dbc.Modal:
     """Create the delete confirmation modal."""
     return dbc.Modal(
         [
@@ -215,14 +216,14 @@ def create_delete_confirmation_modal():
     )
 
 
-def create_scenario_learn_more_modal():
+def create_scenario_learn_more_modal() -> dbc.Modal:
     """Create the scenario learn more modal."""
     return dbc.Modal(
         [
             dbc.ModalHeader(
                 html.Div(
                     [
-                        html.I(className='fa fa-circle-info me-2', style={'color': '#3b82f6'}),
+                        html.I(className='fa fa-circle-info me-2', style={'color': '#6d192a'}),
                         'Scenario Settings Guide',
                     ],
                     style={'fontSize': '1.4rem', 'fontWeight': '600'},
@@ -233,7 +234,7 @@ def create_scenario_learn_more_modal():
                 [
                     html.Div(
                         [
-                            html.H5('Outbreak Settings', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Outbreak Settings', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
@@ -274,7 +275,7 @@ def create_scenario_learn_more_modal():
                                 ],
                                 style={'lineHeight': '1.8', 'marginBottom': '1.5rem'},
                             ),
-                            html.H5('Protective Measures', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Preventative Measures', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
@@ -303,7 +304,7 @@ def create_scenario_learn_more_modal():
                                         [
                                             'Vaccination Rate: ',
                                             html.Span(
-                                                'Percentage of participants who are vaccinated',
+                                                'Percentage of population who are vaccinated',
                                                 style={'color': '#64748b'},
                                             ),
                                         ]
@@ -311,7 +312,7 @@ def create_scenario_learn_more_modal():
                                 ],
                                 style={'lineHeight': '1.8', 'marginBottom': '1.5rem'},
                             ),
-                            html.H5('Simulation Settings', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Simulation Settings', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
@@ -366,15 +367,15 @@ def create_scenario_learn_more_modal():
     )
 
 
-def create_agent_config_learn_more_modal():
+def create_agent_config_learn_more_modal() -> dbc.Modal:
     """Create the agent config learn more modal."""
     return dbc.Modal(
         [
             dbc.ModalHeader(
                 html.Div(
                     [
-                        html.I(className='fa fa-circle-info me-2', style={'color': '#3b82f6'}),
-                        'Participant Settings Guide',
+                        html.I(className='fa fa-circle-info me-2', style={'color': '#6d192a'}),
+                        'Population Settings Guide',
                     ],
                     style={'fontSize': '1.4rem', 'fontWeight': '600'},
                 ),
@@ -384,12 +385,12 @@ def create_agent_config_learn_more_modal():
                 [
                     html.Div(
                         [
-                            html.H5('Basic Configuration', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Basic Configuration', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
                                         [
-                                            'Number of Participants: ',
+                                            'Number of Individuals: ',
                                             html.Span('Total people in the facility', style={'color': '#64748b'}),
                                         ]
                                     ),
@@ -410,13 +411,13 @@ def create_agent_config_learn_more_modal():
                                 ],
                                 style={'lineHeight': '1.8', 'marginBottom': '1.5rem'},
                             ),
-                            html.H5('Movement & Behavior', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Movement & Behavior', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
                                         [
                                             'Movement Speed: ',
-                                            html.Span('How fast participants move around', style={'color': '#64748b'}),
+                                            html.Span('How fast individuals move around', style={'color': '#64748b'}),
                                         ]
                                     ),
                                     html.Li(
@@ -443,7 +444,7 @@ def create_agent_config_learn_more_modal():
                                 ],
                                 style={'lineHeight': '1.8', 'marginBottom': '1.5rem'},
                             ),
-                            html.H5('Compliance Settings', style={'color': '#3b82f6', 'marginBottom': '0.75rem'}),
+                            html.H5('Compliance Settings', style={'color': '#6d192a', 'marginBottom': '0.75rem'}),
                             html.Ul(
                                 [
                                     html.Li(
@@ -506,9 +507,9 @@ layout = html.Div(
             [
                 html.Div(
                     [
-                        html.H6('Scenario & Participant Builder', className='page-title'),
+                        html.H6('Scenario & Population Builder', className='page-title'),
                         html.P(
-                            'Create and configure simulation scenarios and participant behaviors for your facility simulations.',
+                            'Create and configure simulation scenarios and population behaviors for your facility simulations.',
                             className='page-subtitle',
                         ),
                     ],
@@ -530,12 +531,12 @@ layout = html.Div(
         # How-to Modal
         dbc.Modal(
             [
-                dbc.ModalHeader(dbc.ModalTitle('How to Use the Scenario & Participant Builder')),
+                dbc.ModalHeader(dbc.ModalTitle('How to Use the Scenario & Population Builder')),
                 dbc.ModalBody(
                     [
                         html.H5('Managing Resources', className='mt-3 mb-3'),
                         html.P(
-                            'This builder helps you create, edit, and manage scenarios and participant configurations. Follow these steps to work with your resources:',
+                            'This builder helps you create, edit, and manage scenarios and population configurations. Follow these steps to work with your resources:',
                             className='mb-4',
                         ),
                         # Create Resource
@@ -738,7 +739,7 @@ layout = html.Div(
                                             'You can expand the "View Full Details" section to see the complete configuration in JSON format.'
                                         ),
                                         html.Li(
-                                            'Start with STEP 1 to define your scenario, then move to STEP 2 to configure participants.'
+                                            'Start with STEP 1 to define your scenario, then move to STEP 2 to configure population.'
                                         ),
                                     ],
                                     style={'marginTop': '0.5rem', 'marginBottom': '0'},
@@ -766,7 +767,7 @@ layout = html.Div(
                         'borderBottom': 'none',
                     },
                     active_label_style={
-                        'backgroundColor': '#3b82f6',
+                        'backgroundColor': '#6d192a',
                         'color': '#ffffff',
                         'borderRadius': '8px 8px 0 0',
                         'fontWeight': '600',
@@ -777,7 +778,7 @@ layout = html.Div(
                                 html.Div(
                                     [
                                         html.P(
-                                            'Set up your simulation scenario including outbreak conditions, protective measures, and simulation settings. '
+                                            'Set up your simulation scenario including outbreak conditions, preventative measures, and simulation settings. '
                                             'Choose an existing scenario or create a new one to customize infection parameters, prevention strategies, and how the simulation runs.',
                                             className='step-description',
                                             style={
@@ -836,7 +837,7 @@ layout = html.Div(
                                     dbc.Tabs(
                                         [
                                             create_resource_tab('virus', 'Outbreak Settings'),
-                                            create_resource_tab('prevention', 'Protective Measures'),
+                                            create_resource_tab('prevention', 'Preventative Measures'),
                                             create_resource_tab('simulation', 'Simulation Settings'),
                                         ]
                                     ),
@@ -860,7 +861,7 @@ layout = html.Div(
                     ],
                 ),
                 dbc.Tab(
-                    label='STEP 2: Configure Your Participants',
+                    label='STEP 2: Configure Your Population',
                     tab_id='agent_config-tab',
                     label_style={
                         'padding': '1rem 2rem',
@@ -869,7 +870,7 @@ layout = html.Div(
                         'borderBottom': 'none',
                     },
                     active_label_style={
-                        'backgroundColor': '#3b82f6',
+                        'backgroundColor': '#6d192a',
                         'color': '#ffffff',
                         'borderRadius': '8px 8px 0 0',
                         'fontWeight': '600',
@@ -881,8 +882,8 @@ layout = html.Div(
                                     [
                                         html.P(
                                             'Define the people in your facility and how they behave. '
-                                            'Configure the number of participants, their movement patterns, social interactions, and compliance with protective measures. '
-                                            'Select an existing configuration or create a new one to customize participant behavior.',
+                                            'Configure the number of individuals, their movement patterns, social interactions, and compliance with preventative measures. '
+                                            'Select an existing configuration or create a new one to customize population behavior.',
                                             className='step-description',
                                             style={
                                                 'margin': '0 0 1rem 0',
@@ -894,7 +895,7 @@ layout = html.Div(
                                         html.Button(
                                             [
                                                 html.I(className='fa fa-circle-info me-2'),
-                                                'Learn More About Participant Settings',
+                                                'Learn More About Population Settings',
                                             ],
                                             id='agent-config-learn-more-btn',
                                             className='btn btn-link learn-more-btn',
@@ -914,7 +915,7 @@ layout = html.Div(
                                                 dcc.Dropdown(
                                                     id={'type': 'dropdown', 'resource': 'agent_config'},
                                                     options=[],
-                                                    placeholder='Choose an existing participant setup or create a new one',
+                                                    placeholder='Choose an existing population setup or create a new one',
                                                     className='dropdown-standard',
                                                 ),
                                             ],
@@ -978,7 +979,7 @@ layout = html.Div(
                         html.Div(
                             [
                                 html.P(
-                                    'You have successfully configured both your scenario and participant settings. '
+                                    'You have successfully configured both your scenario and population settings. '
                                     'Your simulation is ready to run!',
                                     style={
                                         'color': '#6c757d',

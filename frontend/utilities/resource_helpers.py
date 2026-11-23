@@ -152,7 +152,7 @@ def render_summary(resource_type: str, item: dict[str, Any]) -> list[html.Div]:
     description_map = {
         'Name': 'Unique identifier for this configuration',
         'Virus': 'Outbreak settings used in this environment',
-        'Prevention': 'Protective measures applied in this environment',
+        'Prevention': 'Preventative measures applied in this environment',
         'Simulation': 'Technical settings for how the simulation runs',
         'Masks': 'Types of face coverings and their effectiveness',
         'Vaccines': 'Immunization types and dose schedules',

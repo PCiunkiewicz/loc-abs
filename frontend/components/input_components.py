@@ -71,14 +71,14 @@ def create_vaccine_type(vaccine_type: str, label: str, is_disabled: bool, defaul
                 inline=True,
                 labelClassName='vaccine-checkbox-label',
             ),
-            html.Label('Effectiveness', className='form-label'),
+            html.Label('Efficacy', className='form-label'),
             html.Div(
                 [
                     html.Div(
                         [
+                            html.Div('Unvaccinated', className='vaccine-dose-header-item'),
                             html.Div('Dose 1', className='vaccine-dose-header-item'),
                             html.Div('Dose 2', className='vaccine-dose-header-item'),
-                            html.Div('Dose 3', className='vaccine-dose-header-item'),
                         ],
                         className='vaccine-dose-header',
                     ),

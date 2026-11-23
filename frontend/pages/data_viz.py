@@ -1,4 +1,4 @@
-"""Data Visualisation Page for LocABS Application."""
+"""Data Visualisation Page for Loc-ABS Application."""
 
 from datetime import datetime
 from typing import Any
@@ -12,7 +12,7 @@ from loguru import logger
 from components.tooltip import create_tooltip
 from utilities import api
 
-register_page(__name__, path='/data-viz', name='Data Visualisation', title='LocABS · Data Visualisation')
+register_page(__name__, path='/data-viz', name='Data Visualisation', title='Loc-ABS - Data Visualisation')
 
 EXPORT_TYPE_MAP = {
     'tab-animation': ('ANIMATION', 'Animation', 'my-animation'),
@@ -78,7 +78,7 @@ layout = html.Div(
                                         html.Div(
                                             [
                                                 dbc.Label(
-                                                    'Participant Configuration',
+                                                    'Population Configuration',
                                                     html_for='dv-agent-dropdown',
                                                     className='dv-sidebar-form-label',
                                                 ),
@@ -90,12 +90,12 @@ layout = html.Div(
                                             className='dv-label-container',
                                         ),
                                         create_tooltip(
-                                            'Select how participants in the facility behave and move',
+                                            'Select how individuals in the facility behave and move',
                                             'dv-agent-tooltip',
                                             placement='top',
                                         ),
                                         html.P(
-                                            'Defines participant behavior and population',
+                                            'Defines individual behavior and population',
                                             className='dv-helper-text',
                                         ),
                                         dcc.Dropdown(
@@ -122,7 +122,7 @@ layout = html.Div(
                                             placement='top',
                                         ),
                                         html.P(
-                                            'Scenario setup with outbreak and protective measures',
+                                            'Scenario setup with outbreak and preventative measures',
                                             className='dv-helper-text',
                                         ),
                                         dcc.Dropdown(
@@ -270,9 +270,9 @@ def _populate_dropdowns(_: int) -> tuple[list[dict[str, Any]], list[dict[str, An
     scenarios = []
     runs = []
     try:
-        _, agents, _ = api.get_all('agent_config')
-        _, scenarios, _ = api.get_all('scenario')
-        _, runs, _ = api.get_all('run')
+        _, agents, _ = api.AGENT_CONFIGS.get_all()
+        _, scenarios, _ = api.SCENARIOS.get_all()
+        _, runs, _ = api.RUNS.get_all()
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching dropdown options: %s', exc)
 
@@ -320,7 +320,7 @@ def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -
     }
 
     try:
-        success, run_obj, err = api.create('run', payload)
+        success, run_obj, err = api.RUNS.create(payload)
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error starting run: %s', exc)
         alert = dbc.Alert('Failed to start run.', color='danger', duration=3000)
@@ -330,24 +330,13 @@ def _start_run(_n: int, name: str, agent_id: str, scenario_id: str, runs: int) -
         alert = dbc.Alert(f'Failed to start run: {err}', color='danger', duration=3000)
         return no_update, no_update, alert, no_update, no_update, no_update
 
-    notification = None
-    try:
-        start_ok, _, start_err = api.start_run(run_obj['id'])
-        if not start_ok:
-            notification = dbc.Alert(f'Run created but failed to start: {start_err}', color='danger', duration=4000)
-    except Exception as exc:  # pylint: disable=broad-exception-caught
-        logger.exception('Error enqueueing run %s: %s', run_obj.get('id'), exc)
-        notification = dbc.Alert('Run created but failed to start.', color='danger', duration=4000)
-
     details = _render_run_details(run_obj)
-    notification = notification or dbc.Alert(
-        f'Run started: {run_obj.get("name", "run")}', color='success', duration=3000
-    )
+    notification = dbc.Alert(f'Run started: {run_obj.get("name", "run")}', color='success', duration=3000)
 
     # refresh run list
     run_opts = []
     try:
-        success_runs, runs_all, _ = api.get_all('run')
+        success_runs, runs_all, _ = api.RUNS.get_all()
         if success_runs and runs_all:
             run_opts = [
                 {'label': f'{r.get("name", "run")} ({r.get("status", "").lower()})', 'value': r['id']} for r in runs_all
@@ -394,7 +383,7 @@ def _poll_run_status(_n: int, run_obj: Any) -> tuple[Any, Any, Any]:
         return no_update, no_update, no_update
 
     try:
-        success, updated_run, err = api.get_run_status(run_id)
+        success, updated_run, _ = api.RUNS.get_by_id(run_id, 'status/')
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error polling run status for %s: %s', run_id, exc)
         return no_update, no_update, no_update
@@ -408,7 +397,7 @@ def _poll_run_status(_n: int, run_obj: Any) -> tuple[Any, Any, Any]:
     # Refresh the dropdown to show updated status
     run_opts = []
     try:
-        success_runs, runs_all, _ = api.get_all('run')
+        success_runs, runs_all, _ = api.RUNS.get_all()
         if success_runs and runs_all:
             run_opts = [
                 {'label': f'{r.get("name", "run")} ({r.get("status", "").lower()})', 'value': r['id']} for r in runs_all
@@ -439,7 +428,7 @@ def _close_run_details(_n: int) -> tuple[Any, Any, Any]:
     # Refresh the dropdown to show updated runs
     run_opts = []
     try:
-        success_runs, runs_all, _ = api.get_all('run')
+        success_runs, runs_all, _ = api.RUNS.get_all()
         if success_runs and runs_all:
             run_opts = [
                 {'label': f'{r.get("name", "run")} ({r.get("status", "").lower()})', 'value': r['id']} for r in runs_all
@@ -715,8 +704,8 @@ def _get_resource_maps() -> tuple[dict[int, str], dict[int, str]]:
     scenarios_map = {}
     agents_map = {}
     try:
-        _, scenarios, _ = api.get_all('scenario')
-        _, agents, _ = api.get_all('agent_config')
+        _, scenarios, _ = api.SCENARIOS.get_all()
+        _, agents, _ = api.AGENT_CONFIGS.get_all()
         scenarios_map = {s['id']: s['name'] for s in (scenarios or []) if 'id' in s and 'name' in s}
         agents_map = {a['id']: a['name'] for a in (agents or []) if 'id' in a and 'name' in a}
     except Exception as exc:  # pylint: disable=broad-exception-caught
@@ -768,7 +757,7 @@ def _fetch_and_render_runs_table(metadata: dict[str, Any]) -> tuple[Any, dict[st
     """Render a table of runs covering the bottom space."""
     metadata = metadata or {}
     try:
-        success, runs, err = api.get_all('run')
+        success, runs, err = api.RUNS.get_all()
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.exception('Error fetching runs table: %s', exc)
         return dbc.Alert('Unable to load runs right now.', color='danger', className='dv-summary-alert'), metadata
@@ -835,7 +824,7 @@ def _fetch_and_render_runs_table(metadata: dict[str, Any]) -> tuple[Any, dict[st
     State('dv-viewer-state', 'data'),
     prevent_initial_call=True,
 )
-def _load_content(run_id: str, active_tab: str, viewer_state: dict):
+def _load_content(run_id: str, active_tab: str, _: dict) -> Any:
     """Load content based on selected run and active tab."""
     if not ctx.triggered_id:
         return (
@@ -853,7 +842,7 @@ def _load_content(run_id: str, active_tab: str, viewer_state: dict):
 
     # Fetch run status
     try:
-        run_success, run_data, run_err = api.get_run_status(run_id)
+        run_success, run_data, run_err = api.RUNS.get_by_id(run_id)
         if not run_success or not run_data:
             error_msg = f'Unable to load run status: {run_err}' if run_err else 'Unable to load run status right now.'
             error_result = (
@@ -891,7 +880,7 @@ def _load_content(run_id: str, active_tab: str, viewer_state: dict):
 
     # Fetch exports
     try:
-        success, all_exports, err = api.get_exports_for_run(run_id)
+        success, all_exports, err = api.RUNS.get_by_id(run_id, 'exports/')
         if not success:
             error_msg = f'Unable to load exports: {err}' if err else 'Unable to load exports right now.'
             error_result = (
@@ -947,47 +936,34 @@ def _load_content(run_id: str, active_tab: str, viewer_state: dict):
     ],
     prevent_initial_call=True,
 )
-def _generate_export(n_clicks_list, names, run_id, active_tab):
+def _generate_export(_: Any, names: list[str], run_id: str, active_tab: str) -> Any:
     """Generate a new export when the button is clicked."""
-    if not ctx.triggered_id:
-        return no_update, no_update
-
-    if not run_id:
-        alert = dbc.Alert('Please select a simulation run first', color='warning', duration=3000)
-        return alert, no_update
-
-    triggered = ctx.triggered_id
-    export_type = triggered.get('export_type') if isinstance(triggered, dict) else 'ANIMATION'
-
-    name = None
-    if names:
-        for n in names:
-            if n:
-                name = n
-                break
-
-    if not name:
-        alert = dbc.Alert('Please enter an export name', color='warning', duration=3000)
-        return alert, no_update
-
-    # Validate file extension
     valid_extensions = {'.png', '.gif', '.svg', '.html', '.pdf'}
-    name_lower = name.lower()
 
-    if not any(name_lower.endswith(ext) for ext in valid_extensions):
+    alert = None
+    if not (triggered := ctx.triggered_id):
+        alert = no_update
+    elif not run_id:
+        alert = dbc.Alert('Please select a simulation run first', color='warning', duration=3000)
+    elif not (name := next((n for n in (names or []) if n), None)):
+        alert = dbc.Alert('Please enter an export name', color='warning', duration=3000)
+    elif not any(name.lower().endswith(ext) for ext in valid_extensions):
         alert = dbc.Alert(
             'Export name must include a valid extension: .png, .gif, .svg, .html, or .pdf',
             color='warning',
             duration=4000,
         )
+
+    if alert is not None:
         return alert, no_update
 
     try:
-        success, export_data, err = api.create_export(run_id, name, export_type)
-    except Exception as exc:
-        logger.exception('Error creating export: %s', exc)
-        alert = dbc.Alert(f'Failed to create export: {str(exc)}', color='danger', duration=3000)
-        return alert, no_update
+        export_type = triggered.get('export_type') if isinstance(triggered, dict) else 'ANIMATION'
+        payload = {'run': run_id, 'name': name, 'export_type': export_type}
+        success, _, err = api.EXPORTS.create(payload)
+    except Exception as err:
+        success = False
+        logger.exception('Error creating export: %s', err)
 
     if not success:
         alert = dbc.Alert(f'Failed to create export: {err}', color='danger', duration=4000)
@@ -998,7 +974,7 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
     alert = dbc.Alert(f'{type_label} export "{name}" created successfully!', color='success', duration=4000)
 
     try:
-        success, all_exports, _ = api.get_exports_for_run(run_id)
+        success, all_exports, _ = api.RUNS.get_by_id(run_id, 'exports/')
         all_exports = all_exports or []
         exports = [exp for exp in all_exports if exp.get('export_type') == export_type]
     except Exception as exc:
@@ -1033,7 +1009,7 @@ def _generate_export(n_clicks_list, names, run_id, active_tab):
     ],
     prevent_initial_call=True,
 )
-def _view_export(n_clicks_list, run_id, active_tab):
+def _view_export(n_clicks_list: list, run_id: str, active_tab: str) -> Any:
     """Set viewer state to display the export."""
     if not ctx.triggered_id:
         return no_update
@@ -1049,7 +1025,7 @@ def _view_export(n_clicks_list, run_id, active_tab):
         return no_update
 
     try:
-        success, export_data, err = api.get_by_id('export', export_id)
+        success, export_data, _ = api.EXPORTS.get_by_id(export_id)
     except Exception as exc:
         logger.exception('Error fetching export %s: %s', export_id, exc)
         return no_update
@@ -1065,7 +1041,7 @@ def _view_export(n_clicks_list, run_id, active_tab):
     Input('dv-viewer-state', 'data'),
     prevent_initial_call=True,
 )
-def _render_viewer(viewer_state: dict):
+def _render_viewer(viewer_state: dict) -> Any:
     """Render the export viewer when viewer_state indicates it should be shown."""
     if not viewer_state or not viewer_state.get('open'):
         return no_update
@@ -1078,7 +1054,7 @@ def _render_viewer(viewer_state: dict):
         return no_update
 
     try:
-        success, export_data, err = api.get_by_id('export', export_id)
+        success, export_data, _ = api.EXPORTS.get_by_id(export_id)
     except Exception as exc:
         logger.exception('Error fetching export %s for viewer: %s', export_id, exc)
         return html.Div('Failed to load export', className='text-danger')
@@ -1090,12 +1066,8 @@ def _render_viewer(viewer_state: dict):
     if not outfile:
         return html.Div('Export file not available', className='text-warning')
 
-    if outfile.startswith('data/exports/'):
-        relative_path = outfile[len('data/exports/') :]
-    else:
-        relative_path = outfile
+    relative_path = outfile[len('data/exports/') :] if outfile.startswith('data/exports/') else outfile
     file_url = f'/exports/{relative_path}'
-
     file_ext = outfile.lower().split('.')[-1]
 
     # Create appropriate viewer based on file type
@@ -1118,7 +1090,7 @@ def _render_viewer(viewer_state: dict):
         )
 
     # Create viewer with close button
-    viewer = dbc.Card(
+    return dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row(
@@ -1156,8 +1128,6 @@ def _render_viewer(viewer_state: dict):
         className='dv-export-viewer',
     )
 
-    return viewer
-
 
 @callback(
     Output('dv-content-area', 'children', allow_duplicate=True),
@@ -1165,7 +1135,7 @@ def _render_viewer(viewer_state: dict):
     Input({'type': 'close-export-btn', 'run': dash.dependencies.ALL, 'tab': dash.dependencies.ALL}, 'n_clicks'),
     prevent_initial_call=True,
 )
-def _close_export_view(n_clicks_list):
+def _close_export_view(n_clicks_list: list) -> Any:
     """Close export view and return to export list."""
     if not ctx.triggered_id:
         return no_update, no_update
@@ -1184,7 +1154,7 @@ def _close_export_view(n_clicks_list):
     export_type, export_label, placeholder = EXPORT_TYPE_MAP[active_tab]
 
     try:
-        success, all_exports, _ = api.get_exports_for_run(run_id)
+        _, all_exports, _ = api.RUNS.get_by_id(run_id, 'exports/')
         exports = [exp for exp in (all_exports or []) if exp.get('export_type') == export_type]
     except Exception as exc:
         logger.exception('Error refreshing exports: %s', exc)

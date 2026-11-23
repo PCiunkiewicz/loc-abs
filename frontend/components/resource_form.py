@@ -3,17 +3,17 @@
 from dash import dcc, html
 
 from components.tooltip import create_tooltip
+from utilities.types.forms import Field
 
 
 def render_resource_form(
-    resource_type: str, fields: list, values: dict | None = None, readonly: bool = True
+    resource: str, fields: list[Field], values: dict | None = None, readonly: bool = True
 ) -> html.Div:
     """Render a resource form with given fields and values.
 
     Args:
-        resource_type (str): The type of resource (e.g., "location", "user").
-        fields (list): List of field definitions. Each field is a dict with keys:
-                       'id', 'label', 'type', 'placeholder', 'minLength', 'maxLength', 'pattern'.
+        resource (str): The type of resource (e.g., "location", "user").
+        fields (list): List of field definitions. Each field is a dict with keys
         values (dict, optional): Dictionary of field values. Defaults to None.
         readonly (bool, optional): If True, fields are read-only. Defaults to True.
 
@@ -23,24 +23,17 @@ def render_resource_form(
     values = values or {}
     form_items = []
     for field in fields:
-        if 'section_label' in field:
-            form_items.append(html.H5(field['section_label'], className='form-section-label'))
-            continue
-
-        field_id = field.get('id')
-        field_key = field_id.get('field') if isinstance(field_id, dict) else field_id
-
-        field_value = values.get(field_key, None)
+        key = field['id'].get('field') if isinstance(field['id'], dict) else field['id']
+        value = values.get(key, None)
 
         # If a custom component function is provided, use it
-        if 'component' in field and callable(field['component']):
-            # Pass readonly and value to the component
-            form_items.append(field['component'](readonly=readonly, value=field_value))
+        if (component := field.get('component')) and callable(component):
+            form_items.append(component(readonly=readonly, value=value))
             continue
 
         label = field.get('label', '')
         field_type = field.get('type', 'text')
-        class_name = field.get('className', 'form-input')
+        class_name = field.get('css_class', 'form-input')
         tooltip_text = field.get('tooltip', '')
 
         if field_type == 'dropdown':
@@ -52,7 +45,7 @@ def render_resource_form(
                                 html.Label(label, className='form-label'),
                                 html.I(
                                     className='fa fa-circle-question ms-2',
-                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    id=f'{resource}-{key}-tooltip',
                                     style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
                                 )
                                 if tooltip_text
@@ -62,19 +55,17 @@ def render_resource_form(
                         ),
                         create_tooltip(
                             tooltip_text,
-                            f'{resource_type}-{field_key}-tooltip',
+                            f'{resource}-{key}-tooltip',
                             placement='top',
                         )
                         if tooltip_text
                         else None,
                         dcc.Dropdown(
-                            id=field_id,
+                            id=field['id'],
                             options=field.get('options', []),
-                            value=field_value,
-                            placeholder=field.get('placeholder', ''),
+                            value=value,
                             className=class_name,
                             disabled=readonly,
-                            multi=field.get('multi', False),
                         ),
                     ]
                 )
@@ -88,7 +79,7 @@ def render_resource_form(
                                 html.Label(label, className='form-label'),
                                 html.I(
                                     className='fa fa-circle-question ms-2',
-                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    id=f'{resource}-{key}-tooltip',
                                     style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
                                 )
                                 if tooltip_text
@@ -98,31 +89,30 @@ def render_resource_form(
                         ),
                         create_tooltip(
                             tooltip_text,
-                            f'{resource_type}-{field_key}-tooltip',
+                            f'{resource}-{key}-tooltip',
                             placement='top',
                         )
                         if tooltip_text
                         else None,
                         dcc.RadioItems(
-                            id=field_id,
+                            id=field['id'],
                             options=field.get('options', []),
-                            value=field_value,
+                            value=value,
                             className='form-radio-items',
-                            inline=field.get('inline', True),
+                            inline=True,
                         ),
                     ]
                 )
             )
         else:
             input_props = {
-                'id': field_id,
+                'id': field['id'],
                 'type': field_type,
-                'value': field_value,
-                'placeholder': field.get('placeholder', ''),
+                'value': value,
                 'className': class_name,
                 'disabled': readonly,
             }
-            for prop in ['min', 'max', 'step', 'pattern']:
+            for prop in ['min', 'max', 'step']:
                 if prop in field:
                     input_props[prop] = field[prop]
 
@@ -134,7 +124,7 @@ def render_resource_form(
                                 html.Label(label, className='form-label'),
                                 html.I(
                                     className='fa fa-circle-question ms-2',
-                                    id=f'{resource_type}-{field_key}-tooltip',
+                                    id=f'{resource}-{key}-tooltip',
                                     style={'color': '#94a3b8', 'cursor': 'pointer', 'fontSize': '0.875rem'},
                                 )
                                 if tooltip_text
@@ -144,7 +134,7 @@ def render_resource_form(
                         ),
                         create_tooltip(
                             tooltip_text,
-                            f'{resource_type}-{field_key}-tooltip',
+                            f'{resource}-{key}-tooltip',
                             placement='top',
                         )
                         if tooltip_text

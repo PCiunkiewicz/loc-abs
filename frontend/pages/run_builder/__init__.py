@@ -1,1 +1,1 @@
-"""Run Builder module for LocABS Application."""
+"""Run Builder module for Loc-ABS Application."""
